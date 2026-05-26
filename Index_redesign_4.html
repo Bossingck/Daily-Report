@@ -1,0 +1,4281 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Operation Report — Field Service Management</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+
+  /* ── CSS Variables – Pastel Hologram Light Palette ── */
+  :root {
+    --bg-base:       #f0f4ff;
+    --bg-surface:    #ffffff;
+    --bg-card:       #f8f9ff;
+    --bg-subtle:     #eef1fb;
+    --border:        rgba(120,130,220,.18);
+    --border-med:    rgba(100,110,200,.28);
+    --text-primary:  #1a1e3c;
+    --text-secondary:#4a5380;
+    --text-muted:    #8a95c0;
+    --text-white:    #ffffff;
+    --accent-blue:   #5b8def;
+    --accent-violet: #9b7bf7;
+    --accent-cyan:   #38c8e8;
+    --accent-mint:   #3ddba8;
+    --accent-rose:   #f472b6;
+    --accent-amber:  #f5a623;
+    --accent-red:    #f76060;
+    --accent-green:  #4ade80;
+    --holo-1:        linear-gradient(135deg,#e0e8ff,#f0e8ff,#e8f8ff);
+    --holo-2:        linear-gradient(135deg,#dff0ff,#e8f0ff,#f0e8ff);
+    --glass:         rgba(255,255,255,.65);
+    --glass-border:  rgba(200,210,255,.5);
+    --shadow-soft:   0 4px 24px rgba(80,100,200,.10);
+    --shadow-card:   0 2px 16px rgba(80,100,200,.12);
+    --shadow-hover:  0 8px 32px rgba(80,100,200,.20);
+    --radius-lg:     18px;
+    --radius-md:     12px;
+    --radius-sm:     8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg-base);
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(155,123,247,.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(56,200,232,.10) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(91,141,239,.06) 0%, transparent 60%);
+    font-family: 'Inter', 'Space Grotesk', 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+    padding: 20px;
+  }
+
+  /* ── Landing Page ── */
+  #landing {
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; padding: 60px 20px 40px;
+    background: linear-gradient(160deg, #f0f4ff 0%, #f5f0ff 50%, #eef8ff 100%);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(155,123,247,.15) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(56,200,232,.12) 0%, transparent 40%),
+      radial-gradient(circle at 60% 30%, rgba(244,114,182,.08) 0%, transparent 35%);
+    position: relative; overflow: hidden;
+  }
+  #landing::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(155,123,247,.04) 1px, transparent 1px);
+    background-size: 32px 32px; pointer-events: none;
+  }
+
+  /* Ring / Logo */
+  .welcome-ring {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #9b7bf7, #38c8e8, #4ade80) border-box;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+    box-shadow: 0 0 40px rgba(155,123,247,.25), 0 0 80px rgba(56,200,232,.12);
+    animation: ringPulse 4s ease-in-out infinite;
+  }
+  @keyframes ringPulse {
+    0%,100% { box-shadow: 0 0 40px rgba(155,123,247,.25), 0 0 80px rgba(56,200,232,.12); }
+    50%      { box-shadow: 0 0 60px rgba(155,123,247,.40), 0 0 100px rgba(56,200,232,.20); }
+  }
+  .welcome-ring-icon { font-size: 44px; }
+
+  /* Live badge */
+  .badge-inoc {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,.8); border: 1px solid rgba(155,123,247,.3);
+    border-radius: 20px; padding: 5px 16px; font-size: 12px;
+    font-weight: 700; color: #7b5cf0; margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(155,123,247,.15);
+  }
+  .badge-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: linear-gradient(135deg, #4ade80, #38c8e8);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .welcome-label {
+    font-size: 13px; font-weight: 600; letter-spacing: 4px;
+    text-transform: uppercase; color: #9b7bf7; margin-bottom: 8px;
+  }
+  .welcome-title {
+    font-size: 64px; font-weight: 900; margin: 0 0 6px;
+    background: linear-gradient(135deg, #5b8def 0%, #9b7bf7 40%, #38c8e8 80%, #4ade80 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; text-align: center; letter-spacing: -3px; line-height: 1.05;
+  }
+  .welcome-subtitle {
+    font-size: 14px; color: var(--text-secondary); text-align: center;
+    letter-spacing: 2px; margin-bottom: 12px; font-weight: 500;
+  }
+  .welcome-divider {
+    width: 60px; height: 2px; margin: 0 auto 36px;
+    background: linear-gradient(90deg, transparent, #9b7bf7, #38c8e8, transparent);
+    border-radius: 1px;
+  }
+  .welcome-desc {
+    font-size: 14px; color: var(--text-secondary); text-align: center;
+    max-width: 400px; line-height: 1.9; margin-bottom: 44px;
+  }
+
+  /* Enter Button */
+  .btn-welcome-enter {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 44px; border-radius: 50px;
+    font-size: 16px; font-weight: 800; cursor: pointer; border: none;
+    background: linear-gradient(135deg, #5b8def 0%, #9b7bf7 60%, #38c8e8 100%);
+    color: #fff;
+    box-shadow: 0 6px 28px rgba(91,141,239,.40), 0 2px 8px rgba(0,0,0,.08);
+    transition: all .25s; letter-spacing: .3px; margin-bottom: 14px;
+  }
+  .btn-welcome-enter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(91,141,239,.50), 0 4px 16px rgba(0,0,0,.10);
+  }
+  .btn-welcome-enter:active { transform: translateY(0); }
+  .btn-welcome-arrow {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    transition: transform .25s;
+  }
+  .btn-welcome-enter:hover .btn-welcome-arrow { transform: translateX(4px); }
+
+  .welcome-hint {
+    font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 52px;
+  }
+
+  /* Stat pills */
+  .welcome-stats {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px;
+  }
+  .stat-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.7); border: 1px solid rgba(155,123,247,.2);
+    border-radius: 12px; padding: 10px 18px; backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(80,100,200,.08);
+  }
+  .stat-pill-icon { font-size: 18px; }
+  .stat-pill-label { font-size: 12px; color: var(--text-secondary); line-height: 1.3; }
+  .stat-pill-val { font-size: 12px; font-weight: 700; color: #7b5cf0; }
+
+  .landing-footer { font-size: 11px; color: var(--text-muted); text-align: center; }
+
+  .drop-zone {
+    width: 100%; max-width: 480px;
+    border: 2px dashed rgba(155,123,247,.35); border-radius: 18px;
+    padding: 32px 24px; text-align: center; cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: rgba(255,255,255,.5); margin-bottom: 20px;
+    backdrop-filter: blur(6px);
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: #9b7bf7; background: rgba(155,123,247,.06);
+  }
+  .drop-zone-icon { font-size: 36px; margin-bottom: 10px; }
+  .drop-zone-text { font-size: 14px; color: #7b5cf0; font-weight: 600; margin-bottom: 4px; }
+  .drop-zone-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* ── App wrapper ── */
+  #app { display: none; }
+  #app.visible { display: block; }
+
+  /* ── Header ── */
+  .header {
+    background: rgba(255,255,255,.8);
+    backdrop-filter: blur(16px);
+    border-radius: var(--radius-lg); padding: 18px 28px;
+    margin-bottom: 22px;
+    border: 1px solid var(--glass-border);
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    box-shadow: var(--shadow-soft);
+  }
+  .header h1 {
+    margin: 0; font-size: 20px;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; letter-spacing: .5px;
+  }
+  .header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .header .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── Buttons ── */
+  .btn {
+    border: none; border-radius: var(--radius-sm); padding: 9px 18px;
+    font-size: 13px; cursor: pointer; font-weight: 700; color: #fff;
+    transition: all .18s; letter-spacing: .2px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+  .btn-blue  { background: linear-gradient(135deg, #5b8def, #7b5cf0); }
+  .btn-green { background: linear-gradient(135deg, #3ddba8, #38c8e8); }
+  .btn-copy {
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    width: 100%; padding: 12px 24px; font-size: 14px; border-radius: var(--radius-md);
+    border: none; color: #fff; cursor: pointer; font-weight: 800; margin-top: 14px;
+    letter-spacing: .5px; transition: all .18s;
+    box-shadow: 0 4px 20px rgba(91,141,239,.25);
+  }
+  .btn-copy:hover { opacity: .9; transform: translateY(-1px); }
+
+  .preview-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); margin: 18px 0 6px; padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Summary Cards ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+  }
+  .card {
+    background: rgba(255,255,255,.8);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md); padding: 18px 20px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(10px);
+    transition: all .2s;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content:''; position:absolute; inset:0;
+    background: var(--holo-1); opacity:.4;
+    pointer-events:none;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(155,123,247,.35);
+  }
+  .card .val {
+    font-size: 30px; font-weight: 900;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card .lbl { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab {
+    padding: 10px 20px; border-radius: 50px;
+    border: 1px solid var(--border);
+    cursor: pointer; font-weight: 700; font-size: 13px;
+    background: rgba(255,255,255,.7); color: var(--text-secondary);
+    transition: all .2s; backdrop-filter: blur(8px);
+  }
+  .tab:hover { border-color: rgba(155,123,247,.4); color: #7b5cf0; }
+  .tab.active {
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 16px rgba(91,141,239,.30);
+  }
+
+  /* ── Pivot Table ── */
+  .pivot-wrap { overflow-x: auto; margin-bottom: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-card); }
+  .pivot-title {
+    background: linear-gradient(135deg, #f0f4ff, #f5f0ff);
+    color: #5b8def; font-weight: 800; font-size: 14px;
+    padding: 12px 18px; border-radius: var(--radius-md) var(--radius-md) 0 0;
+    letter-spacing: .5px; border-bottom: 2px solid rgba(155,123,247,.25);
+    display: flex; align-items: center; gap: 8px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  thead tr { background: linear-gradient(90deg, #f0f4ff, #f5f0ff); }
+  th {
+    padding: 10px 14px; text-align: left; font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  th.grand { background: #eef1fb; color: #9b7bf7; }
+  td {
+    padding: 7px 14px; border-bottom: 1px solid var(--border); white-space: nowrap;
+    color: var(--text-primary);
+  }
+  td.center { text-align: center; }
+  td.yellow  { color: #f5a623; font-weight: 700; }
+  td.gold    { color: #f5a623; font-weight: 900; font-size: 16px; background: #fff8ee; text-align: center; }
+  td.subtot  { text-align: center; font-weight: 800; color: #9b7bf7; background: #f5f0ff; }
+  .row-even  { background: #fafbff; border-bottom: 1px solid var(--border); }
+  .row-odd   { background: #f7f8ff; border-bottom: 1px solid var(--border); }
+  .stat-total { background: #f0f4ff; border-top: 2px solid rgba(155,123,247,.3); }
+  .grand-total { background: #eef1fb; border-top: 3px solid #9b7bf7; }
+
+  /* ── Summary Breakdown ── */
+  .breakdown {
+    background: rgba(255,255,255,.8);
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius-lg); padding: 22px 24px;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
+  }
+  .breakdown::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(155,123,247,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .breakdown-title {
+    font-weight: 800; margin-bottom: 18px; font-size: 15px;
+    display: flex; align-items: center; gap: 8px; letter-spacing: .3px;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .breakdown-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(155,123,247,.4) 0%, transparent 100%);
+  }
+
+  /* Main stat row */
+  .bd-hero {
+    background: linear-gradient(135deg, #f0f4ff, #f5f0ff);
+    border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid rgba(155,123,247,.2);
+  }
+  .bd-hero-label { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+  .bd-hero-val   { font-size: 36px; font-weight: 900; line-height: 1; }
+
+  /* In Progress */
+  .bd-progress-card {
+    background: rgba(56,200,232,.07); border: 1px solid rgba(56,200,232,.25);
+    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bd-progress-label { font-size: 12px; color: var(--accent-cyan); font-weight: 600; }
+  .bd-progress-val   { font-size: 28px; font-weight: 900; color: var(--accent-cyan); line-height: 1; }
+
+  /* SLA two-col */
+  .bd-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .bd-sla-card { border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .bd-sla-card.within { background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.25); }
+  .bd-sla-card.over   { background: rgba(247,96,96,.07);  border: 1px solid rgba(247,96,96,.22); }
+  .bd-sla-card .sla-label { font-size: 11px; font-weight: 600; }
+  .bd-sla-card.within .sla-label { color: #3dba78; }
+  .bd-sla-card.over   .sla-label { color: #f76060; }
+  .bd-sla-card .sla-val { font-size: 28px; font-weight: 900; line-height: 1; }
+  .bd-sla-card.within .sla-val { color: #3dba78; }
+  .bd-sla-card.over   .sla-val { color: #f76060; }
+
+  /* SLA 80% editable */
+  .bd-sla80-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, #f8f9ff, #f5f0ff);
+    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 14px;
+    border: 1px solid rgba(155,123,247,.2); transition: border-color .2s;
+  }
+  .bd-sla80-card:hover { border-color: rgba(155,123,247,.45) !important; }
+  .bd-sla80-left  { display: flex; align-items: center; gap: 10px; }
+  .bd-sla80-icon  { font-size: 20px; }
+  .bd-sla80-label { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+  .bd-sla80-sub   { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .bd-sla80-right { display: flex; align-items: center; gap: 6px; }
+  .bd-sla80-input {
+    width: 72px; text-align: right; font-size: 26px; font-weight: 900;
+    background: transparent; border: none; border-bottom: 2px solid;
+    border-radius: 0; padding: 2px 4px; outline: none; color: #9b7bf7;
+    transition: border-color .2s;
+  }
+  .bd-sla80-input::-webkit-inner-spin-button,
+  .bd-sla80-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .bd-sla80-input[type=number] { -moz-appearance: textfield; }
+  .bd-sla80-unit { font-size: 12px; font-weight: 700; color: #9b7bf7; }
+
+  /* Today Row */
+  .bd-today-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 4px; }
+  .bd-today-item {
+    background: rgba(255,255,255,.8); border-radius: var(--radius-md); padding: 12px 14px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+    border: 1px solid var(--border); transition: all .2s; backdrop-filter: blur(6px);
+  }
+  .bd-today-item:hover { border-color: rgba(155,123,247,.35); box-shadow: var(--shadow-card); }
+  .bd-today-icon {
+    font-size: 16px; width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid transparent; display: flex; align-items: center; justify-content: center;
+  }
+  .bd-today-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .bd-today-val   { min-height: 24px; display: flex; align-items: center; }
+  @media(max-width:480px) { .bd-today-row { grid-template-columns: 1fr 1fr; } }
+
+  .bd-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); margin: 2px 0 8px; padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Reason breakdown grid */
+  .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+  .bd-item {
+    background: rgba(255,255,255,.7); border-radius: var(--radius-sm); padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+    border: 1px solid var(--border); transition: all .2s;
+    backdrop-filter: blur(6px);
+  }
+  .bd-item:hover { border-color: rgba(155,123,247,.35); box-shadow: var(--shadow-card); transform: translateY(-1px); }
+  .bd-item .bd-label { font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
+  .bd-item .bd-val   { font-weight: 800; font-size: 20px; line-height: 1.1; color: var(--text-primary); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(30,20,80,.25); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; z-index: 1000; padding: 12px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    font-family: 'Inter', 'Space Grotesk', sans-serif;
+    background: #fff; border-radius: var(--radius-lg);
+    padding: 0; max-width: 780px; width: 100%; max-height: 94vh;
+    overflow-y: auto; color: var(--text-primary);
+    box-shadow: 0 20px 60px rgba(80,60,200,.2), 0 4px 24px rgba(0,0,0,.08);
+    border: 1px solid var(--glass-border);
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 24px; margin-bottom: 0;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-header h2 { margin: 0; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: -.2px; }
+  .close-btn {
+    background: rgba(255,255,255,.18); border: none; color: #fff;
+    font-size: 16px; cursor: pointer; width: 32px; height: 32px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .close-btn:hover { background: rgba(255,255,255,.30); }
+
+  /* modal fields */
+  .modal-fields {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; padding: 16px 24px;
+    background: #f8f9ff; border-bottom: 1px solid var(--border); margin-bottom: 0;
+  }
+  .field-label { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 100px; }
+  .field-label span {
+    font-size: 11px; color: var(--text-muted); font-weight: 700;
+    letter-spacing: .8px; text-transform: uppercase;
+  }
+  input {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text-primary); padding: 7px 11px; font-size: 14px; font-weight: 500;
+    outline: none; width: 100%; transition: border-color .2s, box-shadow .2s;
+  }
+  input:focus { border-color: #9b7bf7; box-shadow: 0 0 0 3px rgba(155,123,247,.14); }
+
+  .modal-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 0; }
+  @media(max-width:680px){ .modal-sections { grid-template-columns: 1fr; } }
+  .modal-section { padding: 12px 18px 16px; border: none; border-radius: 0; }
+  .modal-section.sa-section { background: #f0f5ff; border-right: 2px solid var(--border); }
+  .modal-section.nsa-section { background: #fff8f0; }
+
+  .section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; letter-spacing: -.1px;
+    padding: 10px 14px; margin: -12px -18px 12px;
+    border-bottom: 3px solid transparent;
+  }
+  .sa-section  .section-title { background: linear-gradient(135deg,#5b8def,#7b5cf0); color: #fff; border-bottom-color: transparent; }
+  .nsa-section .section-title { background: linear-gradient(135deg,#f5a623,#f76060); color: #fff; border-bottom-color: transparent; }
+
+  .edit-group-title {
+    font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+    grid-column: 1 / -1; margin: 10px 0 6px; padding: 6px 10px; border-radius: 7px;
+    border-left: 3px solid transparent;
+  }
+  .edit-group-title.group-today   { color: #4a70b4; background: #e0eaff; border-left-color: #5b8def; }
+  .edit-group-title.group-pending { color: #2e7a50; background: #d0f0e0; border-left-color: #3ddba8; }
+  .edit-group-title.group-over    { color: #9a2020; background: #ffe0e0; border-left-color: #f76060; }
+
+  .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .edit-field { display: flex; flex-direction: column; gap: 4px; }
+  .edit-field span { font-size: 12px; color: var(--text-muted); font-weight: 600; letter-spacing: .1px; }
+  .edit-field input { padding: 5px 9px; font-size: 13px; font-weight: 600; letter-spacing: -.2px; }
+
+  /* QR Button */
+  .btn-qr {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: calc(100% - 44px); margin: 14px 22px 18px;
+    padding: 13px 24px; font-size: 15px; font-weight: 800; border-radius: var(--radius-md);
+    cursor: pointer; letter-spacing: .3px; transition: all .2s;
+    background: linear-gradient(135deg, #3ddba8, #38c8e8);
+    border: none; color: #fff;
+    box-shadow: 0 4px 20px rgba(56,200,232,.25);
+  }
+  .btn-qr:hover { opacity: .9; transform: translateY(-1px); }
+
+  /* ── NSA/SA Capture Buttons ── */
+  .nsa-capture-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: none; border-radius: var(--radius-sm); padding: 6px 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; white-space: nowrap;
+    color: #fff;
+  }
+  .nsa-capture-btn.gold { background: linear-gradient(135deg, #f5a623, #f76060); box-shadow: 0 2px 10px rgba(245,166,35,.3); }
+  .nsa-capture-btn.blue { background: linear-gradient(135deg, #5b8def, #38c8e8); box-shadow: 0 2px 10px rgba(56,200,232,.3); }
+  .nsa-capture-btn:hover { opacity: .85; transform: translateY(-1px); }
+  .nsa-capture-btn.success { background: linear-gradient(135deg,#3ddba8,#2ea87a); }
+  .nsa-capture-btn.error   { background: linear-gradient(135deg,#f76060,#c0392b); }
+
+  /* ── Capture Frame (screenshot area) ── */
+  #pdt-capture-frame {
+    background: #fff;
+    border: 2px solid rgba(245,166,35,.4);
+    border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: 0 0 0 4px rgba(245,166,35,.08), var(--shadow-soft);
+  }
+  .pdt-capture-title-bar {
+    background: linear-gradient(135deg, #fff8e0, #fff0c0, #ffe890);
+    padding: 14px 20px 10px;
+    border-bottom: 2px solid rgba(245,166,35,.35);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .pdt-capture-title-main {
+    font-size: 18px; font-weight: 900; color: #b87800;
+    letter-spacing: .5px; display: flex; align-items: center; gap: 10px;
+  }
+  .pdt-capture-title-sub { font-size: 11px; color: #c89a20; font-weight: 500; margin-top: 2px; }
+  .pdt-capture-timestamp {
+    background: rgba(245,166,35,.12); border: 1px solid rgba(245,166,35,.35);
+    border-radius: var(--radius-md); padding: 6px 14px; text-align: right;
+  }
+  .pdt-capture-timestamp .ts-label { font-size: 10px; color: #b87800; font-weight: 600; letter-spacing: .8px; }
+  .pdt-capture-timestamp .ts-val   { font-size: 15px; font-weight: 800; color: #b87800; font-family: monospace; }
+  .pdt-zone-row td { padding: 10px 16px !important; }
+
+  /* ── Arrive Frame ── */
+  .arrive-capture-title-bar {
+    background: linear-gradient(135deg, #f0f5ff, #e8f0ff, #f0e8ff);
+    padding: 12px 18px; border-bottom: 2px solid rgba(91,141,239,.3);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .arrive-capture-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff;
+    border: none; border-radius: var(--radius-sm); padding: 6px 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s;
+    box-shadow: 0 2px 10px rgba(91,141,239,.25);
+  }
+  .arrive-capture-btn:hover { opacity: .88; transform: translateY(-1px); }
+  .arrive-capture-btn.success { background: linear-gradient(135deg,#3ddba8,#2ea87a); }
+  .arrive-capture-btn.error   { background: linear-gradient(135deg,#f76060,#c0392b); }
+
+  .pdt-capture-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff;
+    border: none; border-radius: var(--radius-sm); padding: 6px 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s;
+    box-shadow: 0 2px 10px rgba(91,141,239,.25);
+  }
+  .pdt-capture-btn:hover { opacity: .88; transform: translateY(-1px); }
+  .pdt-capture-btn.success { background: linear-gradient(135deg,#3ddba8,#2ea87a); }
+  .pdt-capture-btn.error   { background: linear-gradient(135deg,#f76060,#c0392b); }
+
+  /* ── Daily Report Panel ── */
+  #daily-report-panel {
+    background: rgba(255,255,255,.8); backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding: 20px 24px; margin-top: 16px; margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .dr-panel-title {
+    font-size: 14px; font-weight: 800;
+    background: linear-gradient(135deg,#5b8def,#9b7bf7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: .5px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .dr-cell {
+    background: rgba(255,255,255,.8); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    cursor: pointer; transition: all .2s; backdrop-filter: blur(6px);
+  }
+  .dr-cell:hover { border-color: rgba(155,123,247,.35); box-shadow: var(--shadow-card); transform: translateY(-1px); }
+  .dr-cell.active { border-color: #9b7bf7; background: rgba(155,123,247,.06); }
+  .dr-cell-icon  { font-size: 18px; }
+  .dr-cell-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; line-height: 1.3; }
+  .dr-cell-val   { font-size: 22px; font-weight: 900; line-height: 1.1; color: var(--text-primary); }
+  .dr-copy-btn {
+    margin-top: 14px; width: 100%;
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    color: #fff; border: none; border-radius: var(--radius-md);
+    padding: 12px 24px; font-size: 14px; font-weight: 800;
+    cursor: pointer; letter-spacing: .5px; transition: all .18s;
+    box-shadow: 0 4px 20px rgba(91,141,239,.25);
+  }
+  .dr-copy-btn:hover { opacity: .88; transform: translateY(-1px); }
+
+  /* ── PDT Table ── */
+  .pdt-wrap { overflow-x: auto; margin-bottom: 24px; width: 100%; box-sizing: border-box; }
+  .pdt-header {
+    background: linear-gradient(135deg, #fff8e0, #ffe890);
+    color: #8a6000; font-weight: 800; font-size: 16px;
+    padding: 14px 20px; border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+    letter-spacing: .5px; width: 100%; box-sizing: border-box;
+    border-bottom: 2px solid rgba(245,166,35,.4);
+  }
+  .pdt-badge {
+    background: rgba(245,166,35,.15); border: 1px solid rgba(245,166,35,.4);
+    color: #b87800; border-radius: 20px; padding: 3px 12px;
+    font-size: 12px; font-weight: 700;
+  }
+  .pdt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pdt-table thead tr { background: linear-gradient(90deg,#fff5cc,#ffe890); }
+  .pdt-table th {
+    padding: 10px 14px; text-align: left; font-weight: 800;
+    color: #6a4800; background: #ffe07a;
+    border-bottom: 2px solid rgba(245,166,35,.4); white-space: nowrap;
+  }
+  .pdt-table td { padding: 8px 14px; border-bottom: 1px solid rgba(245,166,35,.2); white-space: nowrap; }
+  .pdt-sup-row { background: rgba(245,166,35,.3); border-top: 2px solid rgba(245,166,35,.5); }
+  .pdt-sup-row td { color: #5a3800; font-weight: 800; font-size: 13px; padding: 8px 14px; }
+  .pdt-sup-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.12);
+    border-radius: 20px; padding: 2px 12px; color: #5a3800; font-size: 12px; font-weight: 700;
+  }
+  .pdt-row-even { background: #fffde7; }
+  .pdt-row-odd  { background: #fffbdc; }
+  .pdt-row-even:hover, .pdt-row-odd:hover { background: #fff3b0; }
+  .pdt-table td.pdt-team-cell  { color: #3a2800; font-weight: 700; white-space: nowrap; }
+  .pdt-table td.pdt-shift-cell { color: #4a3400; font-weight: 700; text-align: center; }
+  .pdt-table td.pdt-time-cell  { color: #3a2a00; font-weight: 700; font-family: monospace; text-align: center; }
+  .pdt-table td.pdt-skill-cell { color: #1a5a00; font-weight: 800; text-align: center; }
+  .pdt-table td.pdt-sup-cell   { color: #4a3400; text-align: center; }
+  .pdt-table td.pdt-mgr-cell   { color: #4a3a00; }
+  .pdt-table td.pdt-prov-cell  { color: #4a3400; text-align: center; }
+  .pdt-table td.pdt-pdt-cell   { color: #c0392b; font-weight: 900; text-align: center; font-size: 15px; }
+  .pdt-table td.pdt-mh-cell    { color: #4a3400; text-align: center; }
+  .pdt-empty {
+    text-align: center; padding: 48px 24px;
+    background: #fffde7; color: #8a6800; font-size: 14px; border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+  .pdt-grand-row { background: rgba(245,166,35,.3); border-top: 2px solid rgba(245,166,35,.5); }
+  .pdt-grand-row td { color: #5a3800; font-weight: 800; padding: 10px 14px; }
+  .pdt-upload-hint {
+    background: linear-gradient(135deg, #fff8e0, #fff3c0);
+    border: 2px dashed rgba(245,166,35,.5); border-radius: var(--radius-md);
+    padding: 40px 24px; text-align: center; margin-bottom: 24px;
+    cursor: pointer; transition: all .2s;
+  }
+  .pdt-upload-hint:hover { border-color: #f5a623; background: rgba(245,166,35,.08); }
+  .pdt-upload-hint .hint-icon  { font-size: 40px; margin-bottom: 10px; }
+  .pdt-upload-hint .hint-title { font-size: 16px; font-weight: 700; color: #b87800; margin-bottom: 6px; }
+  .pdt-upload-hint .hint-sub   { font-size: 12px; color: #8a6800; }
+
+  /* ── Arrive Table ── */
+  .arrive-wrap { margin-bottom: 24px; width: 100%; box-sizing: border-box; }
+  .arrive-outer-box {
+    border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+    width: 100%; box-sizing: border-box; box-shadow: var(--shadow-card);
+  }
+  .arrive-header {
+    background: linear-gradient(135deg, #f0f5ff, #e8f0ff, #f0e8ff);
+    color: #5b8def; font-weight: 700; font-size: 15px; padding: 12px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    letter-spacing: .5px; width: 100%; box-sizing: border-box;
+    border-bottom: 2px solid rgba(91,141,239,.25);
+  }
+  .arrive-badge {
+    background: rgba(91,141,239,.12); border: 1px solid rgba(91,141,239,.3);
+    color: #5b8def; border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 700;
+  }
+  .arrive-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  .arrive-table thead tr { background: linear-gradient(90deg,#f0f5ff,#e8f0ff); }
+  .arrive-table th {
+    padding: 10px 14px; text-align: left; font-weight: 700;
+    color: #4a6aaa; border-bottom: 2px solid var(--border); white-space: nowrap;
+    position: sticky; top: 0; z-index: 3;
+    background: linear-gradient(90deg,#f0f5ff,#e8f0ff);
+  }
+  .arrive-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+  .arrive-row-even { background: #fafbff; }
+  .arrive-row-odd  { background: #f7f8ff; }
+  .arrive-row-even:hover, .arrive-row-odd:hover { background: #eef2ff; }
+
+  /* ── SA Overview Tables ── */
+  .ov-wrap { margin-bottom: 24px; }
+  .ov-sticky-table-wrap { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+  .ov-sticky-table thead th { position: sticky; top: 0; z-index: 2; }
+  .ov-row-num { color: var(--text-muted); font-size: 11px; font-family: monospace; width: 40px; text-align: center; padding: 6px 6px !important; }
+  th.ov-row-num { color: var(--text-secondary) !important; }
+  .ov-header {
+    border-radius: var(--radius-md) var(--radius-md) 0 0; padding: 12px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-weight: 800; font-size: 15px; letter-spacing: .5px;
+  }
+  .ov-header.red  { background: linear-gradient(135deg, #fff0f0, #ffe0e0); color: #d44; border-bottom: 2px solid rgba(247,96,96,.3); }
+  .ov-header.blue { background: linear-gradient(135deg, #f0f5ff, #e8f0ff); color: #5b8def; border-bottom: 2px solid rgba(91,141,239,.3); }
+  .ov-badge { border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 700; }
+  .ov-badge.red  { background: rgba(247,96,96,.12); border: 1px solid rgba(247,96,96,.3); color: #d44; }
+  .ov-badge.blue { background: rgba(91,141,239,.12); border: 1px solid rgba(91,141,239,.3); color: #5b8def; }
+  .ov-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; background: #fff; }
+  .ov-table thead tr.red-head  { background: linear-gradient(90deg,#fff0f0,#ffe0e0); }
+  .ov-table thead tr.blue-head { background: linear-gradient(90deg,#f0f5ff,#e8f0ff); }
+  .ov-table th { padding: 10px 12px; font-weight: 800; border-bottom: 2px solid var(--border); white-space: nowrap; text-align: center; color: var(--text-primary); }
+  .ov-table th.sla-col { min-width: 160px; text-align: left; }
+  .ov-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: center; }
+  .ov-table td.sla-name { text-align: left; font-weight: 600; }
+  .ov-row-even { background: #fafbff; }
+  .ov-row-odd  { background: #f7f8ff; }
+  .ov-row-even:hover, .ov-row-odd:hover { background: #eef2ff; }
+  .ov-total-row { background: #f0f4ff; border-top: 2px solid rgba(155,123,247,.3); }
+  .ov-total-row td { color: #9b7bf7; font-weight: 900; font-size: 14px; }
+  .ov-sla-overdue { color: #f76060; font-weight: 700; }
+  .ov-sla-indue   { color: #3dba78; }
+  .ov-val-hot  { color: #f76060; font-weight: 900; font-size: 15px; }
+  .ov-val-warn { color: #f5a623; font-weight: 700; }
+  .ov-val-ok   { color: #3dba78; font-weight: 700; }
+  .ov-val-zero { color: var(--text-muted); }
+  .ov-stat-header { background: #f0f4ff; border-top: 2px solid rgba(91,141,239,.25); }
+  .ov-stat-header td { color: #5b8def; font-weight: 800; font-size: 12px; padding: 6px 12px; letter-spacing: .3px; }
+
+  /* ── Pivot Collapse ── */
+  .pivot-collapse-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,.7); border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 700;
+    cursor: pointer; color: var(--text-secondary); transition: all .15s; white-space: nowrap;
+    user-select: none;
+  }
+  .pivot-collapse-btn:hover { background: rgba(155,123,247,.1); border-color: rgba(155,123,247,.4); color: #7b5cf0; }
+  .pivot-collapse-btn .collapse-icon { font-size: 12px; transition: transform .25s; }
+  .pivot-collapse-btn.collapsed .collapse-icon { transform: rotate(-90deg); }
+  .pivot-table-body-wrap { overflow: hidden; transition: max-height .3s ease, opacity .25s ease; max-height: 9999px; opacity: 1; }
+  .pivot-table-body-wrap.collapsed { max-height: 0; opacity: 0; }
+
+  /* ── Summary Above ── */
+  .summary-above-wrap { margin-bottom: 0; }
+
+  /* ── Zone Badges ── */
+  .zone-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 14px; padding: 2px 10px 2px 6px; font-size: 11px; font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ── NSA/SA Slider Graph – Pastel Light ── */
+  .slider-graph-wrap {
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px 18px;
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .slider-graph-wrap::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 80% 10%, rgba(155,123,247,.07) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .slider-graph-title {
+    font-size:13px; font-weight:800; letter-spacing:.8px; text-transform:uppercase;
+    margin-bottom:16px; display:flex; align-items:center; gap:8px;
+    background: linear-gradient(135deg,#5b8def,#9b7bf7);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .slider-graph-section {
+    margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);
+  }
+  .slider-graph-section:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+  .slider-section-label {
+    font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .slider-section-total { font-size:20px; font-weight:900; line-height:1; }
+  .slider-row {
+    display:flex; align-items:center; gap:10px; margin-bottom:8px; position:relative;
+  }
+  .slider-row-label {
+    width:108px; flex-shrink:0;
+    font-size:12px; color:var(--text-secondary); font-weight:600;
+    line-height:1.3; text-align:right;
+  }
+  .slider-track-wrap { flex:1; position:relative; display:flex; align-items:center; }
+  .slider-track {
+    width:100%; height:7px;
+    background: rgba(155,123,247,.12);
+    border-radius:4px; position:relative; overflow:visible;
+  }
+  .slider-fill {
+    height:100%; border-radius:4px; position:absolute; left:0; top:0;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .slider-dot {
+    width:15px; height:15px; border-radius:50%;
+    position:absolute; top:50%; transform:translate(-50%,-50%);
+    border:2px solid rgba(255,255,255,.8); z-index:2;
+    transition: left .6s cubic-bezier(.4,0,.2,1);
+  }
+  .slider-dot-glow { position:absolute; inset:-4px; border-radius:50%; opacity:.4; filter:blur(5px); }
+  .slider-sla-mark {
+    position:absolute; top:-17px; font-size:9px; font-weight:700; letter-spacing:.5px;
+    color:var(--text-muted); transform:translateX(-50%); white-space:nowrap;
+  }
+  .slider-val-right {
+    width:52px; flex-shrink:0; font-size:18px; font-weight:900; text-align:right; line-height:1;
+  }
+  .slider-val-unit { font-size:10px; font-weight:600; opacity:.6; margin-left:2px; vertical-align:middle; }
+  .sg-group-header {
+    font-size:11px; font-weight:800; letter-spacing:.8px; text-transform:uppercase;
+    color:var(--text-secondary); padding:6px 10px 6px 12px;
+    border-left:3px solid; border-radius:0 6px 6px 0;
+    background:rgba(155,123,247,.06);
+    margin-bottom:10px; margin-top:4px;
+  }
+  .slider-legend { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; margin-bottom:4px; }
+  .slider-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:600; color:var(--text-secondary); }
+  .slider-legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .slider-mini-bar-wrap { display:flex; height:8px; border-radius:4px; overflow:hidden; margin-top:6px; gap:1px; }
+  .slider-mini-seg { height:100%; border-radius:1px; transition:flex .5s ease; }
+  @media(max-width:700px){ .sg-two-col { grid-template-columns:1fr !important; } }
+
+  /* NSA Summary Section Containers */
+  #nsa34-cap-frame, #nsa12-cap-frame {
+    background: rgba(255,255,255,.9);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* NSA/SA Section Header Bar */
+  .nsa-section-bar {
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-bottom: 2px solid;
+  }
+  .nsa-section-bar.gold { background: linear-gradient(135deg,#fff8e0,#ffe8a0); border-bottom-color: rgba(245,166,35,.4); }
+  .nsa-section-bar.blue { background: linear-gradient(135deg,#f0f5ff,#e0eeff); border-bottom-color: rgba(91,141,239,.3); }
+
+  /* ── SA Overview Capture Frame & Title Bar ── */
+  .ov-capture-frame {
+    background: #fff;
+    border: 1px solid rgba(200,210,255,.4);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .ov-title-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; padding: 14px 20px;
+  }
+  .ov-title-bar.red {
+    background: linear-gradient(135deg, #fff0f0, #ffe4e4, #fff5f5);
+    border-bottom: 2px solid rgba(247,96,96,.3);
+  }
+  .ov-title-bar.blue {
+    background: linear-gradient(135deg, #f0f5ff, #e8f0ff, #eef4ff);
+    border-bottom: 2px solid rgba(91,141,239,.3);
+  }
+  .ov-title-main {
+    font-size: 16px; font-weight: 900; letter-spacing: .3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ov-title-bar.red  .ov-title-main { color: #c0392b; }
+  .ov-title-bar.blue .ov-title-main { color: #2868c8; }
+  .ov-title-sub {
+    font-size: 12px; font-weight: 500; margin-top: 3px;
+  }
+  .ov-title-bar.red  .ov-title-sub { color: #b05050; }
+  .ov-title-bar.blue .ov-title-sub { color: #4a6aaa; }
+  .ov-ts-box {
+    text-align: right; flex-shrink: 0;
+    background: rgba(255,255,255,.7);
+    border-radius: var(--radius-md); padding: 8px 14px;
+    border: 1px solid rgba(200,210,255,.4);
+  }
+  .ov-ts-label { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+  .ov-title-bar.red  .ov-ts-label { color: #c0392b; }
+  .ov-title-bar.blue .ov-ts-label { color: #2868c8; }
+  .ov-ts-val { font-size: 14px; font-weight: 800; font-family: monospace; color: #2a3a6a; margin-top: 2px; }
+
+  /* ── SA Overview Capture Button ── */
+  .ov-capture-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: none; border-radius: var(--radius-sm); padding: 8px 20px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+    color: #fff; white-space: nowrap;
+    box-shadow: 0 2px 12px rgba(80,100,200,.15);
+  }
+  .ov-capture-btn.red  { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+  .ov-capture-btn.blue { background: linear-gradient(135deg, #5b8def, #2563eb); }
+  .ov-capture-btn:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(80,100,200,.25); }
+  .ov-capture-btn.success { background: linear-gradient(135deg,#3ddba8,#2ea87a) !important; }
+  .ov-capture-btn.error   { background: linear-gradient(135deg,#f76060,#c0392b) !important; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f0f4ff; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: rgba(155,123,247,.35); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(155,123,247,.55); }
+
+  /* ── QR Overlay Fix ── */
+  .qr-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(20,15,60,.45); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; z-index: 2000; padding: 16px;
+  }
+  .qr-overlay.open { display: flex; }
+  .qr-card {
+    background: #fff; border-radius: 20px;
+    max-width: 360px; width: 100%; overflow: hidden;
+    box-shadow: 0 24px 64px rgba(30,20,100,.30), 0 4px 24px rgba(0,0,0,.10);
+    border: 1px solid rgba(155,123,247,.25);
+  }
+  .qr-bank-header {
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    padding: 18px 20px 16px; text-align: center; position: relative;
+  }
+  .qr-close-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(255,255,255,.2); border: none; color: #fff;
+    width: 30px; height: 30px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s; z-index: 1;
+  }
+  .qr-close-btn:hover { background: rgba(255,255,255,.35); }
+  .qr-bank-logo { font-size: 36px; margin-bottom: 6px; }
+  .qr-bank-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .qr-bank-sub { font-size: 12px; color: rgba(255,255,255,.8); font-weight: 500; }
+  .qr-body { padding: 20px; }
+  .qr-frame {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 12px; padding: 10px;
+    border: 2px solid rgba(155,123,247,.2);
+    box-shadow: 0 4px 20px rgba(80,100,200,.10);
+    margin-bottom: 14px;
+  }
+  .qr-frame canvas { display: block; border-radius: 4px; }
+  .qr-corner {
+    position: absolute; width: 16px; height: 16px;
+    border-color: #9b7bf7; border-style: solid; border-width: 0;
+  }
+  .qr-corner.tl { top: 6px; left: 6px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 4px; }
+  .qr-corner.tr { top: 6px; right: 6px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 4px; }
+  .qr-corner.bl { bottom: 6px; left: 6px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 4px; }
+  .qr-corner.br { bottom: 6px; right: 6px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 4px; }
+  .qr-info-box {
+    background: #f8f9ff; border: 1px solid rgba(155,123,247,.18);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; text-align: center;
+  }
+  .qr-info-label { font-size: 10px; color: #9b7bf7; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .qr-info-val { font-size: 13px; font-weight: 700; color: #3a4080; }
+  .qr-scan-hint { font-size: 13px; color: #5a6080; text-align: center; line-height: 1.6; }
+  .qr-footer {
+    background: #f0f4ff; border-top: 1px solid rgba(155,123,247,.15);
+    padding: 10px 16px; font-size: 11px; color: #9b7bf7; text-align: center; font-weight: 600;
+  }
+
+  /* ── Full Page Capture Button ── */
+  .fullpage-capture-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, #9b7bf7, #5b8def); color: #fff;
+    border: none; border-radius: var(--radius-sm); padding: 8px 18px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+    box-shadow: 0 2px 12px rgba(155,123,247,.3); white-space: nowrap;
+  }
+  .fullpage-capture-btn:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(155,123,247,.45); }
+  .fullpage-capture-btn.success { background: linear-gradient(135deg,#3ddba8,#2ea87a); }
+  .fullpage-capture-btn.error   { background: linear-gradient(135deg,#f76060,#c0392b); }
+
+  /* ── Improved Zone Group Header (Arrive & PDT) ── */
+  .zone-group-header-arrive {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 9px 16px; font-size: 14px; font-weight: 800; letter-spacing: .5px;
+    border-left: 4px solid; border-radius: 4px 0 0 4px;
+  }
+  .zone-group-header-pdt {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 9px 16px; font-size: 14px; font-weight: 800; letter-spacing: .5px;
+    border-left: 4px solid; border-radius: 4px 0 0 4px;
+  }
+
+  /* ── SLA80 Slider Bar (in slider graph) ── */
+  .sla80-inline-input {
+    width: 60px; text-align: center; font-size: 16px; font-weight: 900;
+    background: transparent; border: none; border-bottom: 2px solid;
+    border-radius: 0; padding: 0 4px; outline: none;
+    -moz-appearance: textfield;
+  }
+  .sla80-inline-input::-webkit-inner-spin-button,
+  .sla80-inline-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING PAGE ══ -->
+<div id="landing">
+
+  <!-- Logo Ring -->
+  <div class="welcome-ring">
+    <div class="welcome-ring-icon">📡</div>
+  </div>
+
+  <!-- Badge -->
+  <div class="badge-inoc"><div class="badge-dot"></div> INOC · Real-time</div>
+
+  <!-- Title -->
+  <div class="welcome-label">Welcome to</div>
+  <h1 class="welcome-title">INOC</h1>
+  <div class="welcome-subtitle">Integrated Network Operations Center</div>
+  <div class="welcome-divider"></div>
+
+  <p class="welcome-desc">
+    ระบบวิเคราะห์ Work Order Ticket แบบ Real-time<br>
+    แยก SLA · Severity · Daily Report · 1st Arrive · PDT Today
+  </p>
+
+  <!-- Enter Button -->
+  <input type="file" id="landing-file-input" accept=".xlsx,.xls" style="display:none" />
+  <button class="btn-welcome-enter" id="landing-upload-btn">
+    <span>เข้าสู่ระบบ</span>
+    <div class="btn-welcome-arrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </div>
+  </button>
+  <div class="welcome-hint">กด Enter เพื่อ Upload ไฟล์ Excel หรือดูตัวอย่างข้อมูล</div>
+
+  <!-- Stat Pills -->
+  <div class="welcome-stats">
+    <div class="stat-pill">
+      <div class="stat-pill-icon">📊</div>
+      <div>
+        <div class="stat-pill-val">Pivot Table</div>
+        <div class="stat-pill-label">NSA / SA Analysis</div>
+      </div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon">🚀</div>
+      <div>
+        <div class="stat-pill-val">1st Arrive</div>
+        <div class="stat-pill-label">Technician Tracking</div>
+      </div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon">⭐</div>
+      <div>
+        <div class="stat-pill-val">PDT Today</div>
+        <div class="stat-pill-label">PDT Zero Monitor</div>
+      </div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon">📋</div>
+      <div>
+        <div class="stat-pill-val">Daily Report</div>
+        <div class="stat-pill-label">ส่ง Line / Teams</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="landing-footer">
+    INOC Daily Operation · ทำงานได้ทั้ง Online และ Offline · ข้อมูลไม่ถูกส่งออกนอกเครื่อง
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>📡 Daily Operation Ticket Report</h1>
+    <div class="subtitle" id="file-name">📂 กรุณา Upload ไฟล์ Excel (Pending)</div>
+    <div class="subtitle" id="file2-name" style="color:#9b7bf7;margin-top:2px">📂 ยังไม่ได้ Upload ไฟล์ Today</div>
+  </div>
+  <div class="btns">
+    <button class="btn" style="background:rgba(155,123,247,.12);color:#7b5cf0;border:1px solid rgba(155,123,247,.3)" id="back-btn">← หน้าแรก</button>
+    <button class="btn btn-blue" id="upload-btn">📂 Upload Pending</button>
+    <button class="btn" style="background:linear-gradient(135deg,#9b7bf7,#38c8e8);color:#fff" id="upload2-btn">📂 Upload Today</button>
+    <button class="btn btn-green" id="report-btn">📋 Daily Report</button>
+    <button class="btn" style="background:linear-gradient(135deg,#f5a623,#f76060);color:#fff" id="export-dispatched-btn">📥 Export Dispatched OverDue</button>
+    <button class="btn" style="background:linear-gradient(135deg,#5b8def,#38c8e8);color:#fff" id="upload-arrive-btn">🚀 Upload 1st Arrive</button>
+    <button class="btn" style="background:linear-gradient(135deg,#f5a623,#fbbf24);color:#fff" id="upload-pdt-btn">🌟 Upload PDT Today</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" />
+    <input type="file" id="pdt-file-input" accept=".xlsx,.xls" style="display:none" />
+    <input type="file" id="file2-input" accept=".xlsx,.xls" style="display:none" />
+    <input type="file" id="arrive-file-input" accept=".xlsx,.xls" style="display:none" />
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards" id="cards"></div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="nsa34">📊 NSA/SA Detail</div>
+  <div class="tab" data-tab="sa-overview" id="tab-sa-overview">🔍 NSA/SA Over Detail</div>
+  <div class="tab" data-tab="arrive" id="tab-arrive">🚀 1st Arrive</div>
+  <div class="tab" data-tab="pdt" id="tab-pdt">🟡 PDT Today</div>
+</div>
+
+<!-- Content -->
+<div id="content-nsa34"></div>
+<div id="content-nsa12sa" style="display:none"></div>
+<div id="content-arrive" style="display:none"></div>
+<div id="content-pdt" style="display:none"></div>
+<div id="content-sa-overview" style="display:none"></div>
+
+<!-- Daily Report Panel (below content) -->
+<div id="daily-report-panel" style="display:none">
+  <div class="dr-panel-title">📋 Daily Report</div>
+  <div class="dr-grid" id="dr-grid"></div>
+  <button class="dr-copy-btn" id="dr-copy-btn">📋 Copy รายงานประจำวัน</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" style="position:fixed">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h2>📊 Daily Operation Ticket Report</h2>
+      <button class="close-btn" id="modal-close">✕</button>
+    </div>
+    <div class="modal-fields">
+      <label class="field-label"><span>📍 Region</span><input id="f-region" value="C&W" /></label>
+      <label class="field-label"><span>📅 Date</span><input id="f-date" /></label>
+      <label class="field-label"><span>⏰ Time</span><input id="f-time" value="06.00 AM." /></label>
+    </div>
+    <div class="modal-sections">
+      <div class="modal-section sa-section">
+        <div class="section-title" style="color:#7ee8fa">🔹 SLA: SA1-4, NSA1-2</div>
+        <div class="edit-grid" id="sa-fields"></div>
+      </div>
+      <div class="modal-section nsa-section">
+        <div class="section-title" style="color:#ffd666">🔹 SLA: NSA3-4</div>
+        <div class="edit-grid" id="nsa-fields"></div>
+      </div>
+    </div>
+    <button class="btn-qr" id="qr-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <path d="M14 14h2v2h-2zM18 14h3v2h-1M16 18h1v3h-3v-1M20 18v3"/>
+      </svg>
+      สร้าง QR Code รายงาน
+    </button>
+  </div>
+</div>
+
+<!-- QR Code Overlay -->
+<div class="qr-overlay" id="qr-overlay">
+  <div class="qr-card">
+    <div class="qr-bank-header">
+      <button class="qr-close-btn" id="qr-close">✕</button>
+      <div class="qr-bank-logo">📋</div>
+      <div class="qr-bank-title">Daily Operation Report</div>
+      <div class="qr-bank-sub">สแกนเพื่อดูรายงานประจำวัน</div>
+    </div>
+    <div class="qr-body">
+      <div class="qr-frame" id="qr-frame">
+        <canvas id="qr-canvas"></canvas>
+        <div class="qr-corner tl"></div>
+        <div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div>
+        <div class="qr-corner br"></div>
+      </div>
+      <div class="qr-info-box">
+        <div class="qr-info-label">Region / Date / Time</div>
+        <div class="qr-info-val" id="qr-meta">—</div>
+      </div>
+      <div class="qr-scan-hint">สแกนด้วย <b>Line / Teams / กล้อง</b><br>เพื่อดูรายงานฉบับเต็ม</div>
+    </div>
+    <div class="qr-footer">Daily Ticket Report · ข้อมูล ณ วันที่สร้าง QR</div>
+  </div>
+</div>
+
+<!-- Sheet Picker Modal -->
+<div class="modal-overlay" id="sheet-picker-overlay" style="position:fixed">
+  <div class="modal" style="max-width:420px;font-family:'Inter','Segoe UI',sans-serif">
+    <div class="modal-header" style="border-radius:16px 16px 0 0">
+      <h2 style="font-size:16px;font-weight:700;color:#BED4EE;letter-spacing:-.2px">เลือก Sheet</h2>
+      <button class="close-btn" id="sheet-picker-close">✕</button>
+    </div>
+    <div style="padding:14px 20px 6px;background:#DDE2E8;border-bottom:1px solid #B8C4D0">
+      <p style="font-size:12px;font-weight:500;color:#5A6A7A;margin:0">พบหลาย Sheet ในไฟล์ กรุณาเลือก Sheet ที่ต้องการ</p>
+    </div>
+    <div id="sheet-list" style="display:flex;flex-direction:column;gap:8px;padding:14px 20px 18px;background:#E8ECF0"></div>
+  </div>
+</div>
+
+  </div>
+</div><!-- /#app -->
+
+
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────────
+const STATUSES = ["Accepted","Arrived","Departed","Dispatched"];
+const SLAS = ["In Due < 1 Hr.","In Due < 24 Hr.","In Due > 24 Hr.","Over Due > 1 Hr.","Over Due with in 1 Hr."];
+
+const FIELD_LABELS = {
+  open:"🆕 Open Today",closed_within:"✅ Closed Within SLA",
+  closed_over:"⚠️ Closed Over SLA",total:"📌 Pending Total",
+  inprogress:"🔄 In Progress",within:"🟢 Pending Within SLA",
+  over:"🔴 Pending Over SLA",non_action:"🚫 Non Action",
+  site_access:"🚧 Site Access",spare:"🔧 Spare Part",
+  stolen:"🚨 Stolen",difficult:"🛠️ Difficult Work",
+  priority:"🔁 Priority Interrupt",sla80:"⏱️ SLA Time > 80%",
+};
+
+// ── Demo Data ──────────────────────────────────────────────────────────────────
+// ── Zero Data (blank state — all values 0) ────────────────────────────────────
+function makeZeroPivot(cols) {
+  const result = [];
+  for (const status of ["Accepted","Arrived","Departed","Dispatched"]) {
+    for (const sla of ["In Due < 1 Hr.","In Due < 24 Hr.","In Due > 24 Hr.","Over Due > 1 Hr.","Over Due with in 1 Hr."]) {
+      const entry = { status, sla, total: 0 };
+      cols.forEach(c => entry[c] = 0);
+      result.push(entry);
+    }
+  }
+  return result;
+}
+const ZERO_SUMMARY = { total:0, in_progress:0, within_sla:0, over_sla:0, non_action:0, site_access:0, spare_part:0, stolen:0, difficult:0, priority_int:0 };
+const ZERO_DATA = {
+  nsa34_pivot:    makeZeroPivot(["NSA3-24H","NSA3-3D","NSA4-7D","NSA4-24H"]),
+  nsa12sa_pivot:  makeZeroPivot(["NSA1","NSA2","SA1","SA2","SA3","SA4"]),
+  nsa34_summary:  {...ZERO_SUMMARY},
+  nsa12sa_summary:{...ZERO_SUMMARY},
+  nsa34_cols:  ["NSA3-24H","NSA3-3D","NSA4-7D","NSA4-24H"],
+  nsa12sa_cols:["NSA1","NSA2","SA1","SA2","SA3","SA4"],
+};
+
+let currentData = ZERO_DATA;
+let todayData = null; // from file 2
+
+// ── File 2: Today Data ─────────────────────────────────────────────────────────
+function isSameDay(dateVal) {
+  if (!dateVal) return false;
+  const today = new Date();
+  let d;
+  if (dateVal instanceof Date) {
+    d = dateVal;
+  } else if (typeof dateVal === "number") {
+    // Excel serial date (UTC) — convert then adjust to local date
+    const utcMs = Math.round((dateVal - 25569) * 86400 * 1000);
+    // getTimezoneOffset() returns minutes; subtract to convert UTC→local
+    d = new Date(utcMs - (new Date().getTimezoneOffset() * 60000));
+  } else {
+    d = new Date(dateVal);
+  }
+  if (isNaN(d)) return false;
+  return d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate();
+}
+
+function processExcel2(data, sheetName) {
+  const wb = XLSX.read(data, { type: "array", cellDates: true });
+  const ws = wb.Sheets[sheetName];
+  if (!ws) return null;
+  // Use raw:true (same as processExcel) so numeric/date values are consistent
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: true });
+
+  // detect Created Time column (case-insensitive)
+  const sample = rows[0] || {};
+  const createdKey = Object.keys(sample).find(k => /created.?time|created.?date|open.?date|open.?time/i.test(k)) || "Created Time";
+  const ttcKey = Object.keys(sample).find(k => /time.?to.?complete|closed.?date|complete.?time/i.test(k)) || "Time to Complete";
+  const slaKey = Object.keys(sample).find(k => /^sla$/i.test(k)) || "SLA";
+  const sevKey = Object.keys(sample).find(k => /severity/i.test(k)) || "Severity";
+
+  const statusKey = Object.keys(sample).find(k => /^status$/i.test(k)) || "Status";
+  const isInDue   = sla => /in due/i.test(sla||"");
+  const isOverDue = sla => /over due/i.test(sla||"");
+  const isClosed  = r => /^closed(\s*\(auto\))?$/i.test((r[statusKey]||"").toString().trim());
+
+  function calcFor(filterFn) {
+    const subset = rows.filter(r => filterFn(classifySev(r[sevKey]||"")));
+    return {
+      open:          subset.filter(r => isSameDay(r[createdKey])).length,
+      closed_within: subset.filter(r => isClosed(r) && isInDue(r[slaKey])).length,
+      closed_over:   subset.filter(r => isClosed(r) && isOverDue(r[slaKey])).length,
+    };
+  }
+
+  return {
+    nsa34:   calcFor(c => c === "NSA34"),
+    nsa12sa: calcFor(c => c === "NSA12_SA"),
+    sheetName,
+    createdKey, ttcKey, slaKey,
+  };
+}
+
+function getSheetNames(data) {
+  const wb = XLSX.read(data, { type: "array" });
+  return wb.SheetNames;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function slaColor(sla) {
+  if (sla.startsWith("Over Due")) return "#ff4d4f";
+  if (sla === "In Due < 1 Hr.") return "#52c41a";
+  return "#1677ff";
+}
+
+function classifySev(s) {
+  if (!s) return "OTHER";
+  if (/^NSA[34]/i.test(s)) return "NSA34";
+  if (/^(NSA[12]|SA[1-4])/i.test(s)) return "NSA12_SA";
+  return "OTHER";
+}
+function sevLabel(s) {
+  for (const p of ["NSA1","NSA2","SA1","SA2","SA3","SA4"])
+    if (s.toUpperCase().startsWith(p)) return p;
+  return "OTHER";
+}
+function sevLabelNSA34(s) {
+  const u = s.toUpperCase();
+  if (/^NSA4-24/i.test(s)) return "NSA4-24H";
+  if (u.startsWith("NSA4")) return "NSA4-7D";
+  if (/^NSA3-3/i.test(s))  return "NSA3-3D";
+  if (u.startsWith("NSA3")) return "NSA3-24H";
+  return "OTHER";
+}
+function buildPivot(rows, col, colVals) {
+  const result = [];
+  for (const stat of STATUSES) {
+    for (const sla of SLAS) {
+      const entry = { status: stat, sla, total: 0 };
+      for (const cv of colVals) {
+        const cnt = rows.filter(r => r[col]===cv && r.Status===stat && r.SLA===sla).length;
+        entry[cv] = cnt; entry.total += cnt;
+      }
+      result.push(entry);
+    }
+  }
+  return result;
+}
+function buildSummary(rows) {
+  const ack = r => r["Acknowledge"] || "";
+  const overSlaRows = rows.filter(r =>
+    r.Status === "Dispatched" && ["Over Due > 1 Hr.","Over Due with in 1 Hr."].includes(r.SLA)
+  );
+  return {
+    total: rows.length,
+    in_progress: rows.filter(r => ["Accepted","Arrived","Departed"].includes(r.Status)).length,
+    within_sla: rows.filter(r => r.Status==="Dispatched" && ["In Due < 1 Hr.","In Due < 24 Hr.","In Due > 24 Hr."].includes(r.SLA)).length,
+    over_sla: overSlaRows.length,
+    non_action:   overSlaRows.filter(r => /^8\.0|8_0|อื่นๆ(?!.*priority)/i.test(ack(r))).length,
+    site_access:  overSlaRows.filter(r => /^1\.|1_1|1_2|1_4|1_7|5_4|เข้าทำงาน|การอนุญาต/i.test(ack(r))).length,
+    spare_part:   overSlaRows.filter(r => /^6\.|6_1|6_2|อะไหล่|spare/i.test(ack(r))).length,
+    stolen:       overSlaRows.filter(r => /^4\.|4_1|ถูกขโมย/i.test(ack(r))).length,
+    difficult:    overSlaRows.filter(r => /^3\.|3_1|3_3|^5\.|5_2|5_3|ยาก|พายุ/i.test(ack(r))).length,
+    priority_int: overSlaRows.filter(r => /^8\.1|8_1|^9\.|9_1|ภาระงาน|ทำงานอื่น|priority สำคัญกว่า/i.test(ack(r))).length,
+  };
+}
+function processExcel(data) {
+  const wb = XLSX.read(data, { type: "array" });
+  const ws = wb.Sheets["CM - Work Order List"];
+  if (!ws) return null;
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+  // Fill empty Acknowledge with default category
+  const DEFAULT_ACK = "8.0-อื่นๆ";
+  rows.forEach(r => { if (!r["Acknowledge"] || r["Acknowledge"].toString().trim() === "") r["Acknowledge"] = DEFAULT_ACK; });
+  _rawAllRows = rows; // store for export
+  const nsa34Rows = rows.filter(r => classifySev(r.Severity)==="NSA34").map(r => ({...r, _col: sevLabelNSA34(r.Severity||"")}));
+  const nsa12saRows = rows.filter(r => classifySev(r.Severity)==="NSA12_SA").map(r => ({...r, _col: sevLabel(r.Severity)}));
+  return {
+    nsa34_pivot: buildPivot(nsa34Rows, "_col", ["NSA3-24H","NSA3-3D","NSA4-7D","NSA4-24H"]),
+    nsa12sa_pivot: buildPivot(nsa12saRows, "_col", ["NSA1","NSA2","SA1","SA2","SA3","SA4"]),
+    nsa34_summary: buildSummary(nsa34Rows),
+    nsa12sa_summary: buildSummary(nsa12saRows),
+    nsa34_cols: ["NSA3-24H","NSA3-3D","NSA4-7D","NSA4-24H"],
+    nsa12sa_cols: ["NSA1","NSA2","SA1","SA2","SA3","SA4"],
+  };
+}
+
+// ── Export Dispatched OverDue ──────────────────────────────────────────────────
+// Store raw rows globally so export can access them
+let _rawAllRows = null;
+
+function exportDispatchedOverDue() {
+  if (!_rawAllRows || _rawAllRows.length === 0) {
+    alert("ฟีเจอร์นี้ใช้ได้เมื่อ Upload ไฟล์ Excel จริงเท่านั้น (ข้อมูลตัวอย่างไม่รองรับการ Export)");
+    return;
+  }
+
+  // Filter: Status = Dispatched AND SLA = Over Due > 1 Hr. OR Over Due with in 1 Hr.
+  const targetSLAs = ["Over Due > 1 Hr.", "Over Due with in 1 Hr."];
+  const filtered = _rawAllRows.filter(r =>
+    r["Status"] === "Dispatched" && targetSLAs.includes(r["SLA"])
+  );
+
+  if (filtered.length === 0) {
+    alert("ไม่พบข้อมูล Dispatched OverDue ในไฟล์นี้");
+    return;
+  }
+
+  // Columns matching the Detail1 sheet exactly
+  const columns = [
+    "Work Order ID","Source Ticket ID","Region","Manager","Province","Supervisor",
+    "Skill","Team","Site ID","Status","Severity","Classification","WO Creator",
+    "Originator","Created Time","Require Finish Time","SLA","Time Over Due/SLA",
+    "Depart Over 1Hr","Dispatched","Accepted","Departed","Arrived","Target Onsite Time",
+    "Target Onsite Status","Completed","Time to Arrive","Time to Complete",
+    "Suspend Status","Pause/Resume Time","Suspend Reason","Suspend Description",
+    "Reject Reason","Reject Description","Remark","Acknowledge","Subject",
+    "FM Office Site","District","Field40","Field41","Field42","Field43","Field44",
+    "Field45","Field46","Field47","Field48","Field49"
+  ];
+
+  const colWidths = [
+    { wch: 28 },{ wch: 20 },{ wch: 8 },{ wch: 14 },{ wch: 8 },{ wch: 14 },
+    { wch: 8 },{ wch: 45 },{ wch: 14 },{ wch: 12 },{ wch: 14 },{ wch: 16 },
+    { wch: 12 },{ wch: 12 },{ wch: 18 },{ wch: 20 },{ wch: 22 },{ wch: 18 },
+    { wch: 14 },{ wch: 18 },{ wch: 18 },{ wch: 18 },{ wch: 18 },{ wch: 20 },
+    { wch: 20 },{ wch: 18 },{ wch: 16 },{ wch: 18 },{ wch: 16 },{ wch: 20 },
+    { wch: 20 },{ wch: 30 },{ wch: 16 },{ wch: 30 },{ wch: 40 },{ wch: 16 },
+    { wch: 60 },{ wch: 16 },{ wch: 14 },{ wch: 14 },{ wch: 14 },{ wch: 14 },
+    { wch: 14 },{ wch: 14 },{ wch: 14 },{ wch: 14 },{ wch: 14 },{ wch: 14 },
+    { wch: 14 }
+  ];
+
+  // Helper: apply cell style via ws object
+  function setCellStyle(ws, addr, style) {
+    if (!ws[addr]) ws[addr] = { t: "s", v: "" };
+    ws[addr].s = style;
+  }
+
+  // Style definitions
+  const styleTitle = {
+    font: { bold: true, sz: 13, color: { rgb: "FFFFFF" } },
+    fill: { fgColor: { rgb: "1B3A5C" } },
+    alignment: { horizontal: "center", vertical: "center", wrapText: true }
+  };
+  const styleHeader = {
+    font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+    fill: { fgColor: { rgb: "B45309" } },
+    alignment: { horizontal: "center", vertical: "center", wrapText: true },
+    border: {
+      top:    { style: "thin", color: { rgb: "7C3A0A" } },
+      bottom: { style: "medium", color: { rgb: "7C3A0A" } },
+      left:   { style: "thin", color: { rgb: "7C3A0A" } },
+      right:  { style: "thin", color: { rgb: "7C3A0A" } }
+    }
+  };
+  const styleDataEven = {
+    font: { sz: 10, color: { rgb: "1A1A2E" } },
+    fill: { fgColor: { rgb: "FEF3C7" } },
+    alignment: { vertical: "center", wrapText: false },
+    border: {
+      bottom: { style: "thin", color: { rgb: "D4A017" } },
+      right:  { style: "thin", color: { rgb: "D4A017" } }
+    }
+  };
+  const styleDataOdd = {
+    font: { sz: 10, color: { rgb: "1A1A2E" } },
+    fill: { fgColor: { rgb: "FFFFFF" } },
+    alignment: { vertical: "center", wrapText: false },
+    border: {
+      bottom: { style: "thin", color: { rgb: "D4A017" } },
+      right:  { style: "thin", color: { rgb: "D4A017" } }
+    }
+  };
+  const styleOverDue = {
+    font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } },
+    fill: { fgColor: { rgb: "C0392B" } },
+    alignment: { horizontal: "center", vertical: "center" },
+    border: {
+      bottom: { style: "thin", color: { rgb: "922B21" } },
+      right:  { style: "thin", color: { rgb: "922B21" } }
+    }
+  };
+
+  // Helper: column index to letter(s)
+  function colLetter(idx) {
+    let s = "";
+    let n = idx + 1;
+    while (n > 0) { s = String.fromCharCode(65 + (n - 1) % 26) + s; n = Math.floor((n - 1) / 26); }
+    return s;
+  }
+
+  // Helper: build a worksheet for a subset of rows with given title & sheet label
+  function buildDetailSheet(rows, titleText) {
+    const sheetData = [];
+    sheetData.push([titleText]);
+    sheetData.push(columns);
+    rows.forEach(r => sheetData.push(columns.map(col => r[col] !== undefined ? r[col] : "")));
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: columns.length - 1 } }];
+    ws["!cols"] = colWidths;
+    ws["!rows"] = [{ hpt: 30 }, { hpt: 30 }];
+    // Freeze pane below row 2 (header)
+    ws["!freeze"] = { xSplit: 0, ySplit: 2, topLeftCell: "A3", activePane: "bottomLeft" };
+
+    // Style title row (row 1 = index 0)
+    for (let c = 0; c < columns.length; c++) {
+      const addr = colLetter(c) + "1";
+      setCellStyle(ws, addr, styleTitle);
+    }
+    // Style header row (row 2 = index 1)
+    for (let c = 0; c < columns.length; c++) {
+      const addr = colLetter(c) + "2";
+      setCellStyle(ws, addr, styleHeader);
+    }
+    // Style data rows
+    const slaColIdx = columns.indexOf("SLA");
+    const statusColIdx = columns.indexOf("Status");
+    rows.forEach((r, ri) => {
+      const rowNum = ri + 3; // 1-indexed, rows 1&2 are title+header
+      const isOdd = ri % 2 === 0;
+      for (let c = 0; c < columns.length; c++) {
+        const addr = colLetter(c) + rowNum;
+        const slaVal = String(r["SLA"] || "");
+        const isOD = /over due/i.test(slaVal);
+        // SLA column: red if overdue
+        if (c === slaColIdx && isOD) {
+          setCellStyle(ws, addr, styleOverDue);
+        } else {
+          setCellStyle(ws, addr, isOdd ? styleDataOdd : styleDataEven);
+        }
+      }
+    });
+
+    return ws;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: NSA1-NSA2 & SA1-SA4 ───────────────────────────────────────────
+  // Group: NSA1, NSA2, SA1, SA2, SA3, SA4
+  const nsa12saRows = filtered.filter(r => classifySev(r["Severity"] || "") === "NSA12_SA");
+  const titleNSA12SA = "Details for Count of Work Order ID - SLA: Over Due > 1 Hr. / Over Due with in 1 Hr., Status: Dispatched (NSA1-NSA2 & SA1-SA4)";
+  XLSX.utils.book_append_sheet(wb, buildDetailSheet(nsa12saRows, titleNSA12SA), "NSA1-NSA2 & SA1-SA4");
+
+  // ── Sheet 2: NSA3-NSA4 ──────────────────────────────────────────────────────
+  const nsa34Rows = filtered.filter(r => classifySev(r["Severity"] || "") === "NSA34");
+  const titleNSA34 = "Details for Count of Work Order ID - SLA: Over Due > 1 Hr. / Over Due with in 1 Hr., Status: Dispatched (NSA3-NSA4)";
+  XLSX.utils.book_append_sheet(wb, buildDetailSheet(nsa34Rows, titleNSA34), "NSA3-NSA4");
+
+  // ── Download ────────────────────────────────────────────────────────────────
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,"0");
+  const mm = String(today.getMonth()+1).padStart(2,"0");
+  const yy = today.getFullYear();
+  const filename = `Dispatched_OverDue_${yy}${mm}${dd}.xlsx`;
+
+  XLSX.writeFile(wb, filename, { cellStyles: true });
+}
+
+// ── Rendering ──────────────────────────────────────────────────────────────────
+function renderCards(data) {
+  const items = [
+    { label:"NSA3-4 Total", val: data.nsa34_summary.total, color:"#ffd666" },
+    { label:"NSA3-4 Within SLA", val: data.nsa34_summary.within_sla, color:"#52c41a" },
+    { label:"NSA3-4 Over SLA", val: data.nsa34_summary.over_sla, color:"#ff4d4f" },
+    { label:"SA/NSA1-2 Total", val: data.nsa12sa_summary.total, color:"#7ee8fa" },
+    { label:"SA/NSA1-2 Within SLA", val: data.nsa12sa_summary.within_sla, color:"#52c41a" },
+    { label:"SA/NSA1-2 Over SLA", val: data.nsa12sa_summary.over_sla, color:"#ff4d4f" },
+  ];
+  document.getElementById("cards").innerHTML = items.map(c =>
+    `<div class="card" style="border:1px solid ${c.color}33">
+      <div class="val" style="color:${c.color}">${c.val}</div>
+      <div class="lbl">${c.label}</div>
+    </div>`
+  ).join("");
+}
+
+function renderPivot(pivot, cols, title, containerId) {
+  const colGrandTotals = {};
+  cols.forEach(c => colGrandTotals[c] = 0);
+  let grandTotal = 0;
+  pivot.forEach(row => { cols.forEach(c => colGrandTotals[c] += row[c]||0); grandTotal += row.total||0; });
+
+  let rows = "";
+  for (const stat of STATUSES) {
+    const statRows = pivot.filter(r => r.status === stat);
+    const visRows = statRows.filter(r => r.total > 0);
+    if (!visRows.length) continue;
+    const statTotal = statRows.reduce((a,b) => a+b.total, 0);
+    const statColTotals = {};
+    cols.forEach(c => statColTotals[c] = statRows.reduce((a,b) => a+(b[c]||0), 0));
+
+    visRows.forEach((row, idx) => {
+      rows += `<tr class="${idx%2===0?'row-even':'row-odd'}">`;
+      if (idx === 0) {
+        rows += `<td rowspan="${visRows.length}" style="font-weight:700;color:#7dd3fc;border-right:2px solid #1c3352;vertical-align:middle;background:rgba(255,255,255,.88)">${stat}</td>`;
+      }
+      rows += `<td style="color:${slaColor(row.sla)}">${row.sla}</td>`;
+      cols.forEach(c => {
+        rows += `<td class="center" style="color:${row[c]>0?'#e0f7ff':'#3a5a7a'}">${row[c]>0?row[c]:'–'}</td>`;
+      });
+      rows += `<td class="center yellow">${row.total}</td></tr>`;
+    });
+
+    rows += `<tr class="stat-total">
+      <td colspan="2" style="color:#7dd3fc;font-weight:700;font-size:12px;padding-left:8px">▸ รวม ${stat}</td>`;
+    cols.forEach(c => { rows += `<td class="center" style="font-weight:700;color:#4a6a9a">${statColTotals[c]||'–'}</td>`; });
+    rows += `<td class="subtot">${statTotal}</td></tr>`;
+  }
+
+  rows += `<tr class="grand-total">
+    <td colspan="2" style="color:#ffd666;font-weight:800;font-size:14px;padding:7px 14px">Grand Total</td>`;
+  cols.forEach(c => { rows += `<td class="center" style="font-weight:800;color:#ffd666">${colGrandTotals[c]}</td>`; });
+  rows += `<td class="gold">${grandTotal}</td></tr>`;
+
+  const wrapId = containerId + "-collapse-wrap";
+  const btnId  = containerId + "-collapse-btn";
+
+  document.getElementById(containerId).innerHTML = `
+    <div class="pivot-wrap">
+      <div class="pivot-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span>${title}</span>
+        <button id="${btnId}" class="pivot-collapse-btn" title="พับ/ขยายตาราง">
+          <span class="collapse-icon">▼</span> <span class="collapse-label">พับตาราง</span>
+        </button>
+      </div>
+      <div id="${wrapId}" class="pivot-table-body-wrap">
+        <table>
+          <thead><tr>
+            <th>Status</th><th>SLA</th>
+            ${cols.map(c => `<th style="min-width:90px">${c}</th>`).join("")}
+            <th class="grand">Grand Total</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Wire up collapse button
+  const colBtn = document.getElementById(btnId);
+  const colWrap = document.getElementById(wrapId);
+  if (colBtn && colWrap) {
+    colBtn.addEventListener("click", () => {
+      const collapsed = colWrap.classList.toggle("collapsed");
+      colBtn.classList.toggle("collapsed", collapsed);
+      colBtn.querySelector(".collapse-label").textContent = collapsed ? "ขยายตาราง" : "พับตาราง";
+    });
+  }
+}
+
+// sla80 values per section (editable in-place in breakdown)
+const sla80Values = { "content-nsa34": 0, "content-nsa12sa": 0 };
+
+function renderBreakdown(summary, label, color, containerId, todayStats) {
+  const reasonItems = [
+    ["🚫 Non Action",         summary.non_action],
+    ["🚧 Site Access",        summary.site_access],
+    ["🔧 Spare Part",         summary.spare_part],
+    ["🚨 Stolen",             summary.stolen],
+    ["🛠️ Difficult Work",    summary.difficult],
+    ["🔁 Priority Interrupt", summary.priority_int],
+  ];
+  const overTotal = summary.over_sla || 0;
+
+  // Today section — shown always; values from todayStats if available, else "–"
+  const hasToday = todayStats != null;
+  const tOpen   = hasToday ? todayStats.open           : null;
+  const tWithin = hasToday ? todayStats.closed_within  : null;
+  const tOver   = hasToday ? todayStats.closed_over    : null;
+
+  function todayVal(v) {
+    if (v === null) return `<span style="color:#8a9bc0;font-size:13px">–</span>`;
+    return `<span style="color:${color};font-weight:900;font-size:22px;line-height:1">${v}</span>`;
+  }
+  const todayNote = hasToday
+    ? ``
+    : `<div style="font-size:10px;color:#8a9bc0;margin-top:8px;font-style:italic">* Upload ไฟล์ Today เพื่อดูข้อมูลจริง</div>`;
+
+  const sla80Id = `sla80-input-${containerId}`;
+  const currentSla80 = sla80Values[containerId] ?? 0;
+
+  const existing = document.getElementById(containerId);
+  const bd = document.createElement("div");
+  bd.className = "breakdown";
+  bd.style.border = `1px solid ${color}22`;
+  bd.innerHTML = `
+    <div class="breakdown-title" style="color:${color}">📋 สรุป Ticket: ${label}</div>
+
+    <!-- Today Stats Row -->
+    <div class="bd-section-title">วันนี้ (Today)</div>
+    <div class="bd-today-row">
+      <div class="bd-today-item">
+        <div class="bd-today-icon" style="background:${color}18;border-color:${color}33">🆕</div>
+        <div class="bd-today-label">Open Today</div>
+        <div class="bd-today-val">${todayVal(tOpen)}</div>
+      </div>
+      <div class="bd-today-item">
+        <div class="bd-today-icon" style="background:rgba(82,196,26,.1);border-color:rgba(82,196,26,.25)">✅</div>
+        <div class="bd-today-label">Closed Within SLA</div>
+        <div class="bd-today-val">${hasToday ? `<span style="color:#52c41a;font-weight:900;font-size:22px;line-height:1">${tWithin}</span>` : `<span style="color:#8a9bc0;font-size:13px">–</span>`}</div>
+      </div>
+      <div class="bd-today-item">
+        <div class="bd-today-icon" style="background:rgba(255,77,79,.1);border-color:rgba(255,77,79,.25)">⚠️</div>
+        <div class="bd-today-label">Closed Over SLA</div>
+        <div class="bd-today-val">${hasToday ? `<span style="color:#ff4d4f;font-weight:900;font-size:22px;line-height:1">${tOver}</span>` : `<span style="color:#8a9bc0;font-size:13px">–</span>`}</div>
+      </div>
+    </div>
+    ${todayNote}
+
+    <!-- Hero: Pending Total -->
+    <div class="bd-section-title" style="margin-top:16px">Pending (ณ ปัจจุบัน)</div>
+    <div class="bd-hero" style="border-color:${color}22">
+      <div class="bd-hero-label">📌 Pending Total</div>
+      <div class="bd-hero-val" style="color:${color}">${summary.total}</div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="bd-progress-card">
+      <div class="bd-progress-label">🔄 In Progress (Accepted / Arrived / Departed)</div>
+      <div class="bd-progress-val">${summary.in_progress}</div>
+    </div>
+
+    <!-- SLA Cards -->
+    <div class="bd-two-col">
+      <div class="bd-sla-card within">
+        <div class="sla-label">🟢 Pending Within SLA</div>
+        <div class="sla-val">${summary.within_sla}</div>
+      </div>
+      <div class="bd-sla-card over">
+        <div class="sla-label">🔴 Pending Over SLA</div>
+        <div class="sla-val">${overTotal}</div>
+      </div>
+    </div>
+
+    <!-- SLA Time > 80% editable card -->
+    <div class="bd-sla80-card" style="border-color:${color}33">
+      <div class="bd-sla80-left">
+        <div class="bd-sla80-icon">⏱️</div>
+        <div>
+          <div class="bd-sla80-label">SLA Time &gt; 80%</div>
+          <div class="bd-sla80-sub">แก้ไขได้โดยตรง</div>
+        </div>
+      </div>
+      <div class="bd-sla80-right">
+        <input
+          id="${sla80Id}"
+          type="number" min="0"
+          value="${currentSla80}"
+          class="bd-sla80-input"
+          style="color:${color};border-color:${color}44"
+          data-container="${containerId}"
+        />
+        <span class="bd-sla80-unit" style="color:${color}99">TT</span>
+      </div>
+    </div>
+
+    <!-- Reason Breakdown -->
+    <div class="bd-section-title">สาเหตุที่ Over SLA (Dispatched)</div>
+    <div class="breakdown-grid">
+      ${reasonItems.map(([lbl, val]) => {
+        const pct = overTotal > 0 ? Math.round((val/overTotal)*100) : 0;
+        return `<div class="bd-item">
+          <div class="bd-label">${lbl}</div>
+          <div class="bd-val" style="color:${color}">${val}</div>
+          ${overTotal > 0 ? `<div style="height:3px;background:#1a3050;border-radius:2px;margin-top:4px">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;opacity:.7;transition:width .4s"></div>
+          </div>` : ''}
+        </div>`;
+      }).join("")}
+    </div>`;
+  existing.appendChild(bd);
+
+  // Wire up the sla80 input — save to sla80Values so buildReport can read it
+  const inp = document.getElementById(sla80Id);
+  if (inp) {
+    inp.addEventListener("input", () => {
+      sla80Values[containerId] = parseInt(inp.value, 10) || 0;
+    });
+  }
+}
+
+
+// ── Combined Summary Panel (NSA3-4 + NSA1-2/SA1-4) ──────────────────────────
+function renderCombinedSummary(data, containerId) {
+  const s34  = data.nsa34_summary;
+  const s12  = data.nsa12sa_summary;
+  const td34 = todayData ? todayData.nsa34  : null;
+  const td12 = todayData ? todayData.nsa12sa : null;
+
+  function valCell(v, color, size) {
+    if (v === null || v === undefined) return `<span style="color:#8a9bc0;font-size:13px">–</span>`;
+    return `<span style="color:${color};font-weight:900;font-size:${size||22}px;line-height:1">${v}</span>`;
+  }
+
+  const cards34 = [
+    { icon:"🌅", lbl:"Open Today",         val: td34 ? td34.open          : null, color:"#e09000" },
+    { icon:"✅", lbl:"Closed Within SLA",   val: td34 ? td34.closed_within : null, color:"#3dba78" },
+    { icon:"⏰", lbl:"Closed Over SLA",     val: td34 ? td34.closed_over   : null, color:"#f5a623" },
+    { icon:"📋", lbl:"Pending Total",        val: s34.total,       color:"#e09000", big:true },
+    { icon:"⚙️", lbl:"In Progress",          val: s34.in_progress, color:"#5b8def" },
+    { icon:"🎯", lbl:"Within SLA",           val: s34.within_sla,  color:"#3dba78" },
+    { icon:"🔥", lbl:"Over SLA",             val: s34.over_sla,    color:"#f76060" },
+    { icon:"🙅", lbl:"Non Action",           val: s34.non_action,  color:"#f87171" },
+    { icon:"🚪", lbl:"Site Access",          val: s34.site_access, color:"#fb923c" },
+    { icon:"🔩", lbl:"Spare Part",           val: s34.spare_part,  color:"#9b7bf7" },
+    { icon:"🚨", lbl:"Stolen",               val: s34.stolen,      color:"#f76060" },
+    { icon:"🏗️", lbl:"Difficult Work",      val: s34.difficult,   color:"#38c8e8" },
+    { icon:"⚡", lbl:"Priority Interrupt",   val: s34.priority_int,color:"#f5a623" },
+  ];
+
+  const cards12 = [
+    { icon:"🌅", lbl:"Open Today",         val: td12 ? td12.open          : null, color:"#5b8def" },
+    { icon:"✅", lbl:"Closed Within SLA",   val: td12 ? td12.closed_within : null, color:"#3dba78" },
+    { icon:"⏰", lbl:"Closed Over SLA",     val: td12 ? td12.closed_over   : null, color:"#f5a623" },
+    { icon:"📋", lbl:"Pending Total",        val: s12.total,       color:"#5b8def", big:true },
+    { icon:"⚙️", lbl:"In Progress",          val: s12.in_progress, color:"#5b8def" },
+    { icon:"🎯", lbl:"Within SLA",           val: s12.within_sla,  color:"#3dba78" },
+    { icon:"🔥", lbl:"Over SLA",             val: s12.over_sla,    color:"#f76060" },
+    { icon:"🙅", lbl:"Non Action",           val: s12.non_action,  color:"#f87171" },
+    { icon:"🚪", lbl:"Site Access",          val: s12.site_access, color:"#fb923c" },
+    { icon:"🔩", lbl:"Spare Part",           val: s12.spare_part,  color:"#9b7bf7" },
+    { icon:"🚨", lbl:"Stolen",               val: s12.stolen,      color:"#f76060" },
+    { icon:"🏗️", lbl:"Difficult Work",      val: s12.difficult,   color:"#38c8e8" },
+    { icon:"⚡", lbl:"Priority Interrupt",   val: s12.priority_int,color:"#f5a623" },
+  ];
+
+  function cardHTML(items) {
+    return items.map(c => `
+      <div style="background:rgba(255,255,255,.88);border:1px solid ${c.color}44;border-radius:12px;
+                  padding:14px 10px;display:flex;flex-direction:column;align-items:center;
+                  gap:4px;text-align:center;transition:all .2s;
+                  box-shadow:0 2px 10px rgba(80,100,200,.07);backdrop-filter:blur(6px)"
+           onmouseover="this.style.borderColor='${c.color}';this.style.transform='translateY(-1px)'"
+           onmouseout="this.style.borderColor='${c.color}44';this.style.transform='none'">
+        <div style="font-size:20px">${c.icon}</div>
+        <div style="font-size:${c.big?28:22}px;font-weight:900;color:${c.color};line-height:1.1">
+          ${c.val === null ? '<span style="color:#b0bcd8;font-size:14px">–</span>' : c.val}
+        </div>
+        <div style="font-size:10px;color:#7a90b8;font-weight:600;line-height:1.3">${c.lbl}</div>
+      </div>`).join("");
+  }
+
+  // SLA 80% editable fields — styled as a card matching the others
+  const sla80_nsa34_id  = "combined-sla80-nsa34";
+  const sla80_nsa12sa_id = "combined-sla80-nsa12sa";
+  const cur34  = sla80Values["content-nsa34"]  ?? 0;
+  const cur12  = sla80Values["content-nsa12sa"] ?? 0;
+
+  function sla80Card(id, color, currentVal) {
+    return `<div style="background:rgba(255,255,255,.88);border:1px solid ${color}55;border-radius:12px;
+                padding:14px 10px;display:flex;flex-direction:column;align-items:center;
+                gap:6px;text-align:center;position:relative;transition:all .2s;
+                box-shadow:0 2px 10px rgba(80,100,200,.07)"
+         onmouseover="this.style.borderColor='${color}';this.style.transform='translateY(-1px)'"
+         onmouseout="this.style.borderColor='${color}55';this.style.transform='none'">
+      <div style="font-size:20px">⏱️</div>
+      <input id="${id}" type="number" min="0" value="${currentVal}"
+        style="width:72px;text-align:center;font-size:24px;font-weight:900;
+               background:transparent;border:none;border-bottom:2px solid ${color}88;
+               border-radius:0;padding:2px 4px;outline:none;color:${color};
+               -moz-appearance:textfield;"
+        oninput="this.style.borderColor='${color}'"
+        onblur="this.style.borderColor='${color}88'" />
+      <div style="font-size:10px;color:#7a90b8;font-weight:600;line-height:1.3">SLA Time &gt; 80%<br><span style="color:${color};font-size:9px">แก้ไขได้โดยตรง</span></div>
+    </div>`;
+  }
+
+  // Zone breakdown from raw rows
+  function buildZoneBreakdown(filteredRows, color) {
+    if (!filteredRows || filteredRows.length === 0) return "";
+    // Count by zone
+    const zoneCounts = {};
+    filteredRows.forEach(r => {
+      const zp = resolveZone(String(r.Team||r.team||""), String(r.Province||r.province||""), String(r["M_OFFICE"]||r["FM_Office"]||r.woid||""));
+      const clr = getFmColor(zp);
+      const zoneLabel = clr.zone || ("Zone " + zp);
+      if (!zoneCounts[zoneLabel]) zoneCounts[zoneLabel] = { count: 0, icon: clr.icon, badge: clr.badge, bg: clr.bg, border: clr.border };
+      zoneCounts[zoneLabel].count++;
+    });
+    const entries = Object.entries(zoneCounts).sort((a,b) => b[1].count - a[1].count);
+    if (!entries.length) return "";
+    return `<div style="padding:0 18px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <span style="font-size:10px;color:#8a9bc0;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-right:4px">Zone</span>
+      ${entries.map(([zone, d]) =>
+        `<span style="display:inline-flex;align-items:center;gap:5px;background:${d.bg};border:1px solid ${d.border};
+                      border-radius:20px;padding:3px 10px;color:${d.badge};font-size:11px;font-weight:700">
+          ${d.icon} ${zone} <span style="color:${d.badge};opacity:.8">${d.count}</span>
+        </span>`
+      ).join("")}
+    </div>`;
+  }
+
+  // Get raw rows per section for zone breakdown
+  const raw34  = _rawAllRows ? _rawAllRows.filter(r => classifySev(r.Severity||"") === "NSA34")   : [];
+  const raw12  = _rawAllRows ? _rawAllRows.filter(r => classifySev(r.Severity||"") === "NSA12_SA") : [];
+
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+
+  // Build inline zone badges HTML for header
+  function buildZoneBadgesInline(filteredRows) {
+    if (!filteredRows || filteredRows.length === 0) return "";
+    const zoneCounts = {};
+    filteredRows.forEach(r => {
+      const zp = resolveZone(String(r.Team||r.team||""), String(r.Province||r.province||""), String(r["M_OFFICE"]||r["FM_Office"]||r.woid||""));
+      const clr = getFmColor(zp);
+      const zoneLabel = clr.zone || ("Zone " + zp);
+      if (!zoneCounts[zoneLabel]) zoneCounts[zoneLabel] = { count: 0, icon: clr.icon, badge: clr.badge, bg: clr.bg, border: clr.border };
+      zoneCounts[zoneLabel].count++;
+    });
+    const entries = Object.entries(zoneCounts).sort((a,b) => b[1].count - a[1].count);
+    if (!entries.length) return "";
+    return entries.map(([zone, d]) =>
+      `<span style="display:inline-flex;align-items:center;gap:4px;background:${d.bg};border:1px solid ${d.border};
+                    border-radius:20px;padding:2px 9px;color:${d.badge};font-size:11px;font-weight:700">
+        ${d.icon} ${zone} <span style="opacity:.8">${d.count}</span>
+      </span>`
+    ).join("");
+  }
+
+  // Unique IDs for clock spans
+  const clockId34  = "nsa-rt-clock-34";
+  const clockId12  = "nsa-rt-clock-12";
+
+  wrap.innerHTML = `
+    <div style="background:rgba(255,255,255,.8);border:1px solid rgba(200,210,255,.5);border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(80,100,200,.10);backdrop-filter:blur(12px)">
+      <!-- NSA3-4 Section (capture frame) -->
+      <div id="nsa34-cap-frame">
+      <div style="background:linear-gradient(135deg,#fff8e0,#fff0c0,#ffe890);
+                  padding:12px 20px;border-bottom:2px solid rgba(245,166,35,.35);
+                  display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:18px">📊</span>
+        <span style="font-size:15px;font-weight:800;color:#b87800;letter-spacing:.5px">สรุป : NSA3 - NSA4</span>
+        <span style="background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.4);
+                     color:#b87800;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700">
+          Pending ${s34.total} TT
+        </span>
+        <!-- Zone badges -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+          ${buildZoneBadgesInline(raw34)}
+        </div>
+        <!-- Capture btn + Real-time clock -->
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="nsa-capture-btn gold" id="nsa34-cap-btn" data-target="nsa34-cap-frame" data-fname="NSA34_Report">📷 แคปภาพ</button>
+          <div style="background:rgba(255,214,102,.1);border:1px solid rgba(255,214,102,.3);
+                      border-radius:10px;padding:4px 12px;text-align:right;white-space:nowrap">
+            <div style="font-size:9px;color:#a07a20;font-weight:600;letter-spacing:.6px">📅 วันที่ / เวลา</div>
+            <div id="${clockId34}" style="font-size:13px;font-weight:800;color:#b87800;font-family:monospace">—</div>
+          </div>
+        </div>
+        ${!td34 ? '<span style="font-size:10px;color:#a07820;font-style:italic">* Upload Today เพื่อดูข้อมูลวันนี้</span>' : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:16px 18px;background:rgba(255,252,240,.5)">
+        ${cardHTML(cards34)}
+        ${sla80Card(sla80_nsa34_id, "#ffd666", cur34)}
+      </div>
+
+      </div><!-- /nsa34-cap-frame -->
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(155,123,247,.25),transparent);margin:0 18px 4px"></div>
+
+      <!-- NSA1-2 / SA1-4 Section (capture frame) -->
+      <div id="nsa12-cap-frame">
+      <div style="background:linear-gradient(135deg,#f0f5ff,#e8f0ff,#ede0ff);
+                  padding:12px 20px;border-bottom:2px solid rgba(91,141,239,.3);
+                  display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:18px">📈</span>
+        <span style="font-size:15px;font-weight:800;color:#5b8def;letter-spacing:.5px">สรุป : NSA1-2 &amp; SA1-4</span>
+        <span style="background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.3);
+                     color:#5b8def;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700">
+          Pending ${s12.total} TT
+        </span>
+        <!-- Zone badges -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+          ${buildZoneBadgesInline(raw12)}
+        </div>
+        <!-- Capture btn + Real-time clock -->
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="nsa-capture-btn blue" id="nsa12-cap-btn" data-target="nsa12-cap-frame" data-fname="NSA12SA_Report">📷 แคปภาพ</button>
+          <div style="background:rgba(91,141,239,.08);border:1px solid rgba(91,141,239,.25);
+                      border-radius:10px;padding:4px 12px;text-align:right;white-space:nowrap">
+            <div style="font-size:9px;color:#6a90c0;font-weight:600;letter-spacing:.6px">📅 วันที่ / เวลา</div>
+            <div id="${clockId12}" style="font-size:13px;font-weight:800;color:#5b8def;font-family:monospace">—</div>
+          </div>
+        </div>
+        ${!td12 ? '<span style="font-size:10px;color:#7a9ac0;font-style:italic">* Upload Today เพื่อดูข้อมูลวันนี้</span>' : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:16px 18px 14px;background:rgba(240,245,255,.5)">
+        ${cardHTML(cards12)}
+        ${sla80Card(sla80_nsa12sa_id, "#5b8def", cur12)}
+      </div>
+      </div><!-- /nsa12-cap-frame -->
+    </div>`;
+
+  // Start real-time clock for both sections
+  function startNsaClock() {
+    function tick() {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2,"0");
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      const yy = now.getFullYear();
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mi = String(now.getMinutes()).padStart(2,"0");
+      const ss = String(now.getSeconds()).padStart(2,"0");
+      const ts = `${dd}/${mm}/${yy} ${hh}:${mi}:${ss}`;
+      const el34 = document.getElementById(clockId34);
+      const el12 = document.getElementById(clockId12);
+      if (el34) el34.textContent = ts;
+      if (el12) el12.textContent = ts;
+      // Stop if both elements are gone (section rebuilt)
+      if (!el34 && !el12) return;
+      requestAnimationFrame(() => setTimeout(tick, 1000));
+    }
+    tick();
+  }
+  startNsaClock();
+
+  // Wire up SLA 80% inputs → sync to sla80Values so buildReport & breakdown read them
+  const inp34 = document.getElementById(sla80_nsa34_id);
+  if (inp34) {
+    inp34.style.webkitAppearance = "none";
+    inp34.addEventListener("input", () => {
+      sla80Values["content-nsa34"] = parseInt(inp34.value, 10) || 0;
+      const bd = document.getElementById("sla80-input-content-nsa34");
+      if (bd) bd.value = inp34.value;
+      if (currentData) renderSliderGraph(currentData, "slider-graph-wrap");
+    });
+  }
+  const inp12 = document.getElementById(sla80_nsa12sa_id);
+  if (inp12) {
+    inp12.style.webkitAppearance = "none";
+    inp12.addEventListener("input", () => {
+      sla80Values["content-nsa12sa"] = parseInt(inp12.value, 10) || 0;
+      const bd = document.getElementById("sla80-input-content-nsa12sa");
+      if (bd) bd.value = inp12.value;
+      if (currentData) renderSliderGraph(currentData, "slider-graph-wrap");
+    });
+  }
+}
+
+// ── NSA/SA Slider Graph ──────────────────────────────────────────────────────
+function renderSliderGraph(data, containerId) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+
+  const s34 = data.nsa34_summary;
+  const s12 = data.nsa12sa_summary;
+  const td34 = todayData ? todayData.nsa34  : null;
+  const td12 = todayData ? todayData.nsa12sa : null;
+
+  function buildSliderSection(label, summary, color, slaTarget, todaySummary) {
+    const total     = summary.total        || 0;
+    const inProg    = summary.in_progress  || 0;
+    const withinSla = summary.within_sla   || 0;
+    const overSla   = summary.over_sla     || 0;
+    const maxVal    = Math.max(total, 1);
+    const sla80     = slaTarget || 0;
+
+    // Today data
+    const tdOpen   = todaySummary ? (todaySummary.open          || 0) : null;
+    const tdWithin = todaySummary ? (todaySummary.closed_within || 0) : null;
+    const tdOver   = todaySummary ? (todaySummary.closed_over   || 0) : null;
+
+    function sliderRow(rowLabel, val, rowColor, slaMarkPct) {
+      const pct = Math.min(100, Math.round((val / maxVal) * 100));
+      const markHtml = slaMarkPct != null
+        ? `<span class="slider-sla-mark" style="left:${slaMarkPct}%;color:${rowColor}bb">SLA</span>`
+        : "";
+      return `
+        <div class="slider-row">
+          <div class="slider-row-label">${rowLabel}</div>
+          <div class="slider-track-wrap">
+            ${markHtml}
+            <div class="slider-track">
+              <div class="slider-fill" style="width:${pct}%;background:linear-gradient(90deg,${rowColor}33,${rowColor}77)"></div>
+              <div class="slider-dot" style="left:${pct}%;background:${rowColor};box-shadow:0 0 8px 3px ${rowColor}99,0 0 18px 5px ${rowColor}44">
+                <div class="slider-dot-glow" style="background:${rowColor}"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slider-val-right" style="color:${rowColor}">
+            ${val}<span class="slider-val-unit">TT</span>
+          </div>
+        </div>`;
+    }
+
+    function todayRow(icon, rowLabel, val, rowColor) {
+      if (val === null) {
+        return `
+          <div class="slider-row" style="opacity:.4">
+            <div class="slider-row-label">${icon} ${rowLabel}</div>
+            <div class="slider-track-wrap">
+              <div class="slider-track"><div class="slider-fill" style="width:0%"></div></div>
+            </div>
+            <div class="slider-val-right" style="color:#8a9bc0">–</div>
+          </div>`;
+      }
+      const pct = Math.min(100, Math.round((val / maxVal) * 100));
+      return `
+        <div class="slider-row">
+          <div class="slider-row-label">${icon} ${rowLabel}</div>
+          <div class="slider-track-wrap">
+            <div class="slider-track">
+              <div class="slider-fill" style="width:${pct}%;background:linear-gradient(90deg,${rowColor}33,${rowColor}77)"></div>
+              <div class="slider-dot" style="left:${pct}%;background:${rowColor};box-shadow:0 0 8px 3px ${rowColor}99,0 0 18px 5px ${rowColor}44">
+                <div class="slider-dot-glow" style="background:${rowColor}"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slider-val-right" style="color:${rowColor}">
+            ${val}<span class="slider-val-unit">TT</span>
+          </div>
+        </div>`;
+    }
+
+    const slaMarkPct = sla80 > 0 ? Math.min(99, Math.round((sla80 / maxVal) * 100)) : null;
+
+    // Mini stacked bar
+    const wPct = total > 0 ? Math.round((withinSla / total) * 100) : 0;
+    const oPct = total > 0 ? Math.round((overSla   / total) * 100) : 0;
+    const iPct = total > 0 ? Math.round((inProg    / total) * 100) : 0;
+    const rPct = Math.max(0, 100 - wPct - oPct - iPct);
+
+    const todayNote = todaySummary
+      ? ''
+      : `<div style="font-size:10px;color:#8a9bc0;font-style:italic;margin-top:2px">* Upload Today เพื่อดูข้อมูลวันนี้</div>`;
+
+    return `
+      <div class="slider-graph-section">
+
+        <!-- Section Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:4px;height:28px;background:${color};border-radius:2px;box-shadow:0 0 12px ${color}55"></div>
+            <div>
+              <div style="font-size:15px;font-weight:900;color:${color};letter-spacing:.5px">${label}</div>
+              <div style="font-size:11px;color:#8a9bc0;margin-top:1px">Pending Total</div>
+            </div>
+          </div>
+          <div style="font-size:32px;font-weight:900;color:${color};line-height:1;">
+            ${total}<span style="font-size:13px;font-weight:600;opacity:.6;margin-left:3px">TT</span>
+          </div>
+        </div>
+
+        <!-- GROUP 1: วันนี้ -->
+        <div class="sg-group-header" style="border-left-color:${color}88">🗓️ วันนี้ (Today)</div>
+        ${todayRow("🆕","Open Today",   tdOpen,   "#ffd666")}
+        ${todayRow("✅","Closed Within",tdWithin, "#52c41a")}
+        ${todayRow("⚠️","Closed Over",  tdOver,   "#faad14")}
+        ${todayNote}
+
+        <!-- GROUP 2: Pending -->
+        <div class="sg-group-header" style="border-left-color:#7ee8fa88;margin-top:14px">📌 Pending</div>
+        ${sliderRow("📌 Total",      total,     color,    null)}
+        ${sliderRow("🔄 In Progress",inProg,    "#7ee8fa",null)}
+        ${sliderRow("🟢 Within SLA", withinSla, "#52c41a",slaMarkPct)}
+        ${sliderRow("🔴 Over SLA",   overSla,   "#ff4d4f",null)}
+        <div class="slider-row" style="align-items:center">
+          <div class="slider-row-label" style="color:${color}">⏱️ SLA &gt;80%</div>
+          <div class="slider-track-wrap">
+            <div class="slider-track">
+              ${sla80 > 0 ? `<div class="slider-fill" style="width:${Math.min(100,Math.round((sla80/maxVal)*100))}%;background:linear-gradient(90deg,${color}33,${color}77)"></div>
+              <div class="slider-dot" style="left:${Math.min(100,Math.round((sla80/maxVal)*100))}%;background:${color};box-shadow:0 0 8px 3px ${color}99,0 0 18px 5px ${color}44">
+                <div class="slider-dot-glow" style="background:${color}"></div>
+              </div>` : `<div style="font-size:10px;color:#8a9bc0;padding:0 8px;white-space:nowrap">ยังไม่ได้กรอก</div>`}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:3px;width:70px;justify-content:flex-end;flex-shrink:0">
+            <input class="sla80-inline-input" data-section="${label}" type="number" min="0" value="${sla80}"
+              style="color:${color};border-bottom-color:${color}88;width:52px"
+              title="แก้ไข SLA Time &gt;80%" />
+            <span style="font-size:10px;font-weight:700;color:${color}99">TT</span>
+          </div>
+        </div>
+
+        <!-- GROUP 3: สาเหตุ Over SLA -->
+        <div class="sg-group-header" style="border-left-color:#ff4d4f88;margin-top:14px">⚠️ สาเหตุ Over SLA</div>
+        ${sliderRow("🚫 Non Action",   summary.non_action  ||0,"#f87171",null)}
+        ${sliderRow("🚧 Site Access",  summary.site_access ||0,"#fb923c",null)}
+        ${sliderRow("🔧 Spare Part",   summary.spare_part  ||0,"#a78bfa",null)}
+        ${sliderRow("🚨 Stolen",       summary.stolen      ||0,"#ef4444",null)}
+        ${sliderRow("🛠️ Difficult",   summary.difficult   ||0,"#6ee7b7",null)}
+        ${sliderRow("🔁 Priority Int.",summary.priority_int||0,"#fbbf24",null)}
+
+        <!-- Mini proportion bar -->
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(155,123,247,.15)">
+          <div style="font-size:11px;color:#7a90b8;font-weight:600;margin-bottom:6px">สัดส่วนสถานะ Pending</div>
+          <div class="slider-mini-bar-wrap" style="height:10px;border-radius:5px">
+            <div class="slider-mini-seg" style="flex:${wPct};background:#3dba78;opacity:.85" title="Within SLA ${wPct}%"></div>
+            <div class="slider-mini-seg" style="flex:${oPct};background:#f76060;opacity:.85" title="Over SLA ${oPct}%"></div>
+            <div class="slider-mini-seg" style="flex:${iPct};background:#5b8def;opacity:.85" title="In Progress ${iPct}%"></div>
+            ${rPct > 0 ? `<div class="slider-mini-seg" style="flex:${rPct};background:rgba(155,123,247,.12)"></div>` : ""}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:7px">
+            <span style="font-size:11px;font-weight:700;color:#3dba78">■ Within ${wPct}%</span>
+            <span style="font-size:11px;font-weight:700;color:#f76060">■ Over ${oPct}%</span>
+            <span style="font-size:11px;font-weight:700;color:#5b8def">■ In Progress ${iPct}%</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const sla80_34 = (typeof sla80Values !== "undefined") ? (sla80Values["content-nsa34"]  ?? 0) : 0;
+  const sla80_12 = (typeof sla80Values !== "undefined") ? (sla80Values["content-nsa12sa"] ?? 0) : 0;
+
+  wrap.innerHTML = `
+    <div style="background:rgba(255,255,255,.88);border:1px solid rgba(200,210,255,.5);border-radius:18px;padding:20px 22px 18px;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(80,100,200,.10);backdrop-filter:blur(12px)">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 10%,rgba(155,123,247,.06) 0%,transparent 60%);pointer-events:none"></div>
+      <div style="font-size:14px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5b8def,#9b7bf7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+        📊 <span>NSA / SA Detail — Slider View</span>
+      </div>
+      <!-- Two-column grid, each half width -->
+      <div class="sg-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>${buildSliderSection("NSA3 – NSA4", s34, "#ffd666", sla80_34, td34)}</div>
+        <div>${buildSliderSection("NSA1-2 &amp; SA1-4", s12, "#7ee8fa", sla80_12, td12)}</div>
+      </div>
+    </div>`;
+}
+
+function renderAll(data) {
+  renderCards(data);
+  const n34 = document.getElementById("content-nsa34");
+  const n12 = document.getElementById("content-nsa12sa");
+  n34.innerHTML = "";
+  n12.innerHTML = "";
+
+  // ── Layout: Summary first, Slider Graph, then Report 1, then Report 2 ──
+  n34.innerHTML = `
+    <div id="combined-summary-wrap" class="summary-above-wrap"></div>
+    <div id="slider-graph-wrap" style="margin-top:20px"></div>
+    <div id="pivot-nsa34-wrap" style="margin-top:24px"></div>
+    <div id="pivot-nsa12sa-wrap" style="margin-top:24px"></div>`;
+
+  renderCombinedSummary(data, "combined-summary-wrap");
+  renderSliderGraph(data, "slider-graph-wrap");
+  renderPivot(data.nsa34_pivot,   data.nsa34_cols,
+    "📊 Report 1 : NSA3 - NSA4 แยกตาม Severity",   "pivot-nsa34-wrap");
+  renderPivot(data.nsa12sa_pivot, data.nsa12sa_cols,
+    "📊 Report 2 : NSA1-2 &amp; SA1-4 แยกตาม Severity", "pivot-nsa12sa-wrap");
+
+  renderSaOverview && document.getElementById("content-sa-overview").style.display !== "none" && renderSaOverview(data);
+}
+
+// ── Modal / Report ─────────────────────────────────────────────────────────────
+function getVal(id) { return document.getElementById(id)?.value || "0"; }
+
+function buildReport() {
+  return `📊 **Daily Operation Ticket**
+📍 **Region:** ${getVal("f-region")}
+📅 **Date:** ${getVal("f-date")}
+⏰ **Time:** ${getVal("f-time")}
+━━━━━━━━━━━━━━
+🔹 **SLA: SA1-4 , NSA1-2**
+🆕 Ticket Open Today: **${getVal("f-sa_open")} TT**
+✅ Ticket Closed Within SLA: **${getVal("f-sa_closed_within")} TT**
+⚠️ Ticket Closed Over SLA: **${getVal("f-sa_closed_over")} TT**
+📌 **Pending Total: ${getVal("f-sa_total")} TT**
+🔄 Pending In Progress: **${getVal("f-sa_inprogress")} TT**
+⏳ Still not "Accept"
+🟢 Pending Within SLA: **${getVal("f-sa_within")} TT**
+🔴 Pending Over SLA: **${getVal("f-sa_over")} TT**
+ * 🚫 Non Action: **${getVal("f-sa_non_action")} TT**
+ * 🚧 Site Access: **${getVal("f-sa_site_access")} TT**
+ * 🔧 Spare Part: **${getVal("f-sa_spare")} TT**
+ * 🚨 Stolen: **${getVal("f-sa_stolen")} TT**
+ * 🛠️ Difficult Work: **${getVal("f-sa_difficult")} TT**
+ * 🔁 Priority Interrupt: **${getVal("f-sa_priority")} TT**
+⏱️ SLA Time > 80%: **${getVal("f-sa_sla80")} TT**
+━━━━━━━━━━━━━━
+🔹 **SLA: NSA3-4**
+🆕 Ticket Open Today: **${getVal("f-nsa_open")} TT**
+✅ Ticket Closed Within SLA: **${getVal("f-nsa_closed_within")} TT**
+⚠️ Ticket Closed Over SLA: **${getVal("f-nsa_closed_over")} TT**
+📌 **Pending Total: ${getVal("f-nsa_total")} TT**
+🔄 Pending In Progress: **${getVal("f-nsa_inprogress")} TT**
+⏳ Still not "Accept"
+🟢 Pending Within SLA: **${getVal("f-nsa_within")} TT**
+🔴 Pending Over SLA: **${getVal("f-nsa_over")} TT**
+ * 🚫 Non Action: **${getVal("f-nsa_non_action")} TT**
+ * 🚧 Site Access: **${getVal("f-nsa_site_access")} TT**
+ * 🔧 Spare Part: **${getVal("f-nsa_spare")} TT**
+ * 🚨 Stolen: **${getVal("f-nsa_stolen")} TT**
+ * 🛠️ Difficult Work: **${getVal("f-nsa_difficult")} TT**
+ * 🔁 Priority Interrupt: **${getVal("f-nsa_priority")} TT**
+⏱️ SLA Time > 80%: **${getVal("f-nsa_sla80")} TT**`;
+}
+
+function buildModalFields(data) {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = String(d.getFullYear()).slice(-2);
+  document.getElementById("f-date").value = `${dd}/${mm}/${yy}`;
+
+  // Auto-fill current time in HH:MM AM/PM format
+  let h = d.getHours();
+  const min = String(d.getMinutes()).padStart(2,"0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  document.getElementById("f-time").value = `${String(h).padStart(2,"0")}.${min} ${ampm}.`;
+
+  const td = todayData;
+  const saMap = {
+    open: td ? td.nsa12sa.open : 0,
+    closed_within: td ? td.nsa12sa.closed_within : 0,
+    closed_over: td ? td.nsa12sa.closed_over : 0,
+    total: data.nsa12sa_summary.total,
+    inprogress: data.nsa12sa_summary.in_progress,
+    within: data.nsa12sa_summary.within_sla,
+    over: data.nsa12sa_summary.over_sla,
+    non_action: data.nsa12sa_summary.non_action,
+    site_access: data.nsa12sa_summary.site_access,
+    spare: data.nsa12sa_summary.spare_part,
+    stolen: data.nsa12sa_summary.stolen,
+    difficult: data.nsa12sa_summary.difficult,
+    priority: data.nsa12sa_summary.priority_int,
+    sla80: sla80Values["content-nsa12sa"] ?? 0,
+  };
+  const nsaMap = {
+    open: td ? td.nsa34.open : 0,
+    closed_within: td ? td.nsa34.closed_within : 0,
+    closed_over: td ? td.nsa34.closed_over : 0,
+    total: data.nsa34_summary.total,
+    inprogress: data.nsa34_summary.in_progress,
+    within: data.nsa34_summary.within_sla,
+    over: data.nsa34_summary.over_sla,
+    non_action: data.nsa34_summary.non_action,
+    site_access: data.nsa34_summary.site_access,
+    spare: data.nsa34_summary.spare_part,
+    stolen: data.nsa34_summary.stolen,
+    difficult: data.nsa34_summary.difficult,
+    priority: data.nsa34_summary.priority_int,
+    sla80: sla80Values["content-nsa34"] ?? 0,
+  };
+
+  function makeFields(prefix, map, containerId) {
+    const groups = [
+      { title: "วันนี้ (Today)",   cls: "group-today",   keys: ["open","closed_within","closed_over"] },
+      { title: "Pending",          cls: "group-pending",  keys: ["total","inprogress","within","over"] },
+      { title: "สาเหตุ Over SLA",  cls: "group-over",    keys: ["non_action","site_access","spare","stolen","difficult","priority","sla80"] },
+    ];
+    const autoKeys = ["open","closed_within","closed_over"];
+    let html = "";
+    groups.forEach(g => {
+      html += `<div class="edit-group-title ${g.cls}">${g.title}</div>`;
+      g.keys.forEach(k => {
+        const label = FIELD_LABELS[k];
+        if (!label) return;
+        const isAuto = td && autoKeys.includes(k);
+        // Strip leading emoji for cleaner label
+        const cleanLabel = label.replace(/^[\p{Emoji}\s]+/u, '').trim();
+        html += `<label class="edit-field">
+          <span>${cleanLabel}</span>
+          <input id="f-${prefix}_${k}" value="${map[k] ?? 0}" style="${isAuto?'border-color:#7c3aed;background:rgba(124,58,237,.08);':''}" />
+        </label>`;
+      });
+    });
+    document.getElementById(containerId).innerHTML = html;
+  }
+  makeFields("sa", saMap, "sa-fields");
+  makeFields("nsa", nsaMap, "nsa-fields");
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────────
+document.getElementById("upload-btn")?.addEventListener("click", () =>
+  document.getElementById("file-input").click()
+);
+document.getElementById("file-input").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
+  document.getElementById("upload-btn").textContent = "⏳ Loading...";
+  document.getElementById("file-name").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const result = processExcel(new Uint8Array(ev.target.result));
+      if (result) { currentData = result; renderAll(currentData); }
+      else alert("ไม่พบ Sheet 'CM - Work Order List'");
+    } catch(e) { alert("ไม่สามารถอ่านไฟล์ได้"); }
+    document.getElementById("upload-btn").textContent = "📂 Upload Excel";
+  };
+  reader.readAsArrayBuffer(file);
+  this.value = "";
+});
+
+// ── Daily Report Panel (bottom grid) ──────────────────────────────────────────
+function buildDrPanel(data) {
+  const panel = document.getElementById("daily-report-panel");
+  const grid  = document.getElementById("dr-grid");
+  if (!panel || !grid) return;
+
+  // Merge nsa34 + nsa12sa summaries
+  const s34  = data.nsa34_summary  || {};
+  const s12  = data.nsa12sa_summary || {};
+  function sum(k) { return (s34[k]||0) + (s12[k]||0); }
+
+  const cells = [
+    { icon:"🆕", label:"Open Today",         val: sum("open"),         color:"#7dd3fc" },
+    { icon:"✅", label:"Closed Within SLA",   val: sum("closed_within"),color:"#52c41a" },
+    { icon:"⚠️", label:"Closed Over SLA",     val: sum("closed_over"),  color:"#faad14" },
+    { icon:"📌", label:"Pending Total",        val: sum("total"),        color:"#ffd666", big:true },
+    { icon:"🔄", label:"In Progress",          val: sum("inprogress"),   color:"#7ee8fa" },
+    { icon:"🟢", label:"Within SLA",           val: sum("within"),       color:"#52c41a" },
+    { icon:"🔴", label:"Over SLA",             val: sum("over"),         color:"#ff4d4f" },
+    { icon:"🚫", label:"Non Action",           val: sum("non_action"),   color:"#f87171" },
+    { icon:"🚧", label:"Site Access",          val: sum("site_access"),  color:"#fb923c" },
+    { icon:"🔧", label:"Spare Part",           val: sum("spare"),        color:"#a78bfa" },
+    { icon:"🚨", label:"Stolen",               val: sum("stolen"),       color:"#ef4444" },
+    { icon:"🛠️", label:"Difficult Work",       val: sum("difficult"),    color:"#6ee7b7" },
+    { icon:"🔁", label:"Priority Interrupt",   val: sum("priority"),     color:"#fbbf24" },
+  ];
+
+  grid.innerHTML = cells.map(cell => `
+    <div class="dr-cell">
+      <div class="dr-cell-icon">${cell.icon}</div>
+      <div class="dr-cell-label">${cell.label}</div>
+      <div class="dr-cell-val" style="color:${cell.color};font-size:${cell.big?'28px':'22px'}">${cell.val}</div>
+    </div>`).join("");
+
+  panel.style.display = "block";
+  panel.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+// ── Daily Report Modal ────────────────────────────────────────────────────────
+document.getElementById("report-btn") && document.getElementById("report-btn").addEventListener("click", () => {
+  if (!currentData) { alert("กรุณา Upload ไฟล์ Excel ก่อนสร้าง Daily Report"); return; }
+  buildModalFields(currentData);
+  document.getElementById("modal-overlay").classList.add("open");
+});
+
+document.getElementById("export-dispatched-btn")?.addEventListener("click", () => {
+  exportDispatchedOverDue();
+});
+document.getElementById("modal-close")?.addEventListener("click", () =>
+  document.getElementById("modal-overlay").classList.remove("open")
+);
+document.getElementById("modal-overlay").addEventListener("click", function(e) {
+  if (e.target === this) this.classList.remove("open");
+});
+// ── QR Code Generator ─────────────────────────────────────────────────────────
+// Inline QR encoder (no external lib needed — uses qrcode-generator pattern via data URI approach)
+// We'll use the qrcodejs approach via CDN already available, or build minimal inline
+
+document.getElementById("qr-btn")?.addEventListener("click", () => {
+  const text = buildReport();
+  const region = document.getElementById("f-region")?.value || "";
+  const date   = document.getElementById("f-date")?.value   || "";
+  const time   = document.getElementById("f-time")?.value   || "";
+  document.getElementById("qr-meta").textContent = `${region} · ${date} · ${time}`;
+
+  // Use QR API to generate — encode report as Data URI via canvas
+  generateQR(text);
+  document.getElementById("qr-overlay").classList.add("open");
+});
+
+document.getElementById("qr-close")?.addEventListener("click", () =>
+  document.getElementById("qr-overlay").classList.remove("open")
+);
+document.getElementById("qr-overlay").addEventListener("click", function(e) {
+  if (e.target === this) this.classList.remove("open");
+});
+
+function generateQR(text) {
+  const canvas = document.getElementById("qr-canvas");
+  // Use qrserver API to render as image on canvas
+  const size = 220;
+  const url = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}&format=png&ecc=M&margin=0&color=1a56db`;
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    canvas.width  = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, 0, 0, size, size);
+  };
+  img.onerror = () => {
+    // Offline fallback: draw placeholder
+    canvas.width  = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#f0f4ff";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#1a56db";
+    ctx.font = "bold 14px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("ต้องการอินเทอร์เน็ต", size/2, size/2 - 10);
+    ctx.fillText("เพื่อสร้าง QR Code", size/2, size/2 + 14);
+  };
+  img.src = url;
+}
+
+// Close image preview overlay (legacy — keep stub in case referenced)
+
+
+// ── File 2 Upload (Today) ──────────────────────────────────────────────────────
+let _file2Buffer = null;
+
+document.getElementById("upload2-btn")?.addEventListener("click", () =>
+  document.getElementById("file2-input").click()
+);
+
+document.getElementById("file2-input").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
+  document.getElementById("upload2-btn").textContent = "⏳ Loading...";
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _file2Buffer = new Uint8Array(ev.target.result);
+    const sheets = getSheetNames(_file2Buffer);
+    if (sheets.length === 1) {
+      applyFile2(_file2Buffer, sheets[0], file.name);
+    } else {
+      // show sheet picker
+      const list = document.getElementById("sheet-list");
+      list.innerHTML = sheets.map((s, i) =>
+        `<button data-sheet-index="${i}"
+          style="background:#F0F3F6;border:1px solid #AAB6C2;color:#1E2D3D;padding:10px 14px;border-radius:9px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;font-family:'Inter','Segoe UI',sans-serif;display:flex;align-items:center;gap:9px;transition:border-color .15s,background .15s"
+          onmouseover="this.style.borderColor='#2F5585';this.style.background='#E2EAF4'" onmouseout="this.style.borderColor='#AAB6C2';this.style.background='#F0F3F6'">
+          <span style="font-size:15px">📋</span> ${s.replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+        </button>`
+      ).join("");
+      // Store sheets array on the list element for safe retrieval
+      list._sheetNames = sheets;
+      list._filename = file.name;
+      document.getElementById("sheet-picker-overlay").classList.add("open");
+    }
+    document.getElementById("upload2-btn").textContent = "📂 Upload Today";
+  };
+  reader.readAsArrayBuffer(file);
+  this.value = "";
+});
+
+document.getElementById("sheet-picker-close").addEventListener("click", () =>
+  document.getElementById("sheet-picker-overlay").classList.remove("open")
+);
+document.getElementById("sheet-picker-overlay").addEventListener("click", function(e) {
+  if (e.target === this) this.classList.remove("open");
+});
+// Safe sheet selection via event delegation (no inline onclick injection)
+document.getElementById("sheet-list").addEventListener("click", function(e) {
+  const btn = e.target.closest("button[data-sheet-index]");
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.sheetIndex, 10);
+  const sheetName = this._sheetNames[idx];
+  const filename = this._filename;
+  if (sheetName) {
+    document.getElementById("sheet-picker-overlay").classList.remove("open");
+    applyFile2(_file2Buffer, sheetName, filename);
+  }
+});
+
+function applyFile2(buffer, sheetName, filename) {
+  try {
+    const result = processExcel2(buffer, sheetName);
+    if (!result) { alert(`ไม่พบ Sheet "${sheetName}"`); return; }
+    todayData = result;
+    const label = `✅ ${filename} · Sheet: ${sheetName} · Open: ${result.nsa34.open+result.nsa12sa.open} | ClosedIn: ${result.nsa34.closed_within+result.nsa12sa.closed_within} | ClosedOver: ${result.nsa34.closed_over+result.nsa12sa.closed_over}`;
+    document.getElementById("file2-name").textContent = label;
+    document.getElementById("file2-name").style.color = "#a78bfa";
+    // Re-render so breakdown "Today" section shows real values
+    if (currentData) renderAll(currentData);
+  } catch(e) { alert("ไม่สามารถอ่านไฟล์ได้: " + e.message); }
+}
+
+// Back to landing
+document.getElementById("back-btn").addEventListener("click", () => {
+  document.getElementById("app").style.display = "none";
+  document.getElementById("landing").style.display = "flex";
+  document.getElementById("landing").style.flexDirection = "column";
+  window.scrollTo(0,0);
+});
+
+// Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", function() {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    this.classList.add("active");
+    const key = this.dataset.tab;
+    document.getElementById("content-nsa34").style.display   = key==="nsa34"        ? "" : "none";
+    document.getElementById("content-nsa12sa").style.display  = "none"; // merged into nsa34
+    document.getElementById("content-arrive").style.display = key==="arrive"  ? "" : "none";
+    document.getElementById("content-pdt").style.display        = key==="pdt"         ? "" : "none";
+    document.getElementById("content-sa-overview").style.display = key==="sa-overview" ? "" : "none";
+  });
+});
+
+// ── 1st Arrive Feature ────────────────────────────────────────────────────────
+let _arriveRows = null;
+
+// Upload button triggers file picker
+document.getElementById("upload-arrive-btn")?.addEventListener("click", () => {
+  document.getElementById("arrive-file-input").click();
+});
+
+document.getElementById("arrive-file-input").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
+  document.getElementById("upload-arrive-btn").textContent = "⏳ Loading...";
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      processArriveExcel(new Uint8Array(ev.target.result), file.name);
+    } catch(e) {
+      alert("ไม่สามารถอ่านไฟล์ได้: " + e.message);
+    }
+    document.getElementById("upload-arrive-btn").textContent = "🚀 Upload 1st Arrive";
+  };
+  reader.readAsArrayBuffer(file);
+  this.value = "";
+});
+
+function excelTimeToHHMM(val) {
+  if (!val && val !== 0) return "";
+  if (typeof val === "string") {
+    // Already formatted string like "2026-05-20 19:05"
+    const m = val.match(/(\d{2}:\d{2})/);
+    if (m) return m[1];
+    return val;
+  }
+  if (typeof val === "number") {
+    // Excel stores date+time as fractional days since 1900-01-00
+    const fracDay = val % 1;
+    const totalMin = Math.round(fracDay * 1440);
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+  }
+  if (val instanceof Date) {
+    return String(val.getHours()).padStart(2,"0") + ":" + String(val.getMinutes()).padStart(2,"0");
+  }
+  return String(val);
+}
+
+function excelDateTimeToFull(val) {
+  if (!val && val !== 0) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number") {
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    const dd = String(d.getUTCDate()).padStart(2,"0");
+    const mm = String(d.getUTCMonth()+1).padStart(2,"0");
+    const yy = d.getUTCFullYear();
+    const hh = String(d.getUTCHours()).padStart(2,"0");
+    const mi = String(d.getUTCMinutes()).padStart(2,"0");
+    return `${yy}-${mm}-${dd} ${hh}:${mi}`;
+  }
+  if (val instanceof Date) {
+    return val.toISOString().slice(0,16).replace("T"," ");
+  }
+  return String(val);
+}
+
+function parseLastWorkTime(val) {
+  // Returns minutes since midnight, or -1 if unparseable
+  if (!val && val !== 0) return -1;
+  if (typeof val === "number") {
+    // Excel serial: extract time fraction
+    const fracDay = val % 1;
+    const totalMin = Math.round(fracDay * 1440);
+    return totalMin % (24 * 60);
+  }
+  if (val instanceof Date) {
+    return val.getHours() * 60 + val.getMinutes();
+  }
+  if (typeof val === "string") {
+    // "2026-05-20 19:05" or "19:05" — grab time portion after space if present
+    const parts = val.trim().split(" ");
+    const timePart = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    const m = timePart.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return -1;
+    return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  }
+  return -1;
+}
+
+function cleanSupName(name) {
+  if (!name) return "(ไม่ระบุ)";
+  return String(name).trim().replace(/\s+/g, " ");
+}
+
+// Extract FM_Office prefix — first 2 chars, uppercase (e.g. "CE_AYT1" → "CE")
+function getFmPrefix(woid) {
+  const s = String(woid || "").trim().toUpperCase();
+  // Match leading alpha chars (2-3 letters) before underscore or digit
+  const m = s.match(/^([A-Z]{2,3})(?:[_\-]|\d|$)/);
+  return m ? m[1] : (s.slice(0, 2) || "??");
+}
+
+// Color map for FM_Office groups
+const FM_COLORS = {
+  BMA: { bg: "rgba(245,158,11,.13)", border: "rgba(245,158,11,.35)", badge: "#fcd34d", icon: "🟡", zone: "BMA"       },
+  BK:  { bg: "rgba(245,158,11,.13)", border: "rgba(245,158,11,.35)", badge: "#fcd34d", icon: "🟡", zone: "BMA"       },
+  CE:  { bg: "rgba(22,119,255,.13)", border: "rgba(22,119,255,.35)", badge: "#7dd3fc", icon: "🔵", zone: "C&W" },
+  EA:  { bg: "rgba(5,150,105,.13)",  border: "rgba(5,150,105,.35)",  badge: "#6ee7b7", icon: "🟢", zone: "EAS"       },
+  SO:  { bg: "rgba(14,165,233,.13)", border: "rgba(14,165,233,.35)", badge: "#93c5fd", icon: "🔷", zone: "SOU"      },
+  WE:  { bg: "rgba(124,58,237,.13)", border: "rgba(124,58,237,.35)", badge: "#c4b5fd", icon: "🔵", zone: "C&W" },
+  NO:  { bg: "rgba(239,68,68,.13)",  border: "rgba(239,68,68,.35)",  badge: "#fca5a5", icon: "🔴", zone: "NOC"      },
+  NE:  { bg: "rgba(251,146,60,.13)", border: "rgba(251,146,60,.35)", badge: "#fdba74", icon: "🟠", zone: "NE"         },
+};
+function getFmColor(prefix) {
+  return FM_COLORS[prefix] || { bg: "rgba(255,255,255,.05)", border: "rgba(255,255,255,.15)", badge: "#c9e4ff", icon: "⚪", zone: "Zone " + prefix };
+}
+function getFmZone(prefix) {
+  return (FM_COLORS[prefix] || {}).zone || ("Zone " + prefix);
+}
+
+// Resolve zone from team code + province + woid
+// Priority: Province BMA → team -CW- → team -EA- → woid prefix
+function resolveZone(team, province, woid) {
+  const t = String(team    || "").toUpperCase();
+  const p = String(province|| "").toUpperCase().trim();
+  const w = String(woid    || "").toUpperCase();
+
+  // BMA by province
+  if (/^BMAW?\d*$/.test(p) || p === "BMA" || p.startsWith("BMA")) return "BMA";
+
+  // CEN & West by team code -CW-
+  if (/-CW-/.test(t)) return "CE";
+
+  // East by team code -EA-
+  if (/-EA-/.test(t)) return "EA";
+
+  // South by team code -SO-
+  if (/-SO-/.test(t)) return "SO";
+
+  // North by team code -NO-
+  if (/-NO-/.test(t)) return "NO";
+
+  // Fallback: woid prefix
+  const wp = getFmPrefix(woid);
+  if (wp && wp !== "??") return wp === "WE" ? "CE" : wp;
+
+  return "??";
+}
+
+function processArriveExcel(data, filename) {
+  const wb = XLSX.read(data, { type: "array", cellDates: false });
+  const sheetName = wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws) { alert("ไม่พบ Sheet ในไฟล์"); return; }
+
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: true });
+  if (!rows.length) { alert("ไม่พบข้อมูลในไฟล์"); return; }
+
+  const sample = rows[0] || {};
+  const keys = Object.keys(sample);
+
+  function findCol(...patterns) {
+    for (const p of patterns) {
+      const found = keys.find(k => new RegExp(p, "i").test(k));
+      if (found) return found;
+    }
+    return null;
+  }
+
+  const COL_TEAM         = findCol("team") || "Team";
+  const COL_SKILL        = findCol("skill") || "Skill";
+  const COL_PROVINCE     = findCol("province|provinci|จังหวัด") || "Province";
+  const COL_SUP          = findCol("supervisor|sup") || "Supervisor";
+  const COL_MANAGER      = findCol("manager") || "Manager";
+  const COL_WOID         = findCol("m.?offic|m_offic|fm.?offic") || "M_OFFICE";
+  const COL_TIMECLOCK    = findCol("time.?clock|clock.?in|timeclock") || "Time Clock In";
+  const COL_WRK          = findCol("wrk|rk.?n|work.?n") || "Wrk N";
+  const COL_LASTWORK     = findCol("last.?work") || "Last Work";
+  const COL_LASTACTION   = findCol("last.?action") || "Last Action";
+  const COL_FIRSTARRIVED = findCol("1st.?arriv|first.?arriv|arrived.?or.?resume") || "1st Arrived or Resume";
+  const COL_FIRSTACTION  = findCol("1st.?action|first.?action") || "1st Action";
+  const COL_WO_TODAY     = findCol("wo.?on.?hand|wo.*today|on.?hand") || "WO On Hand Today";
+
+  // ── Filter 1: Last Work >= 20:00 ──
+  // ── Filter 2: 1st Arrived or Resume is empty / blank ──
+  const filtered = rows.filter(r => {
+    const lwMin = parseLastWorkTime(r[COL_LASTWORK]);
+    if (lwMin < 0) return false;
+    // ไม่เอา 20:00–23:59 และ 00:00–04:59 (หลังเที่ยงคืนถึงตี 5)
+    if (lwMin >= 20 * 60) return false;       // ตั้งแต่ 20:00 เป็นต้นไป
+    if (lwMin < 5 * 60) return false;         // ก่อน 05:00 (ตี 5)
+
+    const fa = String(r[COL_FIRSTARRIVED] || "").trim();
+    if (fa !== "" && fa !== "0" && fa !== "-") return false;
+
+    // Exclude rows where Time Clock In is 00:00 (not clocked in)
+    const tcFull = excelDateTimeToFull(r[COL_TIMECLOCK]);
+    const tcTime = tcFull ? tcFull.slice(11, 16) : "";
+    if (!tcTime || tcTime === "00:00") return false;
+
+    return true;
+  });
+
+  _arriveRows = filtered.map(r => ({
+    team:        String(r[COL_TEAM] || "").trim(),
+    skill:       String(r[COL_SKILL] || "").trim(),
+    province:    String(r[COL_PROVINCE] || "").trim(),
+    sup:         cleanSupName(r[COL_SUP]),
+    manager:     String(r[COL_MANAGER] || "").trim(),
+    woid:        String(r[COL_WOID] || "").trim(),
+    fmprefix:    resolveZone(String(r[COL_TEAM]||""), String(r[COL_PROVINCE]||""), r[COL_WOID]),
+    timeclock:   excelDateTimeToFull(r[COL_TIMECLOCK]),
+    wrk:         String(r[COL_WRK] || "").trim(),
+    lastwork:    excelDateTimeToFull(r[COL_LASTWORK]),   // full datetime
+    lastaction:  String(r[COL_LASTACTION] || "").trim(),
+    firstaction: String(r[COL_FIRSTACTION] || "").trim(),
+    wo_today:    r[COL_WO_TODAY] !== "" && r[COL_WO_TODAY] !== undefined ? String(r[COL_WO_TODAY]) : "0",
+  }));
+
+  renderArriveTable(_arriveRows, filename);
+
+  // Auto-switch to arrive tab
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("tab-arrive").classList.add("active");
+  document.getElementById("content-nsa34").style.display      = "none";
+  document.getElementById("content-nsa12sa").style.display    = "none";
+  document.getElementById("content-pdt").style.display        = "none";
+  document.getElementById("content-sa-overview").style.display = "none";
+  document.getElementById("content-arrive").style.display     = "";
+}
+
+// ── Zone filter state ─────────────────────────────────────────────────────────
+let _arriveSelectedZone = "ALL";
+
+function buildArriveTableHTML(rows, fmMap, fmPrefixes, selectedZone) {
+  const displayPrefixes = selectedZone === "ALL" ? fmPrefixes : fmPrefixes.filter(fp => fp === selectedZone);
+  let tbody = "";
+  let rowIdx = 0;
+  let visibleCount = 0;
+
+  displayPrefixes.forEach(fp => {
+    const clr = getFmColor(fp);
+    const supMap = fmMap[fp];
+    const supNames = Object.keys(supMap).sort((a, b) => a.localeCompare(b, "th"));
+    const fmTotal = supNames.reduce((n, s) => n + supMap[s].length, 0);
+    visibleCount += fmTotal;
+
+    tbody += `<tr style="background:linear-gradient(90deg,${clr.bg},${clr.bg}cc);border-top:3px solid ${clr.border};border-bottom:2px solid ${clr.border}">
+      <td colspan="10" style="padding:0">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;
+                    background:linear-gradient(90deg,${clr.bg},transparent);
+                    border-left:5px solid ${clr.badge};">
+          <span style="display:inline-flex;align-items:center;gap:8px;
+                       background:${clr.badge};border-radius:20px;padding:5px 16px;
+                       color:#fff;font-weight:800;font-size:13px;letter-spacing:.5px;
+                       box-shadow:0 2px 8px ${clr.badge}55;white-space:nowrap;">
+            ${clr.icon} ${getFmZone(fp)}
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:5px;
+                       background:rgba(255,255,255,.15);border:1px solid ${clr.border};
+                       border-radius:12px;padding:3px 12px;
+                       color:${clr.badge};font-size:12px;font-weight:700;">
+            👥 ${fmTotal} รายการ
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:5px;
+                       background:rgba(255,255,255,.10);border:1px solid ${clr.border};
+                       border-radius:12px;padding:3px 12px;
+                       color:${clr.badge};font-size:12px;font-weight:600;opacity:.85;">
+            🗂 ${supNames.length} Supervisor
+          </span>
+        </div>
+      </td>
+    </tr>`;
+
+    supNames.forEach(sup => {
+      supMap[sup].forEach(r => {
+        const cls = rowIdx % 2 === 0 ? "arrive-row-even" : "arrive-row-odd";
+        const woClass = parseInt(r.wo_today) > 0 ? "wo-val" : "wo-zero";
+        const woDisp  = parseInt(r.wo_today) > 0 ? r.wo_today : "–";
+        tbody += `<tr class="${cls}" style="border-left:3px solid ${clr.border}40">
+          <td class="team-cell">${r.team || "–"}</td>
+          <td class="skill-cell">${r.skill || "–"}</td>
+          <td class="prov-cell">${r.province || "–"}</td>
+          <td class="sup-cell">${r.sup}</td>
+          <td class="sup-cell" style="color:#93c5fd">${r.manager || "–"}</td>
+          <td class="woid-cell">${r.woid || "–"}</td>
+          <td class="time-cell">${r.timeclock || "–"}</td>
+          <td class="lastwork-cell">🔴 ${r.lastwork || "–"}</td>
+          <td style="color:#a0c4e0">${r.lastaction || "–"}</td>
+          <td class="${woClass}">${woDisp}</td>
+        </tr>`;
+        rowIdx++;
+      });
+    });
+
+    tbody += `<tr style="background:#091628;border-bottom:2px solid ${clr.border}">
+      <td colspan="9" style="padding:7px 16px;color:${clr.badge};font-weight:700;font-size:12px;letter-spacing:.3px">
+        ${clr.icon} รวม ${getFmZone(fp)}
+      </td>
+      <td style="text-align:center;color:${clr.badge};font-weight:900;font-size:15px">${fmTotal}</td>
+    </tr>`;
+  });
+
+  tbody += `<tr class="arrive-grand-row">
+    <td colspan="9" style="color:#ffd666;font-weight:800;padding-left:18px">📊 Grand Total ทั้งหมด</td>
+    <td style="color:#ffd666;font-weight:900;font-size:18px;text-align:center">${visibleCount}</td>
+  </tr>`;
+
+  return tbody;
+}
+
+function renderArriveTable(rows, filename) {
+  const container = document.getElementById("content-arrive");
+  if (!rows || rows.length === 0) {
+    container.innerHTML = `
+      <div class="arrive-wrap">
+        <div class="arrive-outer-box">
+          <div class="arrive-header">
+            <span>🚀 1st Arrive Report</span>
+            <span class="arrive-badge">0 รายการ</span>
+          </div>
+          <div class="arrive-empty">
+            <div style="font-size:32px;margin-bottom:10px">✅</div>
+            <div style="color:#52c41a;font-weight:700;font-size:15px;margin-bottom:6px">ไม่พบรายการที่ต้องดำเนินการ</div>
+            <div>ทุก Technician มี 1st Arrived หรือ Last Work ก่อน 20:00 แล้ว</div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Build fmMap
+  const fmMap = {};
+  rows.forEach(r => {
+    const fp = r.fmprefix;
+    if (!fmMap[fp]) fmMap[fp] = {};
+    if (!fmMap[fp][r.sup]) fmMap[fp][r.sup] = [];
+    fmMap[fp][r.sup].push(r);
+  });
+  const fmPrefixes = Object.keys(fmMap).sort((a, b) => a.localeCompare(b));
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("th-TH", { hour:"2-digit", minute:"2-digit" });
+  const dateStr = now.toLocaleDateString("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" });
+
+  // Zone filter buttons (ALL + each prefix)
+  function buildZoneBtns(selected) {
+    const allClr = selected === "ALL"
+      ? "background:#1677ff;color:#fff;border-color:#1677ff"
+      : "background:transparent;color:#5a7aaa;border-color:rgba(155,123,247,.25)";
+    let btns = `<button data-zone="ALL" style="border:1px solid;border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;${allClr}">
+      🌐 ทั้งหมด (${rows.length})
+    </button>`;
+    fmPrefixes.forEach(fp => {
+      const clr = getFmColor(fp);
+      const cnt = Object.values(fmMap[fp]).reduce((n, a) => n + a.length, 0);
+      const active = selected === fp;
+      const style = active
+        ? `background:${clr.badge};color:#0a1928;border-color:${clr.badge}`
+        : `background:${clr.bg};color:${clr.badge};border-color:${clr.border}`;
+      btns += `<button data-zone="${fp}" style="border:1px solid;border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;${style}">
+        ${clr.icon} ${getFmZone(fp)} (${cnt})
+      </button>`;
+    });
+    return btns;
+  }
+
+  function render(selected) {
+    _arriveSelectedZone = selected;
+    const tbody = buildArriveTableHTML(rows, fmMap, fmPrefixes, selected);
+    document.getElementById("arrive-tbody").innerHTML = tbody;
+    // Rebuild zone buttons to update active state
+    document.getElementById("arrive-zone-btns").innerHTML = buildZoneBtns(selected);
+    // Reset horizontal scroll to show Team column
+    const tc = document.getElementById("arrive-table-container");
+    if (tc) tc.scrollLeft = 0;
+    // Re-attach events
+    attachZoneBtnEvents();
+  }
+
+  function attachZoneBtnEvents() {
+    document.querySelectorAll("#arrive-zone-btns button").forEach(btn => {
+      btn.addEventListener("click", () => render(btn.dataset.zone));
+    });
+  }
+
+  container.innerHTML = `
+    <div class="arrive-wrap">
+      <div class="arrive-outer-box">
+        <div class="arrive-header">
+          <div>
+            <span>🚀 1st Arrive Report</span>
+            <span style="font-size:11px;color:#6a80a8;margin-left:12px;font-weight:400">Last Work &lt; 20:00 &nbsp;|&nbsp; ยังไม่มี 1st Arrived &nbsp;|&nbsp; ${dateStr} ${timeStr}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:#5a7aaa">${filename || ""}</span>
+            <span class="arrive-badge">${rows.length} รายการ</span>
+            <button class="arrive-capture-btn" id="arrive-capture-btn" title="แคปภาพตาราง → Ctrl+V วางได้เลย">📷 แคปภาพ</button>
+          </div>
+        </div>
+        <!-- Zone filter buttons -->
+        <div id="arrive-zone-btns" style="background:#091628;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid rgba(180,200,255,.2)">
+          ${buildZoneBtns(_arriveSelectedZone)}
+        </div>
+        <div id="arrive-table-container" style="overflow-x:auto;width:100%;box-sizing:border-box">
+          <table class="arrive-table">
+            <thead>
+              <tr>
+                <th class="col-team" style="min-width:220px;white-space:nowrap;text-align:left">👤 Team</th>
+                <th style="text-align:center">Skill</th>
+                <th style="text-align:center">Province</th>
+                <th style="text-align:center">Supervisor</th>
+                <th style="text-align:center">Manager</th>
+                <th style="text-align:center">FM Office</th>
+                <th style="text-align:center">⏰ Clock In</th>
+                <th style="min-width:160px;text-align:center">🔴 Last Work</th>
+                <th style="text-align:center">Last Action</th>
+                <th style="text-align:center">📦 WO Today</th>
+              </tr>
+            </thead>
+            <tbody id="arrive-tbody">${buildArriveTableHTML(rows, fmMap, fmPrefixes, _arriveSelectedZone)}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  attachZoneBtnEvents();
+  setTimeout(attachArriveCaptureBtn, 150);
+}
+
+// Click on arrive upload hint also triggers file input (if shown)
+document.getElementById("content-arrive").addEventListener("click", function(e) {
+  if (e.target.closest(".arrive-upload-hint")) {
+    document.getElementById("arrive-file-input").click();
+  }
+});
+
+// Show upload hint when arrive tab is clicked and no data loaded
+document.getElementById("tab-arrive").addEventListener("click", function() {
+  if (!_arriveRows) {
+    document.getElementById("content-arrive").innerHTML = `
+      <div class="arrive-upload-hint" id="arrive-hint">
+        <div class="hint-icon">🚀</div>
+        <div class="hint-title">Upload ไฟล์ Excel สำหรับ 1st Arrive</div>
+        <div class="hint-sub">คลิกที่นี่หรือกดปุ่ม "Upload 1st Arrive" ด้านบน</div>
+        <div style="margin-top:10px;font-size:11px;color:#8a9bc0">กรองอัตโนมัติ: Last Work 06:00–19:59 · ยังไม่มี 1st Arrived or Resume · ไม่รวม Work Night</div>
+      </div>`;
+  }
+});
+
+
+// renderAll is called inside goToApp; calling here only pre-fills app while hidden is fine,
+// but we defer to next tick so DOM is fully ready.
+setTimeout(() => renderAll(currentData), 0);
+
+// ── Landing Page Logic ─────────────────────────────────────────────────────────
+function goToApp(data, filename) {
+  if (data) { currentData = data; renderAll(currentData); }
+  if (filename) document.getElementById("file-name").textContent = filename;
+  document.getElementById("landing").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  window.scrollTo(0,0);
+}
+
+// Welcome Enter button → enter app directly (no auto file-picker)
+document.getElementById("landing-upload-btn").addEventListener("click", () => {
+  goToApp(ZERO_DATA, "กรุณา Upload ไฟล์ Excel");
+});
+
+// Landing file input → load file directly from welcome screen
+document.getElementById("landing-file-input").addEventListener("change", function() {
+  if (this.files[0]) handleLandingFile(this.files[0]);
+  this.value = "";
+});
+
+function handleLandingFile(file) {
+  const btn = document.getElementById("landing-upload-btn");
+  if (btn) btn.textContent = "⏳ กำลังประมวลผล...";
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const result = processExcel(new Uint8Array(ev.target.result));
+      if (result) goToApp(result, file.name);
+      else {
+        alert("ไม่พบ Sheet 'CM - Work Order List'");
+        if (btn) btn.textContent = "เข้าสู่ระบบ";
+      }
+    } catch(e) {
+      alert("ไม่สามารถอ่านไฟล์ได้");
+      if (btn) btn.textContent = "เข้าสู่ระบบ";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── PDT Today Feature ────────────────────────────────────────────────────────
+let _pdtSelectedZone = "ALL";
+
+document.getElementById("upload-pdt-btn")?.addEventListener("click", () => {
+  document.getElementById("pdt-file-input").click();
+});
+
+document.getElementById("pdt-file-input").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
+  document.getElementById("upload-pdt-btn").textContent = "⏳ Loading...";
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      processPdtExcel(new Uint8Array(ev.target.result), file.name);
+      // Switch to PDT tab
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.getElementById("tab-pdt").classList.add("active");
+      document.getElementById("content-nsa34").style.display      = "none";
+      document.getElementById("content-nsa12sa").style.display    = "none";
+      document.getElementById("content-arrive").style.display     = "none";
+      document.getElementById("content-sa-overview").style.display = "none";
+      document.getElementById("content-pdt").style.display        = "";
+    } catch(e) {
+      alert("ไม่สามารถอ่านไฟล์ได้: " + e.message);
+    } finally {
+      document.getElementById("upload-pdt-btn").textContent = "🟡 Upload PDT Today";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  this.value = "";
+});
+
+document.getElementById("tab-pdt").addEventListener("click", function() {
+  const container = document.getElementById("content-pdt");
+  if (!container.innerHTML.trim()) {
+    container.innerHTML = `
+      <div class="pdt-upload-hint" id="pdt-upload-hint">
+        <div class="hint-icon">🟡</div>
+        <div class="hint-title">อัปโหลดไฟล์ PDT Today</div>
+        <div class="hint-sub">รองรับ .xlsx / .xls &nbsp;·&nbsp; กรองเฉพาะ PDT (Cut Off 03:00 AM) = 0</div>
+      </div>`;
+    document.getElementById("pdt-upload-hint").addEventListener("click", () => {
+      document.getElementById("pdt-file-input").click();
+    });
+  }
+});
+
+function processPdtExcel(data, filename) {
+  const wb = XLSX.read(data, { type: "array", cellDates: false });
+  const sheetName = wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws) { alert("ไม่พบ Sheet ในไฟล์"); return; }
+
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: true });
+  if (!rows.length) { alert("ไม่พบข้อมูลในไฟล์"); return; }
+
+  const sample = rows[0] || {};
+  const keys = Object.keys(sample);
+
+  function findCol(...patterns) {
+    for (const p of patterns) {
+      const found = keys.find(k => new RegExp(p, "i").test(k));
+      if (found) return found;
+    }
+    return null;
+  }
+
+  const COL_TEAM       = findCol("team") || "Team";
+  const COL_SHIFT      = findCol("shift.?status|shift") || "Shift Status";
+  const COL_CLOCKIN    = findCol("clock.?in|time.?clock") || "Clock In";
+  const COL_SKILL      = findCol("skill") || "Skill";
+  const COL_SUP        = findCol("supervisor|sup") || "Supervisor";
+  const COL_MANAGER    = findCol("manager") || "Manager";
+  const COL_PROVINCE   = findCol("province|จังหวัด") || "Province";
+  const COL_PDT        = findCol("pdt|cut.?off") || "PDT (Cut Off 03:00 AM)";
+  const COL_MANHOUR    = findCol("man.?hour|manhour") || "Man Hour";
+  const COL_WOID       = findCol("m.?offic|fm.?offic|m_offic") || "FM_Office";
+
+  // Filter: PDT = 0 only
+  const filtered = rows.filter(r => {
+    const pdt = String(r[COL_PDT] || "").trim();
+    return pdt === "0" || pdt === "" || Number(r[COL_PDT]) === 0;
+  }).filter(r => String(r[COL_TEAM] || "").trim() !== "");
+
+  // Map FM prefix for zone grouping (same as arrive)
+  const mapped = filtered.map(r => {
+    const woid = String(r[COL_WOID] || "").trim();
+    const fp = resolveZone(String(r[COL_TEAM]||""), String(r[COL_PROVINCE]||""), woid);
+    return {
+      team:     String(r[COL_TEAM]     || "").trim(),
+      shift:    String(r[COL_SHIFT]    || "").trim(),
+      clockin:  excelDateTimeToFull(r[COL_CLOCKIN]) || String(r[COL_CLOCKIN] || "").trim(),
+      skill:    String(r[COL_SKILL]    || "").trim(),
+      sup:      String(r[COL_SUP]      || "").trim(),
+      manager:  String(r[COL_MANAGER]  || "").trim(),
+      province: String(r[COL_PROVINCE] || "").trim(),
+      pdt:      String(r[COL_PDT]      || "0").trim(),
+      manhour:  String(r[COL_MANHOUR]  || "0").trim(),
+      fmprefix: fp,
+      woid:     woid,
+    };
+  });
+
+  // Show only ONDUTY shift
+  const ondutyMapped = mapped.filter(r => {
+    if ((r.shift || "").toUpperCase() !== "ONDUTY") return false;
+    const ci = (r.clockin || "").trim();
+    if (!ci || ci === "–" || ci === "") return false;
+    const timePart = ci.slice(11, 16) || ci;
+    if (timePart === "00:00") return false;
+    return true;
+  });
+  renderPdtTable(ondutyMapped, filename);
+}
+
+function renderPdtTable(rows, filename) {
+  const container = document.getElementById("content-pdt");
+
+  if (!rows || rows.length === 0) {
+    container.innerHTML = `
+      <div class="pdt-wrap">
+        <div class="pdt-header"><span>🟡 PDT Report</span><span class="pdt-badge">0 รายการ</span></div>
+        <div class="pdt-empty">
+          <div style="font-size:32px;margin-bottom:10px">✅</div>
+          <div style="color:#b8860b;font-weight:700;font-size:15px;margin-bottom:6px">ไม่พบรายการ PDT = 0</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("th-TH", { hour:"2-digit", minute:"2-digit" });
+  const dateStr = now.toLocaleDateString("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" });
+
+  // ── Build zone map (same as arrive) ──
+  const zoneMap = {};
+  rows.forEach(r => {
+    const fp = r.fmprefix || "??";
+    r._zone = fp;
+    if (!zoneMap[fp]) zoneMap[fp] = {};
+    if (!zoneMap[fp][r.sup]) zoneMap[fp][r.sup] = [];
+    zoneMap[fp][r.sup].push(r);
+  });
+  const zonePrefixes = Object.keys(zoneMap).sort((a,b) => a.localeCompare(b));
+
+  function buildPdtTableHTML(selectedZone) {
+    const displayPrefixes = selectedZone === "ALL" ? zonePrefixes : zonePrefixes.filter(fp => fp === selectedZone);
+    let tbody = "";
+    let rowIdx = 0;
+    let visibleCount = 0;
+
+    displayPrefixes.forEach(fp => {
+      const clr = getFmColor(fp);
+      const supMap = zoneMap[fp];
+      const supNames = Object.keys(supMap).sort((a, b) => {
+        const aE = a.trim() === "" || a === "(ไม่ระบุ)";
+        const bE = b.trim() === "" || b === "(ไม่ระบุ)";
+        if (!aE && bE) return -1;
+        if (aE && !bE) return 1;
+        return a.localeCompare(b, "th");
+      });
+      const zoneTotal = supNames.reduce((n, s) => n + supMap[s].length, 0);
+      visibleCount += zoneTotal;
+
+      // Zone group header
+      tbody += `<tr class="pdt-zone-row" style="background:linear-gradient(90deg,${clr.bg},${clr.bg}cc);border-top:3px solid ${clr.border};border-bottom:2px solid ${clr.border}">
+        <td colspan="8" style="padding:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;
+                      background:linear-gradient(90deg,${clr.bg},transparent);
+                      border-left:5px solid ${clr.badge};">
+            <span style="display:inline-flex;align-items:center;gap:8px;
+                         background:${clr.badge};border-radius:20px;padding:5px 16px;
+                         color:#fff;font-weight:800;font-size:13px;letter-spacing:.5px;
+                         box-shadow:0 2px 8px ${clr.badge}55;white-space:nowrap;">
+              ${clr.icon} ${getFmZone(fp)}
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;
+                         background:rgba(255,255,255,.15);border:1px solid ${clr.border};
+                         border-radius:12px;padding:3px 12px;
+                         color:${clr.badge};font-size:12px;font-weight:700;">
+              👥 ${zoneTotal} ทีม
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;
+                         background:rgba(255,255,255,.10);border:1px solid ${clr.border};
+                         border-radius:12px;padding:3px 12px;
+                         color:${clr.badge};font-size:12px;font-weight:600;opacity:.85;">
+              🗂 ${supNames.length} Supervisor
+            </span>
+          </div>
+        </td>
+      </tr>`;
+
+      supNames.forEach(sup => {
+        // Sort rows: non-empty team A-Z first, then empty/blank last
+        const sortedRows = [...supMap[sup]].sort((a, b) => {
+          const aTeam = (a.team || "").trim();
+          const bTeam = (b.team || "").trim();
+          if (aTeam && !bTeam) return -1;
+          if (!aTeam && bTeam) return 1;
+          if (aTeam && bTeam) return aTeam.localeCompare(bTeam, "th");
+          // both empty — sort by skill, sup, province
+          const aSup = (a.sup || "").trim(); const bSup = (b.sup || "").trim();
+          if (aSup && !bSup) return -1; if (!aSup && bSup) return 1;
+          return aSup.localeCompare(bSup, "th");
+        });
+        sortedRows.forEach(r => {
+          const rowClass = rowIdx % 2 === 0 ? "pdt-row-even" : "pdt-row-odd";
+          const pdtVal = r.pdt === "0" || r.pdt === "" ? "0" : r.pdt;
+          const mhVal  = r.manhour === "0" || r.manhour === "" ? "0" : r.manhour;
+          tbody += `<tr class="${rowClass}" style="border-left:3px solid ${clr.border}50">
+            <td class="pdt-team-cell">${r.team}</td>
+            <td class="pdt-shift-cell">${r.shift}</td>
+            <td class="pdt-time-cell">${r.clockin}</td>
+            <td class="pdt-skill-cell">${r.skill}</td>
+            <td class="pdt-sup-cell">${r.sup}</td>
+            <td class="pdt-prov-cell">${r.province}</td>
+            <td class="pdt-pdt-cell">${pdtVal}</td>
+            <td class="pdt-mh-cell">${mhVal}</td>
+          </tr>`;
+          rowIdx++;
+        });
+      });
+
+      // Zone sub-total
+      tbody += `<tr style="background:#1a1000;border-bottom:2px solid ${clr.border}">
+        <td colspan="7" style="padding:7px 16px;color:${clr.badge};font-weight:700;font-size:12px;text-align:right">
+          ${clr.icon} รวม ${getFmZone(fp)}
+        </td>
+        <td style="text-align:center;color:${clr.badge};font-weight:900;font-size:15px">${zoneTotal}</td>
+      </tr>`;
+    });
+
+    tbody += `<tr class="pdt-grand-row">
+      <td colspan="7" style="padding-right:18px;text-align:right;font-weight:800">📊 Grand Total ทั้งหมด</td>
+      <td style="font-weight:900;font-size:18px;text-align:center">${visibleCount}</td>
+    </tr>`;
+    return tbody;
+  }
+
+  // Zone filter buttons
+  function buildPdtZoneBtns(selected) {
+    const allClr = selected === "ALL"
+      ? "background:#b8860b;color:#1a0800;border-color:#e6c200"
+      : "background:transparent;color:#c8980a;border-color:#5a3e00";
+    let btns = `<button data-zone="ALL" style="border:1px solid;border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;${allClr}">
+      🌐 ทั้งหมด (${rows.length})
+    </button>`;
+    zonePrefixes.forEach(fp => {
+      const clr = getFmColor(fp);
+      const cnt = Object.values(zoneMap[fp]).reduce((n, a) => n + a.length, 0);
+      const active = selected === fp;
+      const style = active
+        ? `background:${clr.badge};color:#0a1928;border-color:${clr.badge}`
+        : `background:${clr.bg};color:${clr.badge};border-color:${clr.border}`;
+      btns += `<button data-zone="${fp}" style="border:1px solid;border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;${style}">
+        ${clr.icon} ${getFmZone(fp)} (${cnt})
+      </button>`;
+    });
+    return btns;
+  }
+
+  function renderPdtZone(selected) {
+    _pdtSelectedZone = selected;
+    document.getElementById("pdt-tbody").innerHTML = buildPdtTableHTML(selected);
+    document.getElementById("pdt-zone-btns").innerHTML = buildPdtZoneBtns(selected);
+    attachPdtZoneBtns();
+  }
+
+  function attachPdtZoneBtns() {
+    document.querySelectorAll("#pdt-zone-btns button").forEach(btn => {
+      btn.addEventListener("click", () => renderPdtZone(btn.dataset.zone));
+    });
+  }
+
+  container.innerHTML = `
+    <div class="pdt-wrap">
+      <div id="pdt-capture-frame">
+        <!-- Title bar (captured in screenshot) -->
+        <div class="pdt-capture-title-bar">
+          <div>
+            <div class="pdt-capture-title-main">🟡 PDT Report</div>
+            <div class="pdt-capture-title-sub">${filename || ""}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="pdt-capture-timestamp">
+              <div class="ts-label">📅 วันที่ / เวลา</div>
+              <div class="ts-val">${dateStr} ${timeStr}</div>
+              <div style="margin-top:4px">
+                <span class="pdt-badge">${rows.length} รายการ</span>
+              </div>
+            </div>
+            <button class="pdt-capture-btn" id="pdt-capture-btn" title="แคปภาพทั้งตาราง — ข้อมูลครบถ้วน แม้หน้าจะย่อ">📷 แคปภาพ</button>
+          </div>
+        </div>
+        <!-- Zone filter buttons (outside capture but inside frame) -->
+        <div id="pdt-zone-btns" style="background:#1a0e00;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid #5a3e00">
+          ${buildPdtZoneBtns(_pdtSelectedZone)}
+        </div>
+        <div id="pdt-table-container" style="overflow-x:auto;width:100%;box-sizing:border-box">
+          <table class="pdt-table" style="table-layout:fixed;width:100%">
+            <thead>
+              <tr>
+                <th style="width:28%;text-align:center">👤 Team</th>
+                <th style="width:7%;text-align:center">Shift</th>
+                <th style="width:12%;text-align:center">⏰ Clock In</th>
+                <th style="width:6%;text-align:center">Skill</th>
+                <th style="width:10%;text-align:center">Supervisor</th>
+                <th style="width:9%;text-align:center">Province</th>
+                <th style="width:16%;text-align:center">PDT (Cut Off 03:00 AM)</th>
+                <th style="width:12%;text-align:center">Man Hour</th>
+              </tr>
+            </thead>
+            <tbody id="pdt-tbody">${buildPdtTableHTML(_pdtSelectedZone)}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  attachPdtZoneBtns();
+  setTimeout(attachPdtCaptureBtn, 50);
+}
+
+// ── PDT Capture to Clipboard ─────────────────────────────────────────────────
+// Use event delegation on content-pdt so it survives re-renders
+document.getElementById("content-pdt").addEventListener("click", async function(e) {
+  const btn = e.target.closest(".pdt-capture-btn");
+  if (!btn) return;
+
+  const frame = document.getElementById("pdt-capture-frame");
+  if (!frame) return;
+
+  const origText = btn.textContent;
+  btn.textContent = "⏳ กำลังแคป...";
+  btn.disabled = true;
+  btn.className = "pdt-capture-btn";
+
+  // Hide zone-filter buttons from capture
+  const zoneBtns = document.getElementById("pdt-zone-btns");
+  const origZoneDisplay = zoneBtns ? zoneBtns.style.display : "";
+  if (zoneBtns) zoneBtns.style.display = "none";
+
+  // ── Strategy: expand all overflow, move frame off-screen, capture full size ──
+  const allEls = [frame, ...frame.querySelectorAll("*")];
+  const savedStyles = allEls.map(el => ({
+    el,
+    maxHeight: el.style.maxHeight,
+    overflow:  el.style.overflow,
+    overflowX: el.style.overflowX,
+    overflowY: el.style.overflowY,
+    width:     el.style.width,
+  }));
+  allEls.forEach(el => {
+    el.style.maxHeight = "none";
+    el.style.overflow  = "visible";
+    el.style.overflowX = "visible";
+    el.style.overflowY = "visible";
+  });
+
+  // Fix table layout so columns expand to full content width
+  const table = frame.querySelector(".pdt-table");
+  const origTableLayout = table ? table.style.tableLayout : "";
+  const origTableWidth  = table ? table.style.width : "";
+  if (table) { table.style.tableLayout = "auto"; table.style.width = "max-content"; }
+
+  // Force td/th: no clipping
+  frame.querySelectorAll("td, th").forEach(el => {
+    el.style.whiteSpace   = "normal";
+    el.style.overflow     = "visible";
+    el.style.textOverflow = "clip";
+    el.style.width        = "";
+  });
+
+  // Save original position and move off-screen (visible but outside viewport)
+  const origPos = {
+    position:  frame.style.position,
+    top:       frame.style.top,
+    left:      frame.style.left,
+    zIndex:    frame.style.zIndex,
+    width:     frame.style.width,
+  };
+  frame.style.position = "fixed";
+  frame.style.top      = "0px";
+  frame.style.left     = "-99999px";
+  frame.style.zIndex   = "-1";
+  frame.style.width    = "max-content";
+
+  // Wait for browser re-layout
+  await new Promise(r => setTimeout(r, 200));
+
+  const fullW = frame.scrollWidth;
+  const fullH = frame.scrollHeight;
+
+  function restoreAll() {
+    frame.querySelectorAll("td, th").forEach(el => {
+      el.style.whiteSpace   = "";
+      el.style.overflow     = "";
+      el.style.textOverflow = "";
+      el.style.width        = "";
+    });
+    if (table) { table.style.tableLayout = origTableLayout; table.style.width = origTableWidth; }
+    savedStyles.forEach(s => {
+      s.el.style.maxHeight = s.maxHeight;
+      s.el.style.overflow  = s.overflow;
+      s.el.style.overflowX = s.overflowX;
+      s.el.style.overflowY = s.overflowY;
+      s.el.style.width     = s.width;
+    });
+    Object.entries(origPos).forEach(([k, v]) => frame.style[k] = v);
+    if (zoneBtns) zoneBtns.style.display = origZoneDisplay;
+  }
+
+  try {
+    const canvas = await html2canvas(frame, {
+      backgroundColor: "#1a0e00",
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width:  fullW,
+      height: fullH,
+      windowWidth:  fullW,
+      windowHeight: fullH,
+      logging: false,
+    });
+
+    restoreAll();
+
+    canvas.toBlob(async (blob) => {
+      let saved = false;
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        btn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
+        btn.className   = "pdt-capture-btn success";
+        saved = true;
+      } catch (_) {}
+
+      if (!saved) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "PDT_Report_" + new Date().toISOString().slice(0,10) + ".png";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        btn.textContent = "📥 บันทึกไฟล์แล้ว";
+        btn.className   = "pdt-capture-btn success";
+      }
+
+      btn.disabled = false;
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.className   = "pdt-capture-btn";
+      }, 4000);
+    }, "image/png");
+
+  } catch (err) {
+    restoreAll();
+    console.error("PDT Capture error:", err);
+    btn.textContent = "❌ แคปไม่สำเร็จ: " + err.message;
+    btn.className   = "pdt-capture-btn error";
+    btn.disabled    = false;
+    setTimeout(() => {
+      btn.textContent = origText;
+      btn.className   = "pdt-capture-btn";
+    }, 4000);
+  }
+});
+
+function attachPdtCaptureBtn() { /* no-op: using event delegation above */ }
+
+// ── Arrive Capture to Clipboard ───────────────────────────────────────────────
+function attachArriveCaptureBtn() {
+  const btn = document.getElementById("arrive-capture-btn");
+  if (!btn) return;
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  newBtn.addEventListener("click", async () => {
+    const arriveWrap = document.querySelector("#content-arrive .arrive-outer-box");
+    if (!arriveWrap) return;
+
+    newBtn.textContent = "⏳ กำลังแคป...";
+    newBtn.disabled = true;
+    newBtn.className = "arrive-capture-btn";
+
+    const zoneBtnsEl = document.getElementById("arrive-zone-btns");
+    const origZoneDisplay = zoneBtnsEl ? zoneBtnsEl.style.display : "";
+    if (zoneBtnsEl) zoneBtnsEl.style.display = "none";
+
+    // Save original frame styles
+    const origStyle = {
+      position:     arriveWrap.style.position,
+      top:          arriveWrap.style.top,
+      left:         arriveWrap.style.left,
+      zIndex:       arriveWrap.style.zIndex,
+      width:        arriveWrap.style.width,
+      overflow:     arriveWrap.style.overflow,
+    };
+
+    // Save/reset overflow on all children
+    const allEls = [arriveWrap, ...arriveWrap.querySelectorAll("*")];
+    const savedStyles = allEls.map(el => ({
+      el,
+      maxHeight: el.style.maxHeight,
+      overflow:  el.style.overflow,
+      overflowX: el.style.overflowX,
+      overflowY: el.style.overflowY,
+      width:     el.style.width,
+    }));
+    allEls.forEach(el => {
+      el.style.maxHeight = "none";
+      el.style.overflow  = "visible";
+      el.style.overflowX = "visible";
+      el.style.overflowY = "visible";
+    });
+
+    // Force td/th: no clipping so all text visible
+    const cells = arriveWrap.querySelectorAll("td, th");
+    cells.forEach(el => {
+      el.style.whiteSpace   = "normal";
+      el.style.overflow     = "visible";
+      el.style.textOverflow = "clip";
+    });
+
+    // Move frame off-screen (still visible to html2canvas)
+    arriveWrap.style.position = "fixed";
+    arriveWrap.style.top      = "0px";
+    arriveWrap.style.left     = "-99999px";
+    arriveWrap.style.zIndex   = "-1";
+    arriveWrap.style.width    = "max-content";
+
+    await new Promise(r => setTimeout(r, 180));
+
+    function restoreAll() {
+      cells.forEach(el => {
+        el.style.whiteSpace   = "";
+        el.style.overflow     = "";
+        el.style.textOverflow = "";
+      });
+      savedStyles.forEach(s => {
+        s.el.style.maxHeight = s.maxHeight;
+        s.el.style.overflow  = s.overflow;
+        s.el.style.overflowX = s.overflowX;
+        s.el.style.overflowY = s.overflowY;
+        s.el.style.width     = s.width;
+      });
+      Object.entries(origStyle).forEach(([k, v]) => arriveWrap.style[k] = v);
+      if (zoneBtnsEl) zoneBtnsEl.style.display = origZoneDisplay;
+    }
+
+    try {
+      const fullW = arriveWrap.scrollWidth;
+      const fullH = arriveWrap.scrollHeight;
+
+      const tableCanvas = await html2canvas(arriveWrap, {
+        backgroundColor: "#f0f4ff",
+        scale: 2, useCORS: true, allowTaint: true,
+        scrollX: 0, scrollY: 0,
+        x: 0, y: 0,
+        width:  fullW,
+        height: fullH,
+        windowWidth:  fullW + 400,
+        windowHeight: fullH + 400,
+        logging: false,
+      });
+
+      restoreAll();
+
+      const SCALE  = 2, PAD = 24*SCALE, HDR_H = 68*SCALE, STRIPE_H = 5*SCALE;
+      const RADIUS = 12*SCALE, BORDER = 3*SCALE;
+      const tW = tableCanvas.width, tH = tableCanvas.height;
+      const totalW = tW + PAD*2, totalH = tH + HDR_H + STRIPE_H + PAD*2;
+
+      const out = document.createElement("canvas");
+      out.width = totalW; out.height = totalH;
+      const ctx = out.getContext("2d");
+
+      function roundRect(x,y,w,h,r){
+        ctx.beginPath();
+        ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+        ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+        ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+        ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+      }
+
+      ctx.shadowColor = "rgba(22,119,255,0.45)"; ctx.shadowBlur = 24*SCALE;
+      roundRect(PAD/2,PAD/2,totalW-PAD,totalH-PAD,RADIUS);
+      ctx.fillStyle = "#f0f4ff"; ctx.fill();
+      ctx.shadowBlur = 0;
+      roundRect(PAD/2,PAD/2,totalW-PAD,totalH-PAD,RADIUS);
+      ctx.strokeStyle = "#1677ff"; ctx.lineWidth = BORDER; ctx.stroke();
+
+      const hg = ctx.createLinearGradient(0,0,totalW,0);
+      hg.addColorStop(0,"#0d2244"); hg.addColorStop(1,"#0f2d5a");
+      ctx.fillStyle = hg;
+      ctx.save(); roundRect(PAD/2,PAD/2,totalW-PAD,totalH-PAD,RADIUS); ctx.clip();
+      ctx.fillRect(PAD/2,PAD/2,totalW-PAD,HDR_H); ctx.restore();
+
+      const sg = ctx.createLinearGradient(PAD/2,0,totalW-PAD/2,0);
+      sg.addColorStop(0,"#1677ff"); sg.addColorStop(0.5,"#7ee8fa"); sg.addColorStop(1,"#1677ff");
+      ctx.fillStyle = sg;
+      ctx.fillRect(PAD/2+BORDER, PAD/2+HDR_H, totalW-PAD-BORDER*2, STRIPE_H);
+
+      ctx.fillStyle = "#1677ff";
+      ctx.beginPath(); ctx.arc(PAD/2+32*SCALE, PAD/2+HDR_H/2, 8*SCALE, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#7ee8fa";
+      ctx.beginPath(); ctx.arc(PAD/2+32*SCALE, PAD/2+HDR_H/2, 4*SCALE, 0, Math.PI*2); ctx.fill();
+
+      ctx.textBaseline = "middle";
+      const midY = PAD/2 + HDR_H/2;
+      ctx.font = `800 ${26*SCALE}px 'Segoe UI',sans-serif`;
+      ctx.fillStyle = "#7ee8fa"; ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 4*SCALE;
+      ctx.fillText("1st Arrive Report", PAD/2+50*SCALE, midY);
+      ctx.shadowBlur = 0;
+
+      const now = new Date();
+      const dtStr = now.toLocaleDateString("th-TH",{day:"2-digit",month:"2-digit",year:"numeric"})
+                  + "  " + now.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+      ctx.font = `600 ${14*SCALE}px 'Segoe UI',sans-serif`;
+      ctx.fillStyle = "rgba(126,232,250,0.7)";
+      const dw = ctx.measureText(dtStr).width;
+      ctx.fillText(dtStr, totalW-PAD/2-BORDER-dw-16*SCALE, midY);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(PAD/2+BORDER, PAD/2+HDR_H+STRIPE_H, totalW-PAD-BORDER*2, totalH-PAD-HDR_H-STRIPE_H-BORDER);
+      ctx.clip();
+      ctx.drawImage(tableCanvas, PAD, PAD/2+HDR_H+STRIPE_H, tW, tH);
+      ctx.restore();
+
+      out.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
+          newBtn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
+          newBtn.className   = "arrive-capture-btn success";
+        } catch {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = "1stArrive_" + new Date().toISOString().slice(0,10) + ".png";
+          a.click(); setTimeout(() => URL.revokeObjectURL(url), 3000);
+          newBtn.textContent = "📥 บันทึกไฟล์แล้ว";
+          newBtn.className   = "arrive-capture-btn success";
+        }
+        newBtn.disabled = false;
+        setTimeout(() => { newBtn.textContent = "📷 แคปภาพ"; newBtn.className = "arrive-capture-btn"; }, 4000);
+      }, "image/png");
+
+    } catch(err) {
+      try { restoreAll(); } catch(_) {}
+      console.error("Arrive capture:", err);
+      newBtn.textContent = "❌ แคปไม่สำเร็จ: " + err.message;
+      newBtn.className = "arrive-capture-btn error";
+      newBtn.disabled = false;
+      setTimeout(() => { newBtn.textContent = "📷 แคปภาพ"; newBtn.className = "arrive-capture-btn"; }, 3000);
+    }
+  });
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// SA / NSA Overview — Still not Accept + Dispatched OverDue (raw Excel rows)
+// ══════════════════════════════════════════════════════════════
+// Columns to display (matching the Excel screenshot)
+const SA_OV_COLS = [
+  { key:"Work Order ID",       label:"Work Order ID",        w:"140px" },
+  { key:"Source Ticket ID",    label:"Source Ticket ID",     w:"120px" },
+  { key:"SDM TT",              label:"SDM TT",               w:"110px" },
+  { key:"External Ticket ID",  label:"External Ticket ID",   w:"120px" },
+  { key:"Region",              label:"Region",               w:"70px"  },
+  { key:"Province",            label:"Province",             w:"80px"  },
+  { key:"Still",               label:"Still",                w:"80px"  },
+  { key:"Team",                label:"Team",                 w:"220px" },
+  { key:"Site ID",             label:"Site ID",              w:"100px" },
+  { key:"Activity No",         label:"Activity No",          w:"100px" },
+  { key:"Status",              label:"Status",               w:"90px"  },
+  { key:"Severity",            label:"Severity",             w:"80px"  },
+  { key:"Created Time",        label:"Created Time",         w:"140px" },
+  { key:"Require Finish Time", label:"Require Finish Time",  w:"140px" },
+  { key:"SLA",                 label:"SLA",                  w:"160px" },
+  { key:"Dispatched",          label:"Dispatched",           w:"140px" },
+  { key:"Acknowledge",         label:"Acknowledge",          w:"260px" },
+  { key:"Subject",             label:"Subject",              w:"260px" },
+];
+
+function buildRawTable(rawRows, themeClass) {
+  const isRed     = themeClass === "red";
+  const headerBg  = isRed ? "linear-gradient(90deg,#fef2f2,#fee2e2)" : "linear-gradient(90deg,#eff6ff,#dbeafe)";
+  const borderClr = isRed ? "rgba(252,165,165,.4)" : "rgba(147,197,253,.4)";
+  const evenBg    = isRed ? "#fff5f5" : "#f8faff";
+  const oddBg     = isRed ? "#fff0f0" : "#f0f6ff";
+  const hoverBg   = isRed ? "#fee2e2" : "#dbeafe";
+  const accentClr = isRed ? "#ef4444" : "#3b82f6";
+  const hdrColor  = isRed ? "#b91c1c" : "#1d4ed8";
+  const statusGroupBg = isRed ? "#fef2f2" : "#eff6ff";
+
+  if (!rawRows || rawRows.length === 0) {
+    return `<div style="padding:32px;text-align:center;color:#8a9bc0;background:${evenBg};border-radius:0 0 10px 10px;font-size:14px">
+      ⚠️ ไม่พบข้อมูล — กรุณา Upload ไฟล์ Excel ก่อน
+    </div>`;
+  }
+
+  const statusOrder = { "Arrived":0, "Departed":1, "Dispatched":2 };
+  const sorted = [...rawRows].sort((a,b) => {
+    const sa = statusOrder[a.Status] ?? 9;
+    const sb = statusOrder[b.Status] ?? 9;
+    if (sa !== sb) return sa - sb;
+    // Sort by Created Time descending (newest first)
+    const ta = new Date(a["Created Time"] || 0).getTime();
+    const tb = new Date(b["Created Time"] || 0).getTime();
+    return tb - ta;
+  });
+
+  let lastStatus = null;
+  let rowNum = 0;
+  let tbody = "";
+
+  sorted.forEach((r, i) => {
+    if (r.Status !== lastStatus) {
+      lastStatus = r.Status;
+      const cnt = sorted.filter(x => x.Status === r.Status).length;
+      tbody += `<tr style="background:${statusGroupBg};border-top:2px solid ${borderClr}">
+        <td class="ov-row-num" style="background:${statusGroupBg}"></td>
+        <td colspan="${SA_OV_COLS.length}" style="padding:8px 14px;color:${hdrColor};font-weight:800;font-size:13px;letter-spacing:.3px">
+          ⚡ ${r.Status}
+          <span style="background:${isRed?'rgba(239,68,68,.1)':'rgba(59,130,246,.1)'};border-radius:12px;padding:2px 10px;font-size:11px;margin-left:8px">${cnt} รายการ</span>
+        </td>
+      </tr>`;
+    }
+    rowNum++;
+    const bg = i % 2 === 0 ? evenBg : oddBg;
+    const isOD1 = (r.SLA||"").includes("Over Due > 1");
+    tbody += `<tr style="background:${bg}" onmouseover="this.style.background='${hoverBg}'" onmouseout="this.style.background='${bg}'">
+      <td class="ov-row-num">${rowNum}</td>`;
+    SA_OV_COLS.forEach(col => {
+      let val = r[col.key] !== undefined ? r[col.key] : "";
+      let style = `padding:6px 10px;white-space:nowrap;min-width:${col.w};font-size:12px;`;
+      if (col.key === "SLA") {
+        style += isOD1 ? "color:#dc2626;font-weight:700;" : "color:#d97706;font-weight:600;";
+      } else if (col.key === "Status") {
+        const sc = {"Dispatched":"#d97706","Arrived":"#16a34a","Departed":"#2563eb"}[val] || "#374151";
+        style += `color:${sc};font-weight:700;`;
+      } else if (col.key === "Severity") {
+        style += "color:#7c3aed;font-weight:700;text-align:center;";
+      } else if (col.key === "Work Order ID") {
+        style += "color:#1d4ed8;font-family:monospace;font-size:11px;";
+      } else if (col.key === "Team") {
+        style += "color:#1e3a5f;font-weight:500;";
+      } else if (col.key === "Acknowledge") {
+        style += "color:#92400e;font-size:11px;";
+      } else {
+        style += "color:#374151;";
+      }
+      // For certain cols, show blank instead of "–" when empty
+      const blankIfEmpty = ["Source Ticket ID","SDM TT","External Ticket ID","Activity No","Still"];
+      const displayVal = (!val || String(val).trim() === "") && blankIfEmpty.includes(col.key) ? "" : (val || "–");
+      tbody += `<td style="${style}" title="${String(val).replace(/"/g,"&quot;")}">${displayVal}</td>`;
+    });
+    tbody += `</tr>`;
+  });
+
+  tbody += `<tr style="background:${isRed?"#fef2f2":"#eff6ff"};border-top:2px solid ${accentClr}">
+    <td class="ov-row-num" style="background:${isRed?"#fef2f2":"#eff6ff"}">—</td>
+    <td colspan="${SA_OV_COLS.length}" style="padding:10px 14px;color:${isRed?"#b91c1c":"#1d4ed8"};font-weight:800;font-size:13px;text-align:right">
+      📊 Grand Total — ${sorted.length} รายการ
+    </td>
+  </tr>`;
+
+  const thStyle = `padding:9px 10px;text-align:left;font-weight:800;font-size:12px;color:${hdrColor};white-space:nowrap;border-bottom:2px solid ${borderClr};background:${isRed?"#fee2e2":"#dbeafe"};`;
+
+  return `<div class="ov-sticky-table-wrap" style="border:1px solid ${borderClr};border-top:none;border-radius:0 0 10px 10px;background:#fff">
+    <table class="ov-sticky-table" style="width:100%;border-collapse:collapse;font-size:12px;background:#fff">
+      <thead>
+        <tr style="background:${headerBg}">
+          <th class="ov-row-num" style="${thStyle}width:40px;text-align:center">#</th>
+          ${SA_OV_COLS.map(col => `<th style="${thStyle}min-width:${col.w}">${col.label}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>${tbody}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderSaOverview(data) {
+  const container = document.getElementById("content-sa-overview");
+  if (!container) return;
+
+  const OVERDUE_SLAS = ["Over Due > 1 Hr.", "Over Due with in 1 Hr."];
+
+  const now = new Date();
+  const ts = now.toLocaleDateString("th-TH",{day:"2-digit",month:"2-digit",year:"numeric"}) + " " +
+             now.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+
+  // Check raw rows available
+  const hasRaw = _rawAllRows && _rawAllRows.length > 0;
+
+  let dispatchedODRows = [];
+
+  if (hasRaw) {
+    // Filter SA1-4, NSA1-2 only — Dispatched + OverDue
+    const sa12Rows = _rawAllRows.filter(r => classifySev(r.Severity || "") === "NSA12_SA");
+    dispatchedODRows = sa12Rows.filter(r => r.Status === "Dispatched" && OVERDUE_SLAS.includes(r.SLA) && String(r["Source Ticket ID"] || "").trim() !== "");
+  } else {
+    // No raw data — show message
+    container.innerHTML = `
+      <div style="padding:48px;text-align:center;color:#6a80a8;font-size:14px">
+        <div style="font-size:36px;margin-bottom:12px">📂</div>
+        <div style="font-weight:700;color:#7ee8fa;margin-bottom:8px">กรุณา Upload ไฟล์ Excel ก่อน</div>
+        <div>ตารางนี้ต้องการข้อมูล Raw Data จากไฟล์ Excel (CM - Work Order List)</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="margin-bottom:12px;font-size:11px;color:#6a80a8;text-align:right">${ts}</div>
+
+    <!-- Dispatched OverDue (red) -->
+    <div class="ov-wrap">
+      <div id="ov-capture-2" class="ov-capture-frame">
+        <div class="ov-title-bar red">
+          <div>
+            <div class="ov-title-main">⚠️ Dispatched — Pending OverSLA</div>
+            <div class="ov-title-sub">SA1-4, NSA1-2 &nbsp;·&nbsp; Status: Dispatched + OverDue</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap">
+            <div class="ov-ts-box">
+              <div class="ov-ts-label">📅 วันที่ / เวลา</div>
+              <div class="ov-ts-val">${ts}</div>
+              <div style="margin-top:4px"><span class="ov-badge red">${dispatchedODRows.length} รายการ</span></div>
+            </div>
+            <button class="ov-capture-btn red" data-target="ov-capture-2" data-fname="DispatchedOverDue" title="แคปภาพตาราง">📷 แคปภาพ</button>
+          </div>
+        </div>
+        ${buildRawTable(dispatchedODRows, "red")}
+      </div>
+    </div>`;
+}
+
+// ── SA Overview capture (event delegation) ───────────────────────────────────
+document.getElementById("content-sa-overview").addEventListener("click", async function(e) {
+  const btn = e.target.closest(".ov-capture-btn");
+  if (!btn) return;
+
+  const targetId = btn.dataset.target;
+  const fname    = btn.dataset.fname || "SA_Overview";
+  const frame    = document.getElementById(targetId);
+  if (!frame) return;
+
+  const origClass = btn.className;
+  btn.textContent = "⏳ กำลังแคป...";
+  btn.disabled = true;
+
+  try {
+    // ── Strategy: move frame itself off-screen, remove all overflow, capture, restore ──
+    // Save original styles
+    const origStyle = {
+      position:  frame.style.position,
+      top:       frame.style.top,
+      left:      frame.style.left,
+      zIndex:    frame.style.zIndex,
+      overflow:  frame.style.overflow,
+      borderRadius: frame.style.borderRadius,
+    };
+
+    // Collect all scrollable children and save/reset their overflow
+    const scrollEls = [frame, ...frame.querySelectorAll("*")];
+    const savedStyles = scrollEls.map(el => ({
+      el,
+      maxHeight: el.style.maxHeight,
+      overflow:  el.style.overflow,
+      overflowX: el.style.overflowX,
+      overflowY: el.style.overflowY,
+    }));
+    scrollEls.forEach(el => {
+      el.style.maxHeight = "none";
+      el.style.overflow  = "visible";
+      el.style.overflowX = "visible";
+      el.style.overflowY = "visible";
+    });
+
+    // Move frame off-screen (not hidden — html2canvas needs visible)
+    frame.style.position = "fixed";
+    frame.style.top      = "0px";
+    frame.style.left     = "-99999px";
+    frame.style.zIndex   = "-1";
+
+    // Force all td/th to show full text (no clip)
+    frame.querySelectorAll("td, th").forEach(el => {
+      el.style.whiteSpace   = "normal";
+      el.style.overflow     = "visible";
+      el.style.textOverflow = "clip";
+    });
+
+    // Wait for browser to re-layout
+    await new Promise(r => setTimeout(r, 150));
+
+    const fullW = frame.scrollWidth;
+    const fullH = frame.scrollHeight;
+
+    const canvas = await html2canvas(frame, {
+      backgroundColor: "#0a0505",
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width:  fullW,
+      height: fullH,
+      windowWidth:  fullW,
+      windowHeight: fullH,
+      logging: false,
+    });
+
+    // Restore td/th to original
+    frame.querySelectorAll("td, th").forEach(el => {
+      el.style.whiteSpace   = "";
+      el.style.overflow     = "";
+      el.style.textOverflow = "";
+    });
+
+    // Restore all styles
+    savedStyles.forEach(s => {
+      s.el.style.maxHeight = s.maxHeight;
+      s.el.style.overflow  = s.overflow;
+      s.el.style.overflowX = s.overflowX;
+      s.el.style.overflowY = s.overflowY;
+    });
+    Object.entries(origStyle).forEach(([k, v]) => frame.style[k] = v);
+
+    canvas.toBlob(async (blob) => {
+      let saved = false;
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        btn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
+        btn.className = origClass.replace(/red|blue/g,"") + " success";
+        saved = true;
+      } catch (_) {}
+
+      if (!saved) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = fname + "_" + new Date().toISOString().slice(0,10) + ".png";
+        a.click(); setTimeout(() => URL.revokeObjectURL(url), 3000);
+        btn.textContent = "📥 บันทึกไฟล์แล้ว";
+        btn.className = origClass.replace(/red|blue/g,"") + " success";
+      }
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = "📷 แคปภาพ"; btn.className = origClass; }, 4000);
+    }, "image/png");
+
+  } catch (err) {
+    // Restore on error
+    try {
+      if (typeof savedStyles !== "undefined") {
+        savedStyles.forEach(s => {
+          s.el.style.maxHeight = s.maxHeight;
+          s.el.style.overflow  = s.overflow;
+          s.el.style.overflowX = s.overflowX;
+          s.el.style.overflowY = s.overflowY;
+        });
+      }
+      if (typeof origStyle !== "undefined" && frame) {
+        Object.entries(origStyle).forEach(([k, v]) => frame.style[k] = v);
+      }
+    } catch(_) {}
+    btn.textContent = "❌ " + err.message;
+    btn.className = origClass.replace(/red|blue/g,"") + " error";
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = "📷 แคปภาพ"; btn.className = origClass; }, 4000);
+  }
+});
+
+// Tab click + auto-render
+document.getElementById("tab-sa-overview").addEventListener("click", function() {
+  renderSaOverview(currentData);
+});
+
+// ── Inline SLA 80% input delegation (slider graph) ───────────────────────────
+document.getElementById("content-nsa34").addEventListener("input", function(e) {
+  const inp = e.target.closest(".sla80-inline-input");
+  if (!inp) return;
+  const val = parseInt(inp.value, 10) || 0;
+  const section = inp.dataset.section || "";
+  if (/NSA3/i.test(section)) {
+    sla80Values["content-nsa34"] = val;
+    const bd = document.getElementById("sla80-input-content-nsa34");
+    if (bd) bd.value = val;
+    const cb = document.getElementById("combined-sla80-nsa34");
+    if (cb) cb.value = val;
+  } else {
+    sla80Values["content-nsa12sa"] = val;
+    const bd = document.getElementById("sla80-input-content-nsa12sa");
+    if (bd) bd.value = val;
+    const cb = document.getElementById("combined-sla80-nsa12sa");
+    if (cb) cb.value = val;
+  }
+  // Re-render slider graph (inputs will be re-created but delegation still works)
+  if (currentData) {
+    const focused = inp.dataset.section;
+    renderSliderGraph(currentData, "slider-graph-wrap");
+    // Restore focus + value to the matching input after re-render
+    setTimeout(() => {
+      const newInp = document.querySelector(`.sla80-inline-input[data-section="${focused}"]`);
+      if (newInp) { newInp.value = val; newInp.focus(); }
+    }, 30);
+  }
+});
+
+// Also call when renderAll fires
+const _origRenderAll = window.renderAll;
+// We'll hook into renderAll after it's defined
+
+
+// ── NSA Section Capture Buttons (event delegation) ──────────────────────────
+document.getElementById("content-nsa34").addEventListener("click", async function(e) {
+  const btn = e.target.closest(".nsa-capture-btn");
+  if (!btn) return;
+  await captureFrameToClipboard(btn, btn.dataset.target, btn.dataset.fname);
+});
+
+// Generic capture helper (shared)
+async function captureFrameToClipboard(btn, targetId, fname) {
+  const frame = document.getElementById(targetId);
+  if (!frame) return;
+  const origClass = btn.className;
+  btn.textContent = "⏳..."; btn.disabled = true;
+
+  const scrollEls = [frame, ...frame.querySelectorAll("*")];
+  const saved = scrollEls.map(el => ({ el, mh: el.style.maxHeight, ov: el.style.overflow, ox: el.style.overflowX, oy: el.style.overflowY }));
+  scrollEls.forEach(el => { el.style.maxHeight="none"; el.style.overflow="visible"; el.style.overflowX="visible"; el.style.overflowY="visible"; });
+  const origPos = frame.style.position, origLeft = frame.style.left, origTop = frame.style.top, origZ = frame.style.zIndex;
+  frame.style.position="fixed"; frame.style.left="-99999px"; frame.style.top="0px"; frame.style.zIndex="-1";
+  await new Promise(r => setTimeout(r, 150));
+
+  try {
+    const canvas = await html2canvas(frame, {
+      backgroundColor: "#05111e", scale: 2, useCORS: true, allowTaint: true,
+      scrollX: 0, scrollY: 0, x: 0, y: 0,
+      width: frame.scrollWidth, height: frame.scrollHeight,
+      windowWidth: frame.scrollWidth, windowHeight: frame.scrollHeight, logging: false,
+    });
+    saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
+    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ;
+
+    canvas.toBlob(async (blob) => {
+      let saved2 = false;
+      try { await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]); btn.textContent="✅ คัดลอกแล้ว!"; btn.className=origClass.replace(/gold|blue/g,"")+" success"; saved2=true; } catch(_){}
+      if (!saved2) {
+        const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=(fname||"capture")+"_"+new Date().toISOString().slice(0,10)+".png"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),3000);
+        btn.textContent="📥 บันทึกแล้ว"; btn.className=origClass.replace(/gold|blue/g,"")+" success";
+      }
+      btn.disabled=false; setTimeout(()=>{ btn.textContent="📷 แคปภาพ"; btn.className=origClass; }, 4000);
+    }, "image/png");
+  } catch(err) {
+    saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; });
+    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ;
+    btn.textContent="❌ "+err.message; btn.className=origClass.replace(/gold|blue/g,"")+" error"; btn.disabled=false;
+    setTimeout(()=>{ btn.textContent="📷 แคปภาพ"; btn.className=origClass; }, 4000);
+  }
+}
+
+// ── Full Page Capture ─────────────────────────────────────────────────────────
+document.getElementById("fullpage-capture-btn")?.addEventListener("click", async function() {
+  const btn = this;
+  const origText = btn.textContent;
+  btn.textContent = "⏳ กำลังแคปทั้งหน้า...";
+  btn.disabled = true;
+  btn.className = "btn fullpage-capture-btn";
+
+  // Collect all visible content sections
+  const app = document.getElementById("app");
+  const allEls = [app, ...app.querySelectorAll("*")];
+  const savedStyles = allEls.map(el => ({
+    el,
+    maxHeight: el.style.maxHeight,
+    overflow:  el.style.overflow,
+    overflowX: el.style.overflowX,
+    overflowY: el.style.overflowY,
+  }));
+  allEls.forEach(el => {
+    el.style.maxHeight = "none";
+    el.style.overflow  = "visible";
+    el.style.overflowX = "visible";
+    el.style.overflowY = "visible";
+  });
+
+  // Force td/th to show full text
+  app.querySelectorAll("td, th").forEach(el => {
+    el.style.whiteSpace   = "normal";
+    el.style.overflow     = "visible";
+    el.style.textOverflow = "clip";
+  });
+
+  await new Promise(r => setTimeout(r, 200));
+
+  try {
+    const canvas = await html2canvas(app, {
+      backgroundColor: "#f0f4ff",
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: true,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width:  app.scrollWidth,
+      height: app.scrollHeight,
+      windowWidth:  app.scrollWidth,
+      windowHeight: app.scrollHeight,
+      logging: false,
+    });
+
+    // Restore
+    app.querySelectorAll("td, th").forEach(el => {
+      el.style.whiteSpace   = "";
+      el.style.overflow     = "";
+      el.style.textOverflow = "";
+    });
+    savedStyles.forEach(s => {
+      s.el.style.maxHeight = s.maxHeight;
+      s.el.style.overflow  = s.overflow;
+      s.el.style.overflowX = s.overflowX;
+      s.el.style.overflowY = s.overflowY;
+    });
+
+    canvas.toBlob(async (blob) => {
+      let saved = false;
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        btn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
+        btn.className = "btn fullpage-capture-btn success";
+        saved = true;
+      } catch (_) {}
+
+      if (!saved) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "FullPage_Report_" + new Date().toISOString().slice(0,10) + ".png";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        btn.textContent = "📥 บันทึกไฟล์แล้ว";
+        btn.className = "btn fullpage-capture-btn success";
+      }
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = origText; btn.className = "btn fullpage-capture-btn"; }, 4000);
+    }, "image/png");
+
+  } catch (err) {
+    // Restore on error
+    try {
+      savedStyles.forEach(s => {
+        s.el.style.maxHeight = s.maxHeight;
+        s.el.style.overflow  = s.overflow;
+        s.el.style.overflowX = s.overflowX;
+        s.el.style.overflowY = s.overflowY;
+      });
+    } catch (_) {}
+    btn.textContent = "❌ " + err.message;
+    btn.className = "btn fullpage-capture-btn error";
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = origText; btn.className = "btn fullpage-capture-btn"; }, 4000);
+  }
+});
+
+// attachPdtCaptureBtn is called at end of renderPdtTable
+</script>
+</body>
+</html>
