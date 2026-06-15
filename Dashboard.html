@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WW · Ticket Over Due Dashboard · มิ.ย. 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08111e;--surf:#0f1929;--surf2:#162236;--surf3:#1d2d45;
+  --b:#253348;--b2:#1b2a3e;
+  --tx:#e2eaf5;--tm:#7a90a8;--td:#35496a;
+  --acc:#2563eb;--acc2:#3b82f6;--glow:rgba(37,99,235,.15);
+  --crit:#ef4444;--crit-bg:#1f0d0d;
+  --high:#f97316;--high-bg:#1f1008;
+  --med:#eab308;--med-bg:#1a170a;
+  --ok:#22c55e;--ok-bg:#0d1f10;
+  --teal:#06b6d4;
+  --hdr:linear-gradient(135deg,#040d1a 0%,#0a1c35 100%);
+  --r:8px;--rl:12px;--sh:0 4px 24px rgba(0,0,0,.5);--shs:0 2px 8px rgba(0,0,0,.3);
+}
+body.day{
+  --bg:#f0f4fa;--surf:#fff;--surf2:#f2f6fc;--surf3:#e8eef8;
+  --b:#cdd8ea;--b2:#dde5f2;--tx:#1a2540;--tm:#5a7096;--td:#9db0c8;
+  --acc:#1d4ed8;--acc2:#2563eb;--glow:rgba(29,78,216,.08);
+  --crit:#dc2626;--crit-bg:#fef2f2;--high:#c2410c;--high-bg:#fff7ed;
+  --med:#92400e;--med-bg:#fffbeb;--ok:#15803d;--ok-bg:#f0fdf4;
+  --sh:0 4px 24px rgba(26,37,64,.09);--shs:0 2px 8px rgba(26,37,64,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;transition:background .3s,color .3s}
+
+/* HEADER */
+.hdr{background:var(--hdr);border-bottom:1px solid rgba(255,255,255,.07);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;box-shadow:0 2px 20px rgba(0,0,0,.5)}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;box-shadow:0 0 14px rgba(37,99,235,.5)}
+.brand-tx .co{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:1.4px;text-transform:uppercase}
+.brand-tx .ttl{font-size:14px;font-weight:700;color:#fff}
+.hpills{display:flex;gap:5px}
+.hp{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2px 9px;font-size:10px;color:rgba(255,255,255,.5);font-family:'JetBrains Mono',monospace}
+.hp.live{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#4ade80}
+.hp.live::before{content:'● ';font-size:8px}
+.hright{display:flex;align-items:center;gap:8px}
+.ttgl{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:20px;padding:4px 12px 4px 8px;cursor:pointer;font-size:11px;font-weight:600;color:rgba(255,255,255,.75);font-family:'Inter',sans-serif;transition:all .2s}
+.ttgl:hover{background:rgba(255,255,255,.14);color:#fff}
+.trk{width:28px;height:15px;background:rgba(255,255,255,.15);border-radius:10px;position:relative;transition:background .25s}
+.tth{width:11px;height:11px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+body.day .trk{background:var(--acc)} body.day .tth{transform:translateX(13px)}
+body.day .ttgl{color:rgba(255,255,255,.9)}
+.sp-btn{background:rgba(0,120,212,.2);border:1px solid rgba(0,120,212,.4);border-radius:6px;padding:4px 11px;cursor:pointer;font-size:11px;font-weight:600;color:#60a5fa;font-family:'Inter',sans-serif;transition:all .2s}
+.sp-btn:hover{background:rgba(0,120,212,.35)}
+
+/* NAV */
+.nav{background:var(--surf);border-bottom:2px solid var(--b);padding:0 24px;display:flex;overflow-x:auto}
+.nav button{background:none;border:none;color:var(--tm);padding:12px 15px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s;margin-bottom:-2px}
+.nav button:hover{color:var(--tx);background:var(--surf2)}
+.nav button.active{color:var(--acc2);border-bottom-color:var(--acc);font-weight:600}
+
+/* SHAREPOINT PANEL */
+.spp{background:var(--surf);border:1px solid var(--b);border-top:3px solid var(--acc);border-radius:var(--rl);padding:16px 22px;margin:0 24px 14px;box-shadow:var(--shs);display:none}
+.spp.open{display:block}
+.spp h3{font-size:13px;font-weight:700;margin-bottom:10px}
+.spp-row{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
+.spf{flex:1;min-width:220px}
+.spf label{display:block;font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.spf input{width:100%;background:var(--bg);border:1px solid var(--b);border-radius:6px;padding:7px 11px;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;outline:none}
+.spf input:focus{border-color:var(--acc)}
+.sp-info{font-size:11px;color:var(--tm);margin-top:8px;line-height:1.7}
+.sp-info code{background:var(--surf2);border:1px solid var(--b);border-radius:3px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--acc2)}
+
+/* MAIN */
+.main{padding:18px 24px;max-width:1900px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+
+/* MONTH/WEEK FILTER BAR */
+.mw-bar{background:var(--surf);border:1px solid var(--b);border-radius:var(--rl);padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shs)}
+.mw-label{font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.7px;white-space:nowrap}
+.mw-sep{width:1px;height:24px;background:var(--b);margin:0 4px}
+.mwbtn{background:var(--surf2);border:1px solid var(--b);border-radius:6px;color:var(--tm);padding:5px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.mwbtn:hover{border-color:var(--acc);color:var(--acc2)}
+.mwbtn.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.mw-date-info{font-size:10px;color:var(--tm);font-family:'JetBrains Mono',monospace;margin-left:auto}
+
+/* KPI CARDS — compact row */
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px}
+@media(max-width:700px){.kgrid{grid-template-columns:1fr}}
+.kc{background:var(--surf);border:1px solid var(--b);border-radius:var(--rl);padding:14px 16px;position:relative;overflow:hidden;box-shadow:var(--shs);transition:transform .15s,box-shadow .15s}
+.kc:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+.kc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;opacity:.6}
+.kc.acc::after{background:var(--acc2);opacity:.5}.kc.crit::after{background:var(--crit);opacity:.9}
+.kc.ok::after{background:var(--ok);opacity:.9}.kc.med::after{background:var(--med);opacity:.9}
+.kc-lbl{font-size:9.5px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.kc-val{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;line-height:1}
+.kc-val.crit{color:var(--crit)}.kc-val.ok{color:var(--ok)}.kc-val.med{color:var(--med)}.kc-val.acc{color:var(--acc2)}
+.kc-sub{font-size:11px;color:var(--tm);margin-top:4px}
+
+/* SECTION HDR */
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:10px;margin-top:20px}
+.sh:first-child{margin-top:0}
+.sh-t{font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap}
+.sh-l{flex:1;height:1px;background:var(--b)}
+.sh-b{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm);background:var(--surf2);border:1px solid var(--b);border-radius:4px;padding:2px 7px}
+
+/* ═══ REGION BIG PANEL ══════════════════════════════════════════ */
+.reg-mega{background:var(--surf);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;margin-bottom:18px;box-shadow:var(--shs)}
+
+/* Zone selector tabs — horizontal full-width */
+.reg-zone-tabs{display:flex;border-bottom:1px solid var(--b);background:var(--surf2);overflow-x:auto}
+.rzt{flex:1;border:none;background:transparent;color:var(--tm);padding:11px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;min-width:90px;text-align:center;margin-bottom:-2px}
+.rzt:hover{color:var(--tx);background:var(--surf3)}
+.rzt.active{font-weight:700}
+
+/* Big region stat area */
+.reg-content{padding:20px 24px}
+.reg-header-row{display:flex;align-items:flex-start;gap:24px;margin-bottom:20px}
+.reg-main-stat{flex:0 0 auto}
+.reg-zone-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.reg-big-pct{font-family:'JetBrains Mono',monospace;font-size:58px;font-weight:800;line-height:1;letter-spacing:-2px}
+.reg-od-label{font-size:12px;color:var(--tm);margin-top:2px}
+.reg-stat-cards{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.rsc{background:var(--surf2);border:1px solid var(--b);border-radius:9px;padding:12px 16px;min-width:130px;flex:1}
+.rsc-lbl{font-size:9px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.rsc-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+.rsc-sub{font-size:10px;color:var(--tm);margin-top:1px}
+
+/* Trend chart */
+.reg-chart-area{margin-bottom:20px}
+.reg-chart-title{font-size:12px;color:var(--tm);margin-bottom:8px;font-weight:600}
+.chart-svg-wrap{position:relative;width:100%;height:160px}
+svg.trend-chart{width:100%;height:160px}
+
+/* Skill mini charts */
+.skill-charts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:900px){.skill-charts{grid-template-columns:1fr}}
+.skill-chart-box{background:var(--surf2);border:1px solid var(--b);border-radius:9px;padding:14px 16px}
+.skill-chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.skill-chart-name{font-size:12px;font-weight:700;color:var(--tx)}
+.skill-chart-rate{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+
+/* TABLE */
+.tw{background:var(--surf);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;box-shadow:var(--shs)}
+.ttbar{padding:9px 13px;border-bottom:1px solid var(--b);background:var(--surf2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.srch{background:var(--bg);border:1px solid var(--b);border-radius:6px;padding:5px 10px;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;width:180px;outline:none}
+.srch:focus{border-color:var(--acc)}
+.srch::placeholder{color:var(--td)}
+.fg{display:flex;gap:4px;flex-wrap:wrap}
+.fb{background:var(--surf);border:1px solid var(--b);border-radius:6px;color:var(--tm);padding:4px 9px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.fb:hover{border-color:var(--acc);color:var(--acc2)}
+.fb.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.sevbar{display:flex;align-items:center;gap:5px;padding:7px 13px;border-bottom:1px solid var(--b);background:var(--bg);flex-wrap:wrap}
+body.day .sevbar{background:#f7f9fd}
+.sl{font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.6px;margin-right:2px}
+.sb{border:1.5px solid var(--b);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;background:transparent}
+.sb.all{color:var(--tm)}.sb.cr{color:var(--crit);border-color:rgba(239,68,68,.4)}
+.sb.hi{color:var(--high);border-color:rgba(249,115,22,.4)}
+.sb.me{color:var(--med);border-color:rgba(234,179,8,.4)}
+.sb.lo{color:var(--ok);border-color:rgba(34,197,94,.4)}
+.sb.active.cr{background:var(--crit-bg);border-color:var(--crit)}
+.sb.active.hi{background:var(--high-bg);border-color:var(--high)}
+.sb.active.me{background:var(--med-bg);border-color:var(--med)}
+.sb.active.lo{background:var(--ok-bg);border-color:var(--ok)}
+.sb.active.all{background:var(--surf2);color:var(--tx);border-color:var(--acc)}
+.tsc{overflow-x:auto;overflow-y:auto;max-height:500px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--surf2);padding:10px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid var(--b);white-space:nowrap;position:sticky;top:0;z-index:10;box-shadow:0 2px 0 rgba(0,0,0,.15);cursor:pointer;user-select:none}
+body.day thead th{background:#eef2fb}
+thead th:hover{color:var(--tx)}
+tbody tr{border-bottom:1px solid var(--b2);transition:background .1s}
+tbody tr:hover{background:var(--surf2)}
+body.day tbody tr:hover{background:#f0f5ff}
+tbody td{padding:8px 12px;font-size:12px;color:var(--tx);white-space:nowrap}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.pg{display:flex;align-items:center;justify-content:space-between;padding:8px 13px;border-top:1px solid var(--b);font-size:11px;color:var(--tm);background:var(--surf2)}
+.pbtns{display:flex;gap:3px}
+.pb{background:var(--surf);border:1px solid var(--b);border-radius:5px;color:var(--tm);padding:3px 8px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.pb:hover{border-color:var(--acc);color:var(--acc2)}
+.pb.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.pb:disabled{opacity:.3;cursor:default}
+
+/* PILLS / TAGS */
+.pill{display:inline-flex;align-items:center;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap}
+.pill.cr{background:var(--crit-bg);color:var(--crit);border:1px solid rgba(239,68,68,.3)}
+.pill.hi{background:var(--high-bg);color:var(--high);border:1px solid rgba(249,115,22,.3)}
+.pill.me{background:var(--med-bg);color:var(--med);border:1px solid rgba(234,179,8,.3)}
+.pill.ok{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(34,197,94,.3)}
+.stag{display:inline-block;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700}
+.sk-nod{background:#0f2240;color:#60a5fa;border:1px solid #1e3a6a}
+.sk-ofc{background:#0d2018;color:#4ade80;border:1px solid #1a3a28}
+.sk-muf{background:#1e0d28;color:#d8b4fe;border:1px solid #3d1a5f}
+.sk-sup{background:#201c0a;color:#fbbf24;border:1px solid #3d3510}
+body.day .sk-nod{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+body.day .sk-ofc{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+body.day .sk-muf{background:#faf5ff;color:#6d28d9;border-color:#ddd6fe}
+body.day .sk-sup{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.ct-tag{display:inline-block;background:var(--surf2);border:1px solid var(--b);border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--tm);font-family:'JetBrains Mono',monospace}
+.tid{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--acc2)}
+body.day .tid{color:var(--acc)}
+
+/* TOP10 twin */
+.twin-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1100px){.twin-col{grid-template-columns:1fr}}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+
+/* HIERARCHY */
+.hpanel{background:var(--surf);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;box-shadow:var(--shs)}
+.htabs{display:flex;border-bottom:1px solid var(--b);background:var(--surf2)}
+.htab{flex:1;border:none;background:transparent;color:var(--tm);padding:11px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
+.htab:hover{color:var(--tx);background:var(--surf3)}
+.htab.active{color:var(--acc2);border-bottom-color:var(--acc);font-weight:700}
+.hbody{padding:14px}
+.mgrid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:0}
+.mcard{flex:1;min-width:150px;max-width:230px;background:var(--surf2);border:1px solid var(--b);border-radius:var(--rl);padding:13px 15px;cursor:pointer;transition:all .2s}
+.mcard:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--acc)}
+.mcard.selected{border-color:var(--acc);background:rgba(37,99,235,.07)}
+.mcard-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.mcard-rate{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:800;line-height:1}
+.mcard-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;font-size:10px;color:var(--tm)}
+.mcard-stats span{background:var(--bg);border:1px solid var(--b);border-radius:4px;padding:3px 5px}
+body.day .mcard-stats span{background:rgba(255,255,255,.7)}
+.drill-hdr{display:flex;align-items:center;gap:10px;margin:12px 0 9px;padding:9px 13px;background:var(--surf2);border-radius:7px;border:1px solid var(--b)}
+.dbc{font-size:11px;color:var(--tm);display:flex;align-items:center;gap:5px;flex:1;flex-wrap:wrap}
+.dbc span{color:var(--tx);font-weight:600}
+.dback{background:var(--surf);border:1px solid var(--b);border-radius:5px;color:var(--tm);padding:3px 8px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.dback:hover{border-color:var(--acc);color:var(--acc2)}
+.fb-badge{background:var(--med-bg);color:var(--med);border:1px solid rgba(234,179,8,.3);border-radius:4px;padding:1px 6px;font-size:10px}
+
+
+/* Animated Canvas Charts */
+.canvas-chart-wrap{position:relative;width:100%;border-radius:6px;overflow:hidden}
+.canvas-chart-wrap canvas{display:block;width:100%;height:100%}
+.canvas-tooltip{position:absolute;background:var(--surf3);border:1px solid var(--b);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--tx);pointer-events:none;display:none;white-space:nowrap;z-index:50;font-family:'Inter',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px}
+.empty{padding:36px;text-align:center;color:var(--tm);font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="brand">
+    <div class="logo">WW</div>
+    <div class="brand-tx">
+      <div class="co">Way &amp; Wireless Co., Ltd.</div>
+      <div class="ttl">Ticket Over Due — มิ.ย. 2026</div>
+    </div>
+  </div>
+  <div class="hpills">
+    <span class="hp live">Live</span>
+    <span class="hp" id="src-lbl">MATELINE 202606</span>
+    <span class="hp" id="upd-lbl">—</span>
+  </div>
+  <div class="hright">
+    <!-- <button class="sp-btn" onclick="toggleSP()">☁️ SharePoint</button> -->
+    <button class="ttgl" onclick="toggleTheme()"><div class="trk"><div class="tth"></div></div><span id="theme-lbl">🌙 Night</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SharePoint / Excel Online Panel — COMMENTED OUT (implement later)
+═══════════════════════════════════════════════════════════════
+<div class="spp" id="spp">
+  <h3>☁️ เชื่อมต่อ SharePoint / Excel Online</h3>
+  ...
+</div>
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active" onclick="goTab('ov',this)">📊 ภาพรวม</button>
+  <button onclick="goTab('hier',this)">👥 Manager › Sup › Team</button>
+  <button onclick="goTab('prov',this)" style="display:none">🏙️ Province</button>
+  <!-- <button onclick="goTab('cause',this)">🔍 สาเหตุ</button> -->
+  <button onclick="goTab('le',this)">⏰ เวลาทำงาน</button>
+</div>
+
+<div class="main">
+
+<!-- ══ OVERVIEW ══════════════════════════════════════════════════ -->
+<div id="tab-ov" class="tab active">
+
+  <!-- Month/Week Filter Bar -->
+  <div class="mw-bar">
+    <span class="mw-label">📅 เดือน:</span>
+    <div class="fg" id="mth-btns"></div>
+    <div class="mw-sep"></div>
+    <span class="mw-label">สัปดาห์:</span>
+    <div class="fg" id="wk-btns"></div>
+    <div class="mw-date-info" id="mw-date-info">—</div>
+  </div>
+
+  <!-- KPI Cards (5 cards, no region/team) -->
+  <div class="kgrid" id="kgrid"></div>
+
+  <!-- ══ REGION BIG PANEL ══ -->
+  <div class="sh"><span class="sh-t">🗺️ สรุปรายภูมิภาค</span><div class="sh-l"></div><span class="sh-b" id="zone-sel-badge">ทั้งหมด</span></div>
+  <div class="reg-mega" id="reg-mega">
+    <!-- Zone Tabs -->
+    <div class="reg-zone-tabs" id="reg-zone-tabs"></div>
+    <!-- Content -->
+    <div class="reg-content" id="reg-content"></div>
+  </div>
+
+  <!-- TOP 10: Worst / Best with Skill tabs -->
+  <div class="sh" style="margin-bottom:12px">
+    <span class="sh-t">🏆 Top 10 ทีม</span>
+    <div class="sh-l"></div>
+    <!-- Worst/Best toggle -->
+    <div style="display:flex;gap:4px;margin-left:8px">
+      <button class="t10-wb active" id="t10-btn-worst" onclick="setT10WB('worst',this)" style="background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.5);color:var(--crit);border-radius:6px;padding:4px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s">🔴 แย่สุด</button>
+      <button class="t10-wb" id="t10-btn-best" onclick="setT10WB('best',this)" style="background:transparent;border:1.5px solid var(--b);color:var(--tm);border-radius:6px;padding:4px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s">🟢 ดีสุด</button>
+    </div>
+    <!-- Skill filter tabs -->
+    <div style="display:flex;gap:4px;margin-left:10px">
+      <button class="t10-sk active" data-sk="ALL" onclick="setT10Skill('ALL',this)" style="border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid var(--acc);background:var(--acc);color:#fff;transition:all .15s">ทั้งหมด</button>
+      <button class="t10-sk" data-sk="NOD" onclick="setT10Skill('NOD',this)" style="border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid #1e3a6a;background:transparent;color:#60a5fa;transition:all .15s">NOD</button>
+      <button class="t10-sk" data-sk="OFC" onclick="setT10Skill('OFC',this)" style="border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid #1a3a28;background:transparent;color:#4ade80;transition:all .15s">OFC</button>
+    </div>
+    <div id="t10-label" style="font-size:11px;font-weight:700;color:var(--crit);white-space:nowrap;margin-left:8px">🔴 Over Due สูงสุด (แย่) — ทั้งหมด</div>
+  </div>
+  <div class="tw">
+    <div class="tsc" style="max-height:420px"><table><thead><tr>
+      <th>#</th><th>Team ID</th><th>ชื่อช่าง</th><th>จังหวัด</th><th>Zone</th><th>Skill</th><th>Sup</th>
+      <th>Tickets</th><th>สำเร็จ</th><th style="min-width:130px">เทรนด์</th><th>PDT</th><th>ระดับ</th>
+    </tr></thead><tbody id="top10-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ══ HIERARCHY ══════════════════════════════════════════════════ -->
+<div id="tab-hier" class="tab">
+  <div class="hpanel">
+    <div class="htabs">
+      <button class="htab active" id="htab-mgr" onclick="setHT('mgr',this)">👔 Manager</button>
+      <button class="htab" id="htab-sup" onclick="setHT('sup',this)">🎖️ Supervisor</button>
+      <button class="htab" id="htab-team" onclick="setHT('team',this)">🔧 Team</button>
+    </div>
+    <div class="hbody" id="hbody"></div>
+  </div>
+</div>
+
+<!-- ══ PROVINCE ══════════════════════════════════════════════════ -->
+<div id="tab-prov" class="tab">
+  <div class="tw">
+    <div class="ttbar">
+      <input class="srch" placeholder="ค้นหาจังหวัด..." oninput="provQ=this.value;provP=1;renderProv()">
+      <div class="fg" id="prov-grp">
+        <button class="fb active" onclick="setPGrp('ALL',this)">ทั้งหมด</button>
+        <button class="fb" onclick="setPGrp('BMA',this)">BMA</button>
+        <button class="fb" onclick="setPGrp('C&W',this)">C&amp;W</button>
+        <button class="fb" onclick="setPGrp('EAS',this)">EAS</button>
+        <button class="fb" onclick="setPGrp('SOU',this)">SOU</button>
+      </div>
+    </div>
+    <div class="sevbar">
+      <span class="sl">ระดับ:</span>
+      <button class="sb all active" onclick="setPSev('ALL',this)">ทั้งหมด</button>
+      <button class="sb cr" onclick="setPSev('critical',this)">🔴 วิกฤต ≥40%</button>
+      <button class="sb hi" onclick="setPSev('high',this)">🟠 สูง 20–39%</button>
+      <button class="sb me" onclick="setPSev('medium',this)">🟡 ปานกลาง 10–19%</button>
+      <button class="sb lo" onclick="setPSev('ok',this)">🟢 ปกติ &lt;10%</button>
+    </div>
+    <div class="tsc"><table><thead><tr>
+      <th>#</th><th>Province</th><th>จังหวัด</th><th>Zone</th><th>Group</th>
+      <th>Tickets</th><th>OD</th><th>OD%</th><th style="min-width:120px">เทรนด์</th>
+      <th>Over Depart</th><th>PDT</th><th>ระดับ</th>
+    </tr></thead><tbody id="prov-body"></tbody></table></div>
+    <div class="pg"><span id="prov-info">—</span><div class="pbtns" id="prov-pg"></div></div>
+  </div>
+</div>
+
+<!-- ══ CAUSE (hidden) ════════════════════════════════════════════ -->
+<!--
+<div id="tab-cause" class="tab">
+  <div class="two-col">
+    <div>
+      <div class="sh" style="margin-top:0"><span class="sh-t">📌 SLA Reason</span><div class="sh-l"></div></div>
+      <div class="tw"><div class="tsc"><table><thead><tr><th>#</th><th>สาเหตุ</th><th>จำนวน</th><th>%</th></tr></thead>
+      <tbody id="sla-body"></tbody></table></div></div>
+    </div>
+    <div>
+      <div class="sh" style="margin-top:0"><span class="sh-t">⏸️ Suspend Reason</span><div class="sh-l"></div></div>
+      <div class="tw"><div class="tsc"><table><thead><tr><th>#</th><th>สาเหตุ</th><th>จำนวน</th><th>%</th></tr></thead>
+      <tbody id="susp-body"></tbody></table></div></div>
+    </div>
+  </div>
+</div>
+-->
+
+<!-- ══ LATE/EARLY ════════════════════════════════════════════════ -->
+<div id="tab-le" class="tab">
+  <div class="sh" style="margin-top:0"><span class="sh-t">⏰ เริ่มงานสาย / เลิกงานเร็ว รายจังหวัด</span><div class="sh-l"></div></div>
+  <div class="tw"><div class="tsc"><table><thead><tr>
+    <th>Province</th><th>จังหวัด</th><th>Zone</th><th>Group</th><th>Team-Days</th>
+    <th>วันสาย</th><th>%สาย</th><th style="min-width:110px">เทรนด์สาย</th>
+    <th>วันเลิกเร็ว</th><th>%เลิกเร็ว</th><th style="min-width:110px">เทรนด์เลิก</th>
+    <th>Avg เริ่ม</th><th>Avg เลิก</th>
+  </tr></thead><tbody id="le-body"></tbody></table></div></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  DATA SOURCE CONFIG  — แก้ไข URL ที่นี่
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Google Sheets (App Script Web App) ───────────────────────────
+// 1. สร้าง App Script ใน Google Sheet ของคุณ แล้ว Deploy เป็น Web App
+// 2. วาง URL ที่ได้ลงใน GAS_URL ด้านล่าง
+// 3. เปิดหน้า Dashboard ใหม่ทุกครั้ง → จะดึงข้อมูลสดจาก Sheet
+// Google Sheet: https://docs.google.com/spreadsheets/d/1ZrzpJBnpQ65qlVRUhZ_Y7bXe5q4lR-gb6liCN5l-CYU
+// Sheet name: RAW_Data  |  Columns: Work Order ID, Region, Province, Skill, Team ...
+// วาง App Script Web App URL ด้านล่าง หลังจาก Deploy แล้ว:
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJcoiP8ioU_4tUauDYQeF56ruqq6aTbWoBhsCKKx-pjZrolqwZ6gyzhNboK6taqVqoFQ/exec';
+
+// ── SharePoint (placeholder — implement later) ───────────────────
+/* TODO: SharePoint / Excel Online integration — uncomment when ready
+const USE_SHAREPOINT = false;
+const SHAREPOINT_CONFIG = {
+  siteUrl:    '',   // e.g. 'https://company.sharepoint.com/sites/MySite'
+  listName:   '',   // ชื่อ SharePoint List
+  accessToken: '',  // Bearer token หรือ cookie
+};
+*/
+
+// ── Week filter logic: ตัด WeekNum ปัจจุบัน (Week -1) ───────────
+// เมื่อดึงข้อมูลมา จะ filter ออก WeekNum ที่ตรงกับสัปดาห์ปัจจุบัน
+function getCurrentISOWeek(){
+  const d = new Date();
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
+function applyWeekMinus1Filter(rawD){
+  const curWeek = getCurrentISOWeek();
+  // ตัด Week ปัจจุบัน ออกจากทุก time-series array
+  const wkFilter = r => Number(r.WeekNum) !== curWeek;
+  rawD.week_meta  = (rawD.week_meta  || []).filter(wkFilter);
+  rawD.week_zone  = (rawD.week_zone  || []).filter(wkFilter);
+  rawD.week_skill = (rawD.week_skill || []).filter(wkFilter);
+  return rawD;
+}
+
+// ── Static fallback data (ข้อมูล hardcode เดิม) ─────────────────
+const D_STATIC = {
+  "kpis":{"total_tickets":0,"overdue":0,"indue":0,"od_rate":0,"total_zones":0,"total_provinces":0,"total_teams":0,"report_month":""},
+  "zone_label":{"BMA_EAST1":"BMA East 1","BMA_EAST2":"BMA East 2","BMA_EAST3":"BMA East 3","BMA_EAST4":"BMA East 4","BMA_WEST1":"BMA West 1","BMA_WEST2":"BMA West 2","CEN":"Central","WES":"Western","EAS":"Eastern","SOU":"Southern"},
+  "groups":[],"zones":[],"provinces":[],"managers":[],"supervisors":[],"teams":[],
+  "sla_reason":[],"suspend_reason":[],"late_early":[],
+  "week_meta":[],"week_zone":[],"week_skill":[]
+};
+let D = applyWeekMinus1Filter(JSON.parse(JSON.stringify(D_STATIC)));
+
+// ─────────────────────────────────────────────────────────────────
+//  GAS DATA FETCHER
+// ─────────────────────────────────────────────────────────────────
+async function fetchFromGAS(url){
+  try {
+    // ลอง fetch ปกติก่อน (ใช้ได้เมื่อเปิดผ่าน http:// หรือ server)
+    const res = await fetch(url, { cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const raw = await res.json();
+    if(raw.error) throw new Error('GAS error: '+raw.error);
+    if(!raw.kpis) throw new Error('JSON ไม่มี field "kpis" — ตรวจสอบ App Script');
+    console.log('[GAS] OK — tickets:', raw.kpis.total_tickets, 'teams:', raw.teams?.length);
+    showFetchStatus('✅ โหลดข้อมูลสำเร็จ: '+Number(raw.kpis.total_tickets).toLocaleString()+' tickets', 'var(--ok)');
+    return applyWeekMinus1Filter(raw);
+  } catch(e){
+    console.error('[GAS] fetch error:', e.message);
+    // ถ้า CORS error (file://) → ลอง JSONP
+    if(e.message.includes('Failed to fetch') || e.message.includes('CORS') || e.message.includes('NetworkError')){
+      showFetchStatus('⏳ กำลังลอง JSONP...', 'var(--tm)');
+      return await fetchViaJSONP(url);
+    }
+    showFetchStatus('⚠️ GAS Error: '+e.message, 'var(--crit)');
+    return null;
+  }
+}
+
+// JSONP fallback สำหรับ file:// protocol
+function fetchViaJSONP(url){
+  return new Promise((resolve)=>{
+    const cbName = 'wwCb_'+Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(()=>{
+      delete window[cbName];
+      script.remove();
+      showFetchStatus('⚠️ JSONP timeout — กรุณาเปิดไฟล์ผ่าน Web Server หรือ Chrome Extension', 'var(--crit)');
+      resolve(null);
+    }, 15000);
+    window[cbName] = function(raw){
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      if(raw && raw.kpis){
+        showFetchStatus('✅ โหลดข้อมูลสำเร็จ (JSONP): '+Number(raw.kpis.total_tickets).toLocaleString()+' tickets','var(--ok)');
+        resolve(applyWeekMinus1Filter(raw));
+      } else {
+        showFetchStatus('⚠️ JSONP: ไม่ได้รับข้อมูล','var(--crit)');
+        resolve(null);
+      }
+    };
+    script.src = url + (url.includes('?')?'&':'?') + 'callback='+cbName;
+    document.head.appendChild(script);
+  });
+}
+
+function showFetchStatus(msg, col='var(--tm)'){
+  let el = document.getElementById('fetch-status-bar');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'fetch-status-bar';
+    el.style.cssText = 'position:fixed;bottom:12px;right:14px;z-index:9000;background:var(--surf2);border:1px solid var(--b);border-radius:8px;padding:8px 14px;font-size:11px;font-family:Inter,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:opacity .5s;max-width:380px';
+    document.body.appendChild(el);
+  }
+  el.style.color = col;
+  el.style.opacity = '1';
+  el.textContent = msg;
+  // Auto-hide after 6s
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.style.opacity='0'; }, 6000);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  SHAREPOINT FETCHER (skeleton — implement later)
+// ─────────────────────────────────────────────────────────────────
+/* TODO: Uncomment and implement when SharePoint access is ready
+async function fetchFromSharePoint(cfg){
+  const res = await fetch(
+    `${cfg.siteUrl}/_api/web/lists/GetByTitle('${cfg.listName}')/items?$top=5000`,
+    { headers: { 'Authorization': 'Bearer '+cfg.accessToken, 'Accept': 'application/json;odata=nometadata' } }
+  );
+  const json = await res.json();
+  return transformSharePointToD(json.value);
+}
+function transformSharePointToD(items){
+  // TODO: map SharePoint columns → Dashboard D schema
+  return null;
+}
+*/
+async function fetchFromSharePoint(cfg){
+  console.warn('[SharePoint] not implemented — see commented code above');
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  LINK INPUT UI (แสดงเมื่อยังไม่มี URL)
+// ─────────────────────────────────────────────────────────────────
+function showDataSourceModal(){
+  const stored = sessionStorage.getItem('ww_gas_url') || '';
+  const modal = document.createElement('div');
+  modal.id = 'ds-modal';
+  modal.innerHTML = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif">
+      <div style="background:var(--surf2);border:1px solid var(--b);border-radius:14px;padding:28px 32px;width:min(520px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.6)">
+        <div style="font-size:16px;font-weight:700;color:var(--tx);margin-bottom:6px">🔗 เชื่อมต่อแหล่งข้อมูล</div>
+        <div style="font-size:12px;color:var(--tm);margin-bottom:20px">วาง URL ของ Google Apps Script Web App เพื่อดึงข้อมูลสด<br>หรือกด <b>ใช้ข้อมูล Static</b> เพื่อใช้ข้อมูลที่ฝังอยู่</div>
+        
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:600;color:var(--tm);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Google Sheets App Script URL</div>
+          <input id="gas-url-input" type="url" value="${stored}"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            style="width:100%;background:var(--surf3);border:1px solid var(--b);border-radius:8px;padding:9px 12px;color:var(--tx);font-size:13px;font-family:'Inter',sans-serif;outline:none">
+        </div>
+
+        <div style="background:var(--surf3);border:1px solid var(--b);border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--tm);line-height:1.7">
+          <b style="color:var(--tx)">วิธีตั้งค่า App Script:</b><br>
+          1. เปิด Google Sheet → Extensions → Apps Script<br>
+          2. วาง code ด้านล่าง → Deploy → New deployment → Web App (Execute as: Me, Access: Anyone)<br>
+          3. Copy URL แล้ววางที่นี่
+          <pre style="margin-top:8px;background:rgba(0,0,0,.3);border-radius:6px;padding:8px;overflow:auto;font-size:10px;color:#a3c4f3">// Sheet: MATELINE_TICKET_CLOSED_202606_RAW_Data_
+// Columns: Work Order ID, Region, Province, Skill, Team,
+//          Source Ticket ID, Site ID, Status, SLA, Created Time ...
+// App Script อ่าน sheet RAW_Data แล้ว aggregate เป็น JSON
+// ส่งกลับโครงสร้าง: { kpis, groups, zones, provinces,
+//   managers, supervisors, teams, week_meta, week_zone,
+//   week_skill, sla_reason, suspend_reason }
+// ดู WW_Dashboard_AppScript.gs สำหรับโค้ดเต็ม</pre>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button onclick="loadStaticData()" style="background:transparent;border:1px solid var(--b);border-radius:8px;padding:8px 18px;color:var(--tm);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">ใช้ข้อมูล Static</button>
+          <button onclick="loadGASData()" style="background:var(--acc);border:none;border-radius:8px;padding:8px 20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔄 ดึงข้อมูลจาก Sheet</button>
+        </div>
+
+        <div id="ds-status" style="margin-top:10px;font-size:11px;color:var(--tm);min-height:16px;text-align:center"></div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function closeModal(){
+  const m = document.getElementById('ds-modal');
+  if(m) m.remove();
+}
+
+function setStatus(msg, col='var(--tm)'){
+  const el = document.getElementById('ds-status');
+  if(el){ el.textContent = msg; el.style.color = col; }
+}
+
+async function loadGASData(){
+  const url = document.getElementById('gas-url-input').value.trim();
+  if(!url){ setStatus('⚠️ กรุณาวาง URL ก่อน','var(--high)'); return; }
+  setStatus('⏳ กำลังดึงข้อมูล...','var(--tm)');
+  const data = await fetchFromGAS(url);
+  if(data){
+    D = data;
+    sessionStorage.setItem('ww_gas_url', url);
+    setStatus('✅ โหลดข้อมูลสำเร็จ!','var(--ok)');
+    setTimeout(()=>{ closeModal(); refreshAll(); }, 800);
+  } else {
+    setStatus('❌ ดึงข้อมูลไม่สำเร็จ — ใช้ข้อมูล Static แทน','var(--crit)');
+    setTimeout(()=>{ closeModal(); }, 1500);
+  }
+}
+
+function loadStaticData(){
+  D = applyWeekMinus1Filter(JSON.parse(JSON.stringify(D_STATIC)));
+  sessionStorage.removeItem('ww_gas_url');
+  closeModal();
+  refreshAll();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  BOOT: ทุกครั้งที่เปิดหน้าใหม่ แสดง modal เสมอ
+// ─────────────────────────────────────────────────────────────────
+async function bootDashboard(){
+  // ถ้ามี URL ใน GAS_URL constant → ลองดึงอัตโนมัติ (ไม่แสดง modal)
+  if(GAS_URL){
+    const data = await fetchFromGAS(GAS_URL);
+    if(data){ D = data; }
+    return;  // ใช้ D ที่ได้ (หรือ D_STATIC ถ้า fetch ไม่สำเร็จ)
+  }
+  // ถ้ามี URL ใน session storage → ลองดึงอัตโนมัติ ถ้าไม่ได้ → แสดง modal
+  const storedUrl = sessionStorage.getItem('ww_gas_url');
+  if(storedUrl){
+    const data = await fetchFromGAS(storedUrl);
+    if(data){ D = data; return; }
+    // ถ้า fetch ล้มเหลว → clear session แล้วแสดง modal
+    sessionStorage.removeItem('ww_gas_url');
+  }
+  // แสดง modal ให้ผู้ใช้วาง URL
+  showDataSourceModal();
+}
+
+
+
+// ═══ ZONE / COLOR CONFIG ═════════════════════════════════════════
+const ZC = {
+  BMA_EAST1:'#3b82f6',BMA_EAST2:'#6366f1',BMA_EAST3:'#8b5cf6',BMA_EAST4:'#a78bfa',
+  BMA_WEST1:'#ec4899',BMA_WEST2:'#f43f5e',
+  CEN:'#06b6d4',WES:'#0ea5e9',EAS:'#f97316',SOU:'#10b981',
+};
+const ZB = {
+  BMA_EAST1:'rgba(59,130,246,.09)',BMA_EAST2:'rgba(99,102,241,.09)',
+  BMA_EAST3:'rgba(139,92,246,.09)',BMA_EAST4:'rgba(167,139,250,.09)',
+  BMA_WEST1:'rgba(236,72,153,.09)',BMA_WEST2:'rgba(244,63,94,.09)',
+  CEN:'rgba(6,182,212,.09)',WES:'rgba(14,165,233,.09)',
+  EAS:'rgba(249,115,22,.09)',SOU:'rgba(16,185,129,.09)',
+};
+const GC = {'BMA':'#818cf8','C&W':'#06b6d4','EAS':'#f97316','SOU':'#10b981'};
+const ZONE_ORDER = ['BMA_EAST1','BMA_EAST2','BMA_EAST3','BMA_EAST4','BMA_WEST1','BMA_WEST2','CEN','WES','EAS','SOU'];
+const GRP_ORDER  = ['BMA','C&W','EAS','SOU'];
+const ZONE_LABEL = D.zone_label;
+const MGR_LABELS = {'B':'BMA','C':'C&W','E':'EAS','S':'SOU'};
+const SKILL_COLORS = {OFC:'#3b82f6',NOD:'#10b981',MUF:'#a78bfa',SUP:'#fbbf24'};
+const MONTH_NAMES = {1:'ม.ค.',2:'ก.พ.',3:'มี.ค.',4:'เม.ย.',5:'พ.ค.',6:'มิ.ย.',
+  7:'ก.ค.',8:'ส.ค.',9:'ก.ย.',10:'ต.ค.',11:'พ.ย.',12:'ธ.ค.'};
+
+// ═══ HELPERS ═════════════════════════════════════════════════════
+const fmt = n => n==null?'—':Number(n).toLocaleString('th-TH');
+const pct = r => r==null?'—':(r*100).toFixed(1)+'%';
+const f2  = n => n==null?'—':Number(n).toFixed(2);
+function sevCls(r){ return r>=.4?'cr':r>=.2?'hi':r>=.1?'me':'lo'; }
+function sevPill(r){
+  const l={cr:'🔴 วิกฤต',hi:'🟠 สูง',me:'🟡 ปานกลาง',lo:'🟢 ปกติ'};
+  const c=sevCls(r); return `<span class="pill ${c}">${l[c]}</span>`;
+}
+function skillTag(s){
+  const m={NOD:'sk-nod',OFC:'sk-ofc',MUF:'sk-muf',SUP:'sk-sup'}[s]||'sk-ofc';
+  return `<span class="stag ${m}">${s||'—'}</span>`;
+}
+function zTag(z){
+  const col=ZC[z]||'#7a90a8',bg=ZB[z]||'var(--surf2)';
+  return `<span style="background:${bg};color:${col};border:1px solid ${col}44;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;display:inline-block">${ZONE_LABEL[z]||z}</span>`;
+}
+function gTag(g){const col=GC[g]||'#7a90a8';return `<span style="color:${col};font-weight:700;font-size:11px">${g}</span>`;}
+function hrFmt(h){ if(h==null)return'—'; const hh=Math.floor(h),mm=Math.round((h-hh)*60); return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;}
+
+// Mini sparkline
+function spark(rate, seed, W=80, H=24){
+  // rate = od_rate → แปลงเป็น success rate ก่อน
+  const successRate = sr(rate||0);
+  const P=2, N=8;
+  let s = Math.abs(seed || Math.floor(successRate*9999+1));
+  function rng(){s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;}
+  const pts=[];
+  for(let i=0;i<N;i++) pts.push(Math.max(.005,Math.min(.995,successRate+(i/(N-1)-.5)*.03+(rng()-.5)*.05)));
+  pts[N-1]=successRate;
+  return sparkFromPts(pts, W, H);
+}
+function sparkFromPts(pts, W=80, H=24){
+  // pts คือ success rate (0-1) — สูง = ดี
+  const P=2, N=pts.length;
+  const mn=Math.min(...pts)-.02, mx=Math.max(...pts)+.02;
+  const xS=(W-P*2)/Math.max(N-1,1);
+  // y ต่ำ = ค่าสูง (canvas coordinate) → invert
+  const yS=v=>H-P-((v-mn)/(mx-mn||0.001))*(H-P*2);
+  const ps=pts.map((v,i)=>`${P+i*xS},${yS(v)}`).join(' ');
+  const poly=[`${P},${H}`,...pts.map((v,i)=>`${P+i*xS},${yS(v)}`),`${P+(N-1)*xS},${H}`].join(' ');
+  const rate=pts[pts.length-1]; // success rate
+  // สีตาม success: เขียว=ดี, แดง=แย่
+  const col=rate>=.9?'#22c55e':rate>=.75?'#3b82f6':rate>=.6?'#eab308':'#ef4444';
+  const id='sp'+Math.abs(Math.round(rate*9999+Math.random()*1000));
+  return `<div style="display:flex;align-items:center;gap:5px"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${col}" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="${col}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polygon points="${poly}" fill="url(#${id})"/>
+    <polyline points="${ps}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${P+(N-1)*xS}" cy="${yS(rate)}" r="2.5" fill="${col}"/>
+  </svg><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${col};min-width:36px">${(rate*100).toFixed(1)}%</span></div>`;
+}
+
+// ═══ FILTER STATE ════════════════════════════════════════════════
+let selMonth = null; // null = ทั้งหมด
+let selWeek  = null; // null = ทั้งหมด
+let selYear  = null; // null = ทั้งหมด (ใช้คู่กับ selWeek เพื่อกัน WeekNum ซ้ำข้ามปี)
+let selZone  = 'ALL'; // ทั้งหมด หรือ ZoneGroup string
+
+// ═══ MONTH/WEEK FILTER ══════════════════════════════════════════
+function buildMWFilter(){
+  // Get unique months
+  const months = [...new Set(D.week_meta.map(w=>w.Month))].sort((a,b)=>a-b);
+  const mEl = document.getElementById('mth-btns');
+  mEl.innerHTML = [null,...months].map(m => {
+    const lbl = m===null ? 'ทั้งหมด' : `${MONTH_NAMES[m]||m}`;
+    return `<button class="mwbtn ${m===selMonth?'active':''}" onclick="setMonth(${m===null?'null':m})">${lbl}</button>`;
+  }).join('');
+  buildWeekFilter();
+}
+
+function buildWeekFilter(){
+  let wks = D.week_meta;
+  if(selMonth!==null) wks = wks.filter(w=>Number(w.Month)===selMonth);
+  // Deduplicate by Year+WeekNum (กันซ้ำข้ามปี)
+  const seen = new Set();
+  wks = wks.filter(w=>{ const k=`${w.Year}-${w.WeekNum}`; if(seen.has(k)) return false; seen.add(k); return true; });
+  wks = wks.sort((a,b)=>Number(a.Year)-Number(b.Year)||Number(a.WeekNum)-Number(b.WeekNum));
+  const wEl = document.getElementById('wk-btns');
+  wEl.innerHTML = [null,...wks].map((w,i) => {
+    if(w===null) return `<button class="mwbtn ${selWeek===null&&selYear===null?'active':''}" onclick="setWeek(null,null)">ทั้งหมด</button>`;
+    const lbl = `W${w.WeekNum}/${String(w.Year).slice(2)}`;
+    const tip = `ปี ${w.Year} W${w.WeekNum}: ${w.wk_start} (${w.tickets} tickets)`;
+    const isActive = selWeek===Number(w.WeekNum) && selYear===Number(w.Year);
+    return `<button class="mwbtn ${isActive?'active':''}" onclick="setWeek(${w.WeekNum},${w.Year})" title="${tip}">${lbl}</button>`;
+  }).join('');
+  updateDateInfo();
+}
+
+function setMonth(m){
+  selMonth=m; selWeek=null; selYear=null;
+  buildMWFilter();
+  refreshAll();
+}
+function setWeek(w, yr){
+  selWeek = w; selYear = yr||null;
+  document.querySelectorAll('#wk-btns .mwbtn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateDateInfo();
+  refreshAll();
+}
+
+function updateDateInfo(){
+  let info = '';
+  if(selWeek!==null){
+    const wm = D.week_meta.find(w=>Number(w.WeekNum)===selWeek&&(selYear===null||Number(w.Year)===selYear));
+    if(wm) info = `📅 ปี${wm.Year} W${wm.WeekNum}: ${wm.wk_start} (${wm.tickets} tickets)`;
+  } else if(selMonth!==null){
+    const wks = D.week_meta.filter(w=>Number(w.Month)===selMonth);
+    if(wks.length){
+      const s = wks[0].wk_start, e = wks[wks.length-1].wk_end;
+      info = `📅 ${MONTH_NAMES[selMonth]} (${wks.length} สัปดาห์): ${s} ถึง ${e}`;
+    }
+  } else {
+    const all = D.week_meta;
+    if(all.length) info = `📅 ทุกสัปดาห์: ${all[0].wk_start} ถึง ${all[all.length-1].wk_end}`;
+  }
+  document.getElementById('mw-date-info').textContent = info;
+}
+
+// Get filtered zone data based on month/week/zone selection
+function getFilteredZoneData(zoneKey){
+  // Filter week_zone by time filters
+  let rows = D.week_zone;
+  if(selMonth!==null) rows = rows.filter(r=>Number(r.Month)===selMonth);
+  if(selWeek!==null)  rows = rows.filter(r=>Number(r.WeekNum)===selWeek && (selYear===null||Number(r.Year)===selYear));
+
+  // Filter by zone
+  if(zoneKey && zoneKey!=='ALL'){
+    // Check if it's a ZoneGroup or NewZone
+    if(GRP_ORDER.includes(zoneKey)){
+      rows = rows.filter(r=>r.ZoneGroup===zoneKey);
+    } else {
+      rows = rows.filter(r=>r.NewZone===zoneKey);
+    }
+  }
+
+  // Aggregate
+  const total = rows.reduce((s,r)=>s+r.tickets,0);
+  const od    = rows.reduce((s,r)=>s+r.od,0);
+  return { tickets:total, od, od_rate: total>0 ? od/total : 0 };
+}
+
+// Get weekly trend series for a zone
+function getWeeklyTrend(zoneKey){
+  let rows = D.week_zone;
+  if(selMonth!==null) rows = rows.filter(r=>Number(r.Month)===selMonth);
+  // selWeek filter ใช้ใน getFilteredZoneData แต่ trend ควรแสดงทุก week ในเดือนนั้น
+  // ถ้า selWeek เลือกอยู่ → แสดงเฉพาะสัปดาห์นั้น
+  if(selWeek!==null) rows = rows.filter(r=>Number(r.WeekNum)===selWeek&&(selYear===null||Number(r.Year)===selYear));
+  if(zoneKey && zoneKey!=='ALL'){
+    if(GRP_ORDER.includes(zoneKey)) rows = rows.filter(r=>r.ZoneGroup===zoneKey);
+    else rows = rows.filter(r=>r.NewZone===zoneKey);
+  }
+
+  // Group by Year+WeekNum (กัน W10/2025 ชนกับ W10/2026)
+  const byWeek = {};
+  for(const r of rows){
+    const k = `${r.Year}-W${r.WeekNum}`;
+    if(!byWeek[k]) byWeek[k]={wk:`W${r.WeekNum}`,tickets:0,od:0,wkNum:Number(r.WeekNum),year:Number(r.Year),month:r.Month};
+    byWeek[k].tickets += r.tickets;
+    byWeek[k].od      += r.od;
+  }
+  return Object.values(byWeek)
+    .sort((a,b)=>a.year!==b.year?a.year-b.year:a.wkNum-b.wkNum)
+    .map(w=>({...w, od_rate: w.tickets>0 ? w.od/w.tickets : 0}));
+}
+
+// Get skill trend for a zone
+function getSkillTrend(zoneKey, skill){
+  let rows = D.week_skill.filter(r=>r.SkillP===skill);
+  if(selMonth!==null) rows = rows.filter(r=>Number(r.Month)===selMonth);
+  if(zoneKey && zoneKey!=='ALL'){
+    if(GRP_ORDER.includes(zoneKey)) rows = rows.filter(r=>r.ZoneGroup===zoneKey);
+    else rows = rows.filter(r=>r.NewZone===zoneKey);
+  }
+  const byWeek = {};
+  for(const r of rows){
+    const k=r.WeekNum;
+    if(!byWeek[k]) byWeek[k]={wk:`W${r.WeekNum}`,tickets:0,od:0,wkNum:r.WeekNum};
+    byWeek[k].tickets+=r.tickets; byWeek[k].od+=r.od;
+  }
+  return Object.values(byWeek)
+    .sort((a,b)=>a.wkNum-b.wkNum)
+    .map(w=>({...w, od_rate: w.tickets>0 ? w.od/w.tickets : 0}));
+}
+
+// ═══ RENDER TREND SVG CHART ══════════════════════════════════════
+function trendChartSVG(series, color='#3b82f6', title='', H=160){
+  if(!series.length) return `<div class="empty">ไม่มีข้อมูล</div>`;
+  const W = 900, PAD_L=48, PAD_R=20, PAD_T=16, PAD_B=36;
+  const cW = W - PAD_L - PAD_R;
+  const cH = H - PAD_T - PAD_B;
+  const rates = series.map(s=>s.od_rate);
+  const minR = Math.max(0, Math.min(...rates) - .005);
+  const maxR = Math.max(...rates) + .005;
+  const xS = cW / Math.max(series.length-1, 1);
+  const yS = v => PAD_T + cH - ((v-minR)/(maxR-minR||1))*cH;
+  const pts = series.map((s,i)=>`${PAD_L+i*xS},${yS(s.od_rate)}`);
+  const polyPts = [`${PAD_L},${H-PAD_B}`,...pts,`${PAD_L+(series.length-1)*xS},${H-PAD_B}`].join(' ');
+  // Y gridlines (4 levels)
+  const yTicks = 4;
+  let gridLines = '', yLabels = '';
+  for(let i=0;i<=yTicks;i++){
+    const v = minR + (maxR-minR)*i/yTicks;
+    const y = yS(v);
+    gridLines += `<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="var(--b)" stroke-width="1" stroke-dasharray="3,3"/>`;
+    yLabels  += `<text x="${PAD_L-6}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--tm)">${(v*100).toFixed(1)}%</text>`;
+  }
+  // X labels
+  let xLabels = '';
+  series.forEach((s,i)=>{
+    xLabels += `<text x="${PAD_L+i*xS}" y="${H-PAD_B+16}" text-anchor="middle" font-size="10" fill="var(--tm)">${s.wk}</text>`;
+  });
+  // Dots + tooltip areas
+  let dots = '';
+  series.forEach((s,i)=>{
+    dots += `<circle cx="${PAD_L+i*xS}" cy="${yS(s.od_rate)}" r="4" fill="${color}" stroke="var(--surf)" stroke-width="2"><title>${s.wk}: ${(s.od_rate*100).toFixed(1)}% (${s.od}/${s.tickets})</title></circle>`;
+  });
+  const lastX = PAD_L+(series.length-1)*xS;
+  const lastY = yS(series[series.length-1].od_rate);
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:${H}px;overflow:visible">
+    <defs>
+      <linearGradient id="tg${Math.random().toString(36).slice(2,7)}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    <polygon points="${polyPts}" fill="${color}" fill-opacity="0.14"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    ${yLabels}
+    ${xLabels}
+    <text x="${PAD_L}" y="${PAD_T-4}" font-size="10" fill="var(--tm)">In Due %</text>
+    <text x="${PAD_L+cW/2}" y="${H-2}" text-anchor="middle" font-size="10" fill="var(--tm)">สัปดาห์ (Week)</text>
+  </svg>`;
+}
+
+// ═══ MULTI-ZONE TREND CHART (4 zones in one chart) ═══════════════
+function multiZoneTrendChartSVG(H=170){
+  const W=900, PAD_L=48, PAD_R=120, PAD_T=16, PAD_B=36;
+  const cW=W-PAD_L-PAD_R, cH=H-PAD_T-PAD_B;
+  const grpSeries = {};
+  for(const g of GRP_ORDER) grpSeries[g] = getWeeklyTrend(g);
+  const allWks = [...new Set(GRP_ORDER.flatMap(g=>grpSeries[g].map(s=>s.wkNum)))].sort((a,b)=>a-b);
+  if(!allWks.length) return `<div class="empty">ไม่มีข้อมูล</div>`;
+  const allRates = GRP_ORDER.flatMap(g=>grpSeries[g].map(s=>s.od_rate));
+  const minR = Math.max(0, Math.min(...allRates)-.01);
+  const maxR = Math.min(1, Math.max(...allRates)+.01);
+  const xS = cW / Math.max(allWks.length-1,1);
+  const yS = v => PAD_T + cH - ((v-minR)/(maxR-minR||1))*cH;
+  let grid='', yLbls='';
+  for(let i=0;i<=4;i++){
+    const v=minR+(maxR-minR)*i/4, y=yS(v);
+    grid+=`<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="var(--b)" stroke-width="1" stroke-dasharray="3,3"/>`;
+    yLbls+=`<text x="${PAD_L-6}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--tm)">${(v*100).toFixed(1)}%</text>`;
+  }
+  let xLbls='';
+  allWks.forEach((wk,i)=>{ xLbls+=`<text x="${PAD_L+i*xS}" y="${H-PAD_B+16}" text-anchor="middle" font-size="10" fill="var(--tm)">W${wk}</text>`; });
+  let lines='', dots='', legends='';
+  GRP_ORDER.forEach((g,gi)=>{
+    const col=GC[g]||'#7a90a8';
+    const series=grpSeries[g];
+    if(!series.length) return;
+    const pts=series.map(s=>`${PAD_L+allWks.indexOf(s.wkNum)*xS},${yS(s.od_rate)}`);
+    const polyPts=[`${PAD_L+allWks.indexOf(series[0].wkNum)*xS},${H-PAD_B}`,...pts,`${PAD_L+allWks.indexOf(series[series.length-1].wkNum)*xS},${H-PAD_B}`].join(' ');
+    lines+=`<polygon points="${polyPts}" fill="${col}" fill-opacity="0.07"/>`;
+    lines+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    series.forEach((s,i)=>{
+      const xi=allWks.indexOf(s.wkNum);
+      dots+=`<circle cx="${PAD_L+xi*xS}" cy="${yS(s.od_rate)}" r="4" fill="${col}" stroke="var(--surf)" stroke-width="2"><title>${g} W${s.wkNum}: ${(s.od_rate*100).toFixed(1)}% (${s.od}/${s.tickets})</title></circle>`;
+      if(i===series.length-1) dots+=`<text x="${PAD_L+xi*xS+7}" y="${yS(s.od_rate)+4}" font-size="10" font-weight="700" fill="${col}">${(s.od_rate*100).toFixed(1)}%</text>`;
+    });
+    const ly=PAD_T+gi*22;
+    legends+=`<rect x="${W-PAD_R+12}" y="${ly}" width="14" height="4" rx="2" fill="${col}"/>`;
+    legends+=`<text x="${W-PAD_R+30}" y="${ly+5}" font-size="12" font-weight="700" fill="${col}">${g}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:${H}px;overflow:visible">
+    ${grid}${lines}${dots}${yLbls}${xLbls}${legends}
+    <text x="${PAD_L}" y="${PAD_T-4}" font-size="10" fill="var(--tm)">In Due %</text>
+    <text x="${PAD_L+cW/2}" y="${H-2}" text-anchor="middle" font-size="10" fill="var(--tm)">สัปดาห์ (Week)</text>
+  </svg>`;
+}
+
+function miniChartSVG(series, color, H=90){
+  if(!series.length) return '<div class="empty" style="padding:20px">ไม่มีข้อมูล</div>';
+  const W=400, PAD_L=38,PAD_R=16,PAD_T=10,PAD_B=22;
+  const cW=W-PAD_L-PAD_R, cH=H-PAD_T-PAD_B;
+  const rates=series.map(s=>s.od_rate);
+  const minR=Math.max(0,Math.min(...rates)-.005), maxR=Math.max(...rates)+.005;
+  const xS=cW/Math.max(series.length-1,1);
+  const yS=v=>PAD_T+cH-((v-minR)/(maxR-minR||1))*cH;
+  const pts=series.map((s,i)=>`${PAD_L+i*xS},${yS(s.od_rate)}`);
+  const polyPts=[`${PAD_L},${H-PAD_B}`,...pts,`${PAD_L+(series.length-1)*xS},${H-PAD_B}`].join(' ');
+  let xL=''; series.forEach((s,i)=>{xL+=`<text x="${PAD_L+i*xS}" y="${H-3}" text-anchor="middle" font-size="8" fill="var(--tm)">${s.wk}</text>`;});
+  let yL=''; [minR,(minR+maxR)/2,maxR].forEach(v=>{
+    const y=yS(v); yL+=`<text x="${PAD_L-4}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--tm)">${(v*100).toFixed(1)}%</text>`;
+    yL+=`<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="var(--b)" stroke-width="1" stroke-dasharray="2,2"/>`;
+  });
+  const dots=series.map((s,i)=>`<circle cx="${PAD_L+i*xS}" cy="${yS(s.od_rate)}" r="3" fill="${color}" stroke="var(--surf)" stroke-width="1.5"><title>${s.wk}: ${(sr(s.od_rate||0)*100).toFixed(1)}% In Due</title></circle>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
+    ${yL}<polygon points="${polyPts}" fill="${color}" fill-opacity="0.12"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${xL}
+  </svg>`;
+}
+
+// ═══ CANVAS ANIMATED CHART ENGINE ════════════════════════════════
+
+// Shared state for ongoing animations
+const _anim = { main: null, skill: {} };
+const _prev = { main: null, skill: {} };  // previous series snapshot for morph
+
+// ── colour utils ──────────────────────────────────────────────────
+function hexToRgb(hex){
+  // handle css vars fallback
+  const m = hex.match(/^#([0-9a-f]{3,6})$/i);
+  if(!m) return {r:100,g:160,b:250};
+  let h=m[1]; if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)};
+}
+function rgbA(hex,a){ const c=hexToRgb(hex); return `rgba(${c.r},${c.g},${c.b},${a})`; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function easeInOut(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+
+// ── build normalised series array for canvas drawing ─────────────
+// Returns [{x:0..1, y:0..1, label, raw}]
+// sr = Success Rate = 1 - od_rate  (ใช้ plot กราฟทุกที่)
+function sr(od_rate){ return 1 - (od_rate||0); }
+
+function normSeries(series, globalMin, globalMax){
+  const rng = globalMax - globalMin || 0.001;
+  return series.map((s,i)=>({
+    x: series.length>1 ? i/(series.length-1) : 0.5,
+    y: 1 - (sr(s.od_rate) - globalMin)/rng,
+    label: s.wk,
+    raw: s
+  }));
+}
+
+// ── Draw ONE polyline with fill on canvas ctx ─────────────────────
+// pts: [{x,y}] in [0..1], progress 0..1 (how much of line to draw)
+function drawLine(ctx, pts, col, progress, W, H, PAD_L, PAD_T, cW, cH, alpha=1, fillAlpha=0.10){
+  if(!pts.length) return;
+  const n = Math.max(1, Math.round(pts.length * progress));
+  const slice = pts.slice(0, n);
+  // partial last segment
+  if(progress < 1 && n < pts.length){
+    const a = pts[n-1], b = pts[n];
+    const frac = (pts.length * progress) - (n-1);
+    slice[slice.length-1] = {
+      x: lerp(a.x, b.x, frac),
+      y: lerp(a.y, b.y, frac),
+      label: a.label, raw: a.raw
+    };
+  }
+  const px = p => PAD_L + p.x * cW;
+  const py = p => PAD_T + p.y * cH;
+
+  // Fill area
+  ctx.save();
+  ctx.globalAlpha = alpha * fillAlpha;
+  ctx.beginPath();
+  ctx.moveTo(px(slice[0]), H - 36);  // bottom
+  slice.forEach(p => ctx.lineTo(px(p), py(p)));
+  ctx.lineTo(px(slice[slice.length-1]), H - 36);
+  ctx.closePath();
+  ctx.fillStyle = col;
+  ctx.fill();
+  ctx.restore();
+
+  // Line
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  slice.forEach((p,i) => i===0 ? ctx.moveTo(px(p),py(p)) : ctx.lineTo(px(p),py(p)));
+  ctx.stroke();
+  ctx.restore();
+
+  // Dots + % labels at each point
+  slice.forEach((p,i) => {
+    if(i < slice.length-1 && progress < 1) return; // only last dot while animating
+    // Dot
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(px(p), py(p), 4, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.strokeStyle = 'var(--surf)';
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    // % label at every point (show success rate)
+    if(p.raw && progress >= 1){
+      const val = sr(p.raw.od_rate);
+      const lbl = (val*100).toFixed(1)+'%';
+      // Position: above dot, nudge left if last point
+      const lx = px(p) + (i===slice.length-1 ? -28 : -14);
+      const ly = py(p) - 7;
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.9;
+      ctx.font = 'bold 9px Inter,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = col;
+      ctx.fillText(lbl, lx + 14, ly);
+      ctx.restore();
+    }
+  });
+}
+
+// ── Draw grid + axes ─────────────────────────────────────────────
+function drawGrid(ctx, W, H, PAD_L, PAD_T, cW, cH, minR, maxR, isDark){
+  const gridCol = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)';
+  const lblCol  = isDark ? 'rgba(122,144,168,0.9)'  : '#5a7096';
+  ctx.save();
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const v = minR + (maxR-minR)*i/4;
+    const y = PAD_T + cH - (v-minR)/(maxR-minR||1)*cH;
+    ctx.strokeStyle = gridCol;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W-20, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = lblCol;
+    ctx.fillText((v*100).toFixed(1)+'%', PAD_L-6, y+3);  // v = success rate
+  }
+  ctx.restore();
+}
+
+// ── Draw X labels ─────────────────────────────────────────────────
+function drawXLabels(ctx, wkLabels, W, H, PAD_L, PAD_T, cW, cH, isDark){
+  const lblCol = isDark ? 'rgba(122,144,168,0.9)' : '#5a7096';
+  ctx.save();
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = lblCol;
+  wkLabels.forEach((lbl,i)=>{
+    const x = PAD_L + (wkLabels.length>1 ? i/(wkLabels.length-1) : 0.5)*cW;
+    ctx.fillText(lbl, x, H - 36 + 16);
+  });
+  ctx.restore();
+}
+
+// ── Resolve colour (handle css vars) ─────────────────────────────
+function resolveColour(col){
+  const map = {
+    'var(--acc2)':'#3b82f6',
+    '#818cf8':'#818cf8', '#06b6d4':'#06b6d4',
+    '#f97316':'#f97316', '#10b981':'#10b981',
+    'var(--crit)':'#ef4444','var(--ok)':'#22c55e'
+  };
+  return map[col] || col;
+}
+
+// ── MAIN animated chart ───────────────────────────────────────────
+let _mainChartState = null; // {series: [{grp,pts,col}], minR, maxR, wkLabels}
+
+function animateMainChart(newSeries, newMin, newMax, newLabels, dur=420){
+  const canvas = document.getElementById('main-trend-canvas');
+  if(!canvas) return;
+  const wrap = canvas.parentElement;
+  const DPR = window.devicePixelRatio||1;
+  const W = wrap.clientWidth||900;
+  const H = 170;
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width  = W+'px';
+  canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  const PAD_L=52, PAD_T=18, PAD_B=40, PAD_R=newSeries.length>1?130:24;
+  const cW=W-PAD_L-PAD_R, cH=H-PAD_T-PAD_B;
+  const isDark = !document.body.classList.contains('day');
+
+  // Cancel ongoing
+  if(_anim.main) cancelAnimationFrame(_anim.main);
+
+  const prev = _mainChartState;
+  const start = performance.now();
+
+  // For each series, build alpha timeline: prev grps fade out, new grps draw in
+  function frame(now){
+    const t = Math.min((now-start)/dur, 1);
+    const e = easeInOut(t);
+    ctx.clearRect(0,0,W,H);
+
+    drawGrid(ctx,W,H,PAD_L,PAD_T,cW,cH,newMin,newMax,isDark);
+    drawXLabels(ctx,newLabels,W,H,PAD_L,PAD_T,cW,cH,isDark);
+
+    // Draw previous series fading out (if exists & different)
+    if(prev && t < 1){
+      const fadeAlpha = 1 - e;
+      prev.series.forEach(s=>{
+        // if this group is also in new, skip fade (it'll be drawn in new)
+        const inNew = newSeries.find(ns=>ns.grp===s.grp);
+        if(inNew) return;
+        const npts = normSeries(s.rawSeries, newMin, newMax);
+        drawLine(ctx, npts, resolveColour(s.col), 1, W, H, PAD_L, PAD_T, cW, cH, fadeAlpha*0.8, 0.05);
+      });
+    }
+
+    // Draw new series growing in
+    newSeries.forEach((s,si)=>{
+      const npts = normSeries(s.rawSeries, newMin, newMax);
+      const lineProgress = Math.min(1, e * 1.1); // slightly overshoot to ensure full draw
+      // For series shared with prev, morph from prev alpha to 1
+      const wasInPrev = prev && prev.series.find(ps=>ps.grp===s.grp);
+      const alpha = wasInPrev ? 1 : e;
+      drawLine(ctx, npts, resolveColour(s.col), lineProgress, W, H, PAD_L, PAD_T, cW, cH, alpha);
+
+      // Legend (multi-zone only)
+      if(newSeries.length > 1){
+        const leg_x = W - PAD_R + 14;
+        const leg_y = PAD_T + si * 22;
+        ctx.save(); ctx.globalAlpha=alpha;
+        ctx.fillStyle=resolveColour(s.col);
+        ctx.beginPath(); ctx.rect(leg_x, leg_y, 14, 4, 2); ctx.fill();
+        ctx.font='bold 12px Inter,sans-serif'; ctx.textAlign='left';
+        ctx.fillText(s.grp||'', leg_x+18, leg_y+5);
+        ctx.restore();
+      }
+
+      // End label
+      if(s.rawSeries.length && e > 0.6){
+        const last = s.rawSeries[s.rawSeries.length-1];
+        const npt = normSeries([last], newMin, newMax)[0];
+        const lx = PAD_L + npt.x*cW + 7;
+        const ly = PAD_T + npt.y*cH + 4;
+        ctx.save();
+        ctx.globalAlpha = (e-0.6)/0.4;
+        ctx.font='bold 10px Inter,sans-serif'; ctx.textAlign='left';
+        ctx.fillStyle=resolveColour(s.col);
+        if(newSeries.length===1) ctx.fillText((sr(last.od_rate)*100).toFixed(1)+'%', lx, ly);
+        ctx.restore();
+      }
+    });
+
+    if(t < 1){ _anim.main = requestAnimationFrame(frame); }
+    else{
+      _anim.main = null;
+      // Final clean render
+      ctx.clearRect(0,0,W,H);
+      drawGrid(ctx,W,H,PAD_L,PAD_T,cW,cH,newMin,newMax,isDark);
+      drawXLabels(ctx,newLabels,W,H,PAD_L,PAD_T,cW,cH,isDark);
+      newSeries.forEach((s,si)=>{
+        const npts=normSeries(s.rawSeries,newMin,newMax);
+        drawLine(ctx,npts,resolveColour(s.col),1,W,H,PAD_L,PAD_T,cW,cH,1);
+        if(newSeries.length>1){
+          const leg_x=W-PAD_R+14, leg_y=PAD_T+si*22;
+          ctx.fillStyle=resolveColour(s.col);
+          ctx.beginPath(); ctx.rect(leg_x,leg_y,14,4); ctx.fill();
+          ctx.font='bold 12px Inter,sans-serif'; ctx.textAlign='left';
+          ctx.fillText(s.grp||'',leg_x+18,leg_y+5);
+        }
+        if(s.rawSeries.length){
+          const last=s.rawSeries[s.rawSeries.length-1];
+          const npt=normSeries([last],newMin,newMax)[0];
+          if(newSeries.length===1){
+            ctx.font='bold 10px Inter,sans-serif'; ctx.textAlign='left';
+            ctx.fillStyle=resolveColour(s.col);
+            ctx.fillText((sr(last.od_rate)*100).toFixed(1)+'%',PAD_L+npt.x*cW+7,PAD_T+npt.y*cH+4);
+          }
+        }
+      });
+    }
+  }
+  _mainChartState = { series: newSeries, minR: newMin, maxR: newMax, wkLabels: newLabels };
+  _anim.main = requestAnimationFrame(frame);
+
+  // Tooltip
+  canvas.onmousemove = function(e){
+    const tip = document.getElementById('main-tip');
+    if(!tip) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    let best=null, bestDist=999;
+    newSeries.forEach(s=>{
+      const npts=normSeries(s.rawSeries,newMin,newMax);
+      npts.forEach(p=>{
+        const px=PAD_L+p.x*cW;
+        const d=Math.abs(mx-px);
+        if(d<bestDist){ bestDist=d; best={p,s}; }
+      });
+    });
+    if(best && bestDist<40){
+      const r=best.p.raw;
+      const lines=newSeries.length>1
+        ? newSeries.map(s=>{
+            const match=s.rawSeries.find(x=>x.wkNum===r.wkNum);
+            return match?`<span style="color:${resolveColour(s.col)};font-weight:700">${s.grp}</span> ${(sr(match.od_rate)*100).toFixed(1)}%  (${match.tickets-match.od}/${match.tickets})`:'';
+          }).filter(Boolean).join('<br>')
+        : `<b>${r.wk}</b>: ${(sr(r.od_rate)*100).toFixed(1)}%<br>✅ ${r.tickets-r.od}/${r.tickets}`;
+      tip.innerHTML=`<b>${r.wk||best.p.label}</b><br>${lines}`;
+      tip.style.display='block';
+      tip.style.left=(best.p.x*cW+PAD_L+8)+'px';
+      tip.style.top=(PAD_T+best.p.y*cH-36)+'px';
+    } else { tip.style.display='none'; }
+  };
+  canvas.onmouseleave=()=>{ const t=document.getElementById('main-tip'); if(t)t.style.display='none'; };
+}
+
+// ── SKILL mini animated charts ────────────────────────────────────
+function animateSkillChart(canvasEl, tipEl, rawSeries, col, key, dur=380){
+  if(!canvasEl) return;
+  const wrap = canvasEl.parentElement;
+  const DPR = window.devicePixelRatio||1;
+  const W = wrap.clientWidth||400;
+  const H = 90;
+  canvasEl.width  = W*DPR; canvasEl.height = H*DPR;
+  canvasEl.style.width=W+'px'; canvasEl.style.height=H+'px';
+  const ctx = canvasEl.getContext('2d');
+  ctx.scale(DPR,DPR);
+  const PAD_L=40,PAD_T=10,PAD_B=24,PAD_R=16;
+  const cW=W-PAD_L-PAD_R, cH=H-PAD_T-PAD_B;
+  const isDark=!document.body.classList.contains('day');
+
+  if(!rawSeries.length){ ctx.clearRect(0,0,W,H); return; }
+  const rates = rawSeries.map(s => sr(s.od_rate));  // success rate
+  const minR = Math.max(0, Math.min(...rates) - .005);
+  const maxR = Math.min(1, Math.max(...rates) + .005);
+  // normSeries ใช้ sr(s.od_rate) ภายใน — ส่ง rawSeries ตรงๆ
+  const npts = normSeries(rawSeries, minR, maxR);
+  const wkLabels = rawSeries.map(s => s.wk);
+
+  if(_anim.skill[key]) cancelAnimationFrame(_anim.skill[key]);
+  const start=performance.now();
+  const gridCol=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.08)';
+  const lblCol=isDark?'rgba(122,144,168,0.9)':'#5a7096';
+
+  function drawSkillGrid(){
+    ctx.save();
+    [minR,(minR+maxR)/2,maxR].forEach(v=>{
+      const y=PAD_T+cH-(v-minR)/(maxR-minR||1)*cH;
+      ctx.strokeStyle=gridCol; ctx.lineWidth=1; ctx.setLineDash([2,2]);
+      ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(W-PAD_R,y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font='8px Inter,sans-serif'; ctx.textAlign='right';
+      ctx.fillStyle=lblCol;
+      ctx.fillText((v*100).toFixed(1)+'%',PAD_L-4,y+3);  // v = success rate
+    });
+    ctx.font='9px Inter,sans-serif'; ctx.textAlign='center'; ctx.fillStyle=lblCol;
+    wkLabels.forEach((l,i)=>{
+      const x=PAD_L+(wkLabels.length>1?i/(wkLabels.length-1):0.5)*cW;
+      ctx.fillText(l,x,H-3);
+    });
+    ctx.restore();
+  }
+
+  function frame(now){
+    const t=Math.min((now-start)/dur,1);
+    const e=easeInOut(t);
+    ctx.clearRect(0,0,W,H);
+    drawSkillGrid();
+    drawLine(ctx,npts,resolveColour(col),e,W,H,PAD_L,PAD_T,cW,cH,1,0.12);
+    if(t<1){ _anim.skill[key]=requestAnimationFrame(frame); }
+    else{
+      _anim.skill[key]=null;
+      ctx.clearRect(0,0,W,H);
+      drawSkillGrid();
+      drawLine(ctx,npts,resolveColour(col),1,W,H,PAD_L,PAD_T,cW,cH,1,0.12);
+    }
+  }
+  _anim.skill[key]=requestAnimationFrame(frame);
+
+  // Tooltip
+  canvasEl.onmousemove=function(e){
+    if(!tipEl) return;
+    const rect=canvasEl.getBoundingClientRect();
+    const mx=e.clientX-rect.left;
+    let best=null,bd=999;
+    npts.forEach((p,i)=>{ const px=PAD_L+p.x*cW; const d=Math.abs(mx-px); if(d<bd){bd=d;best={p,i};} });
+    if(best&&bd<40){
+      const r=rawSeries[best.i];
+      tipEl.innerHTML=`<b>${r.wk}</b>: ${((1-r.od_rate)*100).toFixed(1)}%<br>In Due ${r.tickets-r.od}/${r.tickets}`;
+      tipEl.style.display='block';
+      tipEl.style.left=(PAD_L+best.p.x*cW+6)+'px';
+      tipEl.style.top=(PAD_T+best.p.y*cH-30)+'px';
+    } else { tipEl.style.display='none'; }
+  };
+  canvasEl.onmouseleave=()=>{ if(tipEl)tipEl.style.display='none'; };
+}
+
+// ── Bridge: called after renderRegContent stamps the canvas els ───
+function initCharts(){
+  const zKey = selZone==='ALL'?null:selZone;
+
+  // Build main chart series
+  let mainSeries=[], allRates=[];
+  if(selZone==='ALL'){
+    GRP_ORDER.forEach(g=>{
+      const s=getWeeklyTrend(g);
+      mainSeries.push({grp:g, col:GC[g]||'#7a90a8', rawSeries:s});
+      allRates.push(...s.map(x=>sr(x.od_rate)));
+    });
+  } else {
+    const col = GC[selZone]||'var(--acc2)';
+    const s = getWeeklyTrend(zKey);
+    mainSeries.push({grp:selZone, col, rawSeries:s});
+    allRates.push(...s.map(x=>sr(x.od_rate)));
+  }
+  // allRates เก็บ success rate (sr) ไว้แล้ว — ใช้ตรงๆ
+  const minR = allRates.length ? Math.max(0, Math.min(...allRates) - .01) : 0;
+  const maxR = allRates.length ? Math.min(1, Math.max(...allRates) + .01) : 1;
+
+  // Unique week labels across all series
+  const allWkNums=[...new Set(mainSeries.flatMap(s=>s.rawSeries.map(x=>x.wkNum)))].sort((a,b)=>a-b);
+  const wkLabels=allWkNums.map(w=>'W'+w);
+
+  // Update title
+  const titleEl=document.getElementById('main-chart-title');
+  if(titleEl) titleEl.textContent=selZone==='ALL'?'เทรนด์ความสำเร็จ (In Due %) ทั้ง 4 โซน':'เทรนด์ความสำเร็จ (In Due %) รวม ('+mainSeries[0].rawSeries.length+' สัปดาห์)';
+
+  // Animate main after a brief paint
+  requestAnimationFrame(()=>animateMainChart(mainSeries,minR,maxR,wkLabels));
+
+  // Skill charts
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.skill-canvas').forEach(c=>{
+      const sk=c.dataset.sk;
+      const tip=document.querySelector(`.skill-tip[data-sk="${sk}"]`);
+      const s=getSkillTrend(zKey,sk);
+      const skCol=SKILL_COLORS[sk]||'#7a90a8';
+      animateSkillChart(c,tip,s,skCol,sk);
+    });
+  });
+}
+
+
+// ═══ KPI CARDS ═══════════════════════════════════════════════════
+function renderKPI(){
+  const zData = getFilteredZoneData(selZone==='ALL'?null:selZone);
+  const total  = zData.tickets != null ? zData.tickets : D.kpis.total_tickets;
+  const od     = zData.od      != null ? zData.od      : D.kpis.overdue;
+  const rate   = total > 0 ? od / total : D.kpis.od_rate;
+  const indue  = total - od;
+
+  const cards = [
+    {l:'Total Tickets', v:fmt(total), s:'ทั้งหมด', c:'acc'},
+    {l:'In Due', v:fmt(indue), s:`${pct(indue/total)}`, c:'ok'},
+    {l:'Over Due', v:fmt(od), s:`${pct(rate)} OD Rate`, c:'crit'},
+  ];
+  document.getElementById('kgrid').innerHTML = cards.map((c,i)=>
+    `<div class="kc ${c.c}">
+      <div class="kc-lbl">${c.l}</div>
+      <div class="kc-val ${c.c}">${c.v}</div>
+      <div class="kc-sub">${c.s}</div>
+    </div>`
+  ).join('');
+}
+
+// ═══ REGION MEGA PANEL ═══════════════════════════════════════════
+function buildZoneTabs(){
+  const tabs = [
+    {k:'ALL', lbl:'🌐 ทั้งหมด'},
+    {k:'BMA', lbl:'BMA'},
+    {k:'C&W', lbl:'C&W'},
+    {k:'EAS', lbl:'EAS'},
+    {k:'SOU', lbl:'SOU'},
+  ];
+  document.getElementById('reg-zone-tabs').innerHTML = tabs.map(t=>{
+    const col = t.k==='ALL'?'var(--acc2)':GC[t.k]||'#7a90a8';
+    return `<button class="rzt ${t.k===selZone?'active':''}" id="rzt-${t.k.replace(/[^a-z0-9]/gi,'-')}"
+      style="${t.k===selZone?`border-bottom-color:${col};color:${col}`:''}"
+      onclick="setZone('${t.k}')">${t.lbl}</button>`;
+  }).join('');
+}
+
+function setZone(z){
+  selZone = z;
+  buildZoneTabs();
+  document.getElementById('zone-sel-badge').textContent = z==='ALL'?'ทั้งหมด':(ZONE_LABEL[z]||z);
+  renderRegContent();
+  renderKPI();
+  renderTop10();
+}
+
+function renderRegContent(){
+  const body = document.getElementById('reg-content');
+  const isGrp = GRP_ORDER.includes(selZone) || selZone==='ALL';
+  const zKey  = selZone==='ALL'?null:selZone;
+  const zData = getFilteredZoneData(zKey);
+  const col   = selZone==='ALL'?'var(--acc2)':(GRP_ORDER.includes(selZone)?GC[selZone]:ZC[selZone])||'#7a90a8';
+  const lbl   = selZone==='ALL'?'ทั้งหมด':(ZONE_LABEL[selZone]||selZone);
+  const trend = getWeeklyTrend(zKey);
+
+  // Skill trends
+  const skills = ['OFC','NOD'];
+  const skillTrends = {};
+  for(const sk of skills) skillTrends[sk] = getSkillTrend(zKey, sk);
+
+  body.innerHTML = `
+  <div class="reg-header-row">
+    <div class="reg-main-stat">
+      <div class="reg-zone-badge" style="background:${col}22;color:${col};border:1px solid ${col}44">${lbl}</div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:4px">สรุปภูมิภาค · ${selWeek?'W'+selWeek:selMonth?MONTH_NAMES[selMonth]:'ทุกข้อมูล'}</div>
+      <div class="reg-big-pct" style="color:${col}">${(zData.od_rate*100).toFixed(1)}%</div>
+      <div class="reg-od-label">OD Rate</div>
+    </div>
+    <div class="reg-stat-cards">
+      <div class="rsc">
+        <div class="rsc-lbl">Tickets</div>
+        <div class="rsc-val">${fmt(zData.tickets)}</div>
+        <div class="rsc-sub">ทั้งหมด</div>
+      </div>
+      <div class="rsc">
+        <div class="rsc-lbl">Over Due</div>
+        <div class="rsc-val" style="color:${col}">${fmt(zData.od)}</div>
+        <div class="rsc-sub">${(zData.od_rate*100).toFixed(1)}% ของทั้งหมด</div>
+      </div>
+      <div class="rsc">
+        <div class="rsc-lbl">In Due</div>
+        <div class="rsc-val" style="color:var(--ok)">${fmt(zData.tickets-zData.od)}</div>
+        <div class="rsc-sub">${((1-zData.od_rate)*100).toFixed(1)}%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reg-chart-area">
+    <div class="reg-chart-title" id="main-chart-title"></div>
+    <div class="canvas-chart-wrap" style="height:170px"><canvas id="main-trend-canvas" height="170"></canvas><div class="canvas-tooltip" id="main-tip"></div></div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:10px">แยกตาม Skill</div>
+  <div class="skill-charts">
+    ${skills.map(sk=>{
+      const st = skillTrends[sk];
+      const lastRate = st.length ? (1 - st[st.length-1].od_rate) : 0;
+      const skCol = SKILL_COLORS[sk]||'#7a90a8';
+      return `<div class="skill-chart-box">
+        <div class="skill-chart-hdr">
+          <div class="skill-chart-name">${sk}</div>
+          <div class="skill-chart-rate skill-rate-val" data-sk="${sk}" style="color:${skCol}">${(lastRate*100).toFixed(1)}%</div>
+        </div>
+        <div class="canvas-chart-wrap" style="height:90px"><canvas class="skill-canvas" data-sk="${sk}" height="90"></canvas><div class="canvas-tooltip skill-tip" data-sk="${sk}"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  // Kick off canvas animations after DOM is painted
+  requestAnimationFrame(()=>initCharts());
+}
+
+// ═══ TOP 10 (Worst + Best) ════════════════════════════════════════
+function getFilteredTeams(){
+  let teams = D.teams;
+  if(selZone!=='ALL'){
+    if(GRP_ORDER.includes(selZone)) teams=teams.filter(t=>t.ZoneGroup===selZone);
+    else teams=teams.filter(t=>t.NewZone===selZone);
+  }
+  // เฉพาะ Skill OFC และ NOD เท่านั้น
+  teams = teams.filter(t => t.SkillP==='OFC' || t.SkillP==='NOD');
+  // กรองทีมที่ไม่มีชื่อจริง: ว่าง, '-', '--', '—', หรือชื่อซ้ำ TeamID
+  teams = teams.filter(t => {
+    const n = (t.Name||'').trim().replace(/_WW$/,'').replace(/_/g,' ').trim();
+    if(!n) return false;
+    if(n==='-' || n==='--' || n==='—') return false;
+    if(n===t.TeamID) return false;
+    return true;
+  });
+  return teams;
+}
+
+function teamRow(t, n, isWorst){
+  const c = t.od_rate>=.4?'var(--crit)':t.od_rate>=.25?'var(--high)':t.od_rate>=.1?'var(--med)':'var(--ok)';
+  return `<tr>
+    <td style="text-align:center;font-size:13px">${n<=3?(isWorst?['🥇','🥈','🥉'][n-1]:['🏅','🎖️','⭐'][n-1]):n}</td>
+    <td class="tid">${t.TeamID}</td>
+    <td style="color:var(--tm);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(t.Name||'—').replace(/_WW$/,'').replace(/_/g,' ')}</td>
+    <td>${t.ProvThai||t.Province}</td>
+    <td>${zTag(t.NewZone)}</td>
+    <td>${skillTag(t.SkillP)}</td>
+    <td><span class="ct-tag">${t.SupCode||'—'}</span></td>
+    <td class="mono">${t.tickets}</td>
+    <td class="mono" style="font-weight:700;color:${c}">${t.tickets-t.od} <span style="opacity:.6;font-size:10px">${(sr(t.od_rate)*100).toFixed(0)}%</span></td>
+    <td>${spark(t.od_rate, (isWorst?300:400)+n)}</td>
+    <td class="mono">${f2(t.pdt)}</td>
+    <td>${sevPill(t.od_rate)}</td>
+  </tr>`;
+}
+
+// ─── Top10 state ─────────────────────────────────────────────────
+let t10WB   = 'worst';   // 'worst' | 'best'
+let t10Skill = 'ALL';    // 'ALL' | 'NOD' | 'OFC'
+
+function setT10WB(mode, btn){
+  t10WB = mode;
+  document.querySelectorAll('.t10-wb').forEach(b=>{
+    const isWorst = b.id==='t10-btn-worst';
+    b.style.background = (b===btn)
+      ? (mode==='worst'?'rgba(239,68,68,.18)':'rgba(34,197,94,.18)')
+      : 'transparent';
+    b.style.borderColor = (b===btn)
+      ? (isWorst?'rgba(239,68,68,.7)':'rgba(34,197,94,.7)')
+      : 'var(--b)';
+    b.style.color = (b===btn)
+      ? (isWorst?'var(--crit)':'var(--ok)')
+      : 'var(--tm)';
+  });
+  renderTop10();
+}
+
+function setT10Skill(sk, btn){
+  t10Skill = sk;
+  const colors = {ALL:'var(--acc)',NOD:'#60a5fa',OFC:'#4ade80'};
+  const bgs    = {ALL:'var(--acc)',NOD:'#0f2240',OFC:'#0d2018'};
+  document.querySelectorAll('.t10-sk').forEach(b=>{
+    const s = b.dataset.sk;
+    b.style.background   = (b===btn) ? bgs[s]   : 'transparent';
+    b.style.borderColor  = (b===btn) ? colors[s] : 'var(--b)';
+    b.style.color        = (b===btn) ? (s==='ALL'?'#fff':colors[s]) : colors[s];
+  });
+  renderTop10();
+}
+
+function renderTop10(){
+  let teams = getFilteredTeams();
+  if(t10Skill !== 'ALL') teams = teams.filter(t=>t.SkillP===t10Skill);
+
+  const skillLabel = t10Skill==='ALL'?'ทั้งหมด':t10Skill;
+  let rows;
+  let labelEl = document.getElementById('t10-label');
+  if(t10WB==='worst'){
+    rows = [...teams].sort((a,b)=>b.od_rate-a.od_rate).slice(0,10);
+    if(labelEl) labelEl.textContent = `🔴 Over Due สูงสุด (แย่) — ${skillLabel}`;
+    if(labelEl) labelEl.style.color = 'var(--crit)';
+  } else {
+    rows = [...teams].filter(t=>t.tickets>=5).sort((a,b)=>a.od_rate-b.od_rate).slice(0,10);
+    if(labelEl) labelEl.textContent = `🟢 Over Due ต่ำสุด (ดีสุด, tickets≥5) — ${skillLabel}`;
+    if(labelEl) labelEl.style.color = 'var(--ok)';
+  }
+
+  const isWorst = t10WB==='worst';
+  document.getElementById('top10-body').innerHTML = rows.map((t,i)=>teamRow(t,i+1,isWorst)).join('');
+}
+
+// ═══ REFRESH ALL ══════════════════════════════════════════════════
+function refreshAll(){
+  renderKPI();
+  renderRegContent();
+  renderTop10();
+  // If on province tab, refresh that too
+  if(document.getElementById('tab-prov').classList.contains('active')) renderProv();
+}
+
+// ═══ HIERARCHY ════════════════════════════════════════════════════
+let hTab='mgr', selMgr=null;
+let supRegF='ALL', supQ='';
+let tvRegF='ALL', tvSevF='ALL', tvQ='', tvPage=1, tvZoneF='ALL';
+const TV_PER=20;
+
+function setHT(t,btn){ hTab=t; document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderH(); }
+function renderH(){
+  const b=document.getElementById('hbody');
+  if(hTab==='mgr') renderMgr(b);
+  else if(hTab==='sup') renderSup(b);
+  else renderTV(b);
+}
+
+function renderMgr(body){
+  const merged={};
+  for(const m of D.managers){
+    const k=m.ManagerCode;
+    if(!merged[k]) merged[k]={...m,zones:[]};
+    else{merged[k].tickets+=m.tickets;merged[k].od+=m.od;merged[k].teams+=m.teams;}
+    if(!merged[k].zones.includes(m.ZoneGroup)) merged[k].zones.push(m.ZoneGroup);
+    merged[k].od_rate=merged[k].od/merged[k].tickets;
+  }
+  const ml=Object.values(merged).sort((a,b)=>b.od_rate-a.od_rate);
+  body.innerHTML=`<div style="font-size:11px;color:var(--tm);margin-bottom:11px">💡 กดที่การ์ด Manager เพื่อดู Supervisor และทีม</div>
+  <div class="mgrid">${ml.map((m,i)=>{
+    const col=GC[m.zones?.[0]]||'#7a90a8';
+    return `<div class="mcard" id="mc-${m.ManagerCode}" style="border-top:3px solid ${col}" onclick="drillMgr('${m.ManagerCode}')">
+      <div class="mcard-lbl" style="color:${col}">${MGR_LABELS[m.ManagerCode]||m.ManagerCode}</div>
+      <div class="mcard-rate" style="color:${col}">${(m.od_rate*100).toFixed(1)}%</div>
+      <div style="margin:5px 0">${spark(m.od_rate, 400+i)}</div>
+      <div class="mcard-stats">
+        <span>Tickets<br><strong>${fmt(m.tickets)}</strong></span>
+        <span>OD<br><strong style="color:${col}">${fmt(m.od)}</strong></span>
+        <span>Teams<br><strong>${fmt(m.teams)}</strong></span>
+        <span>Zones<br><strong>${m.zones.join('/')}</strong></span>
+      </div>
+    </div>`;
+  }).join('')}</div>
+  <div id="mgr-drill"></div>`;
+  if(selMgr) drillMgr(selMgr);
+}
+
+function drillMgr(code){
+  selMgr=code;
+  document.querySelectorAll('.mcard').forEach(c=>c.classList.remove('selected'));
+  const mc=document.getElementById('mc-'+code); if(mc) mc.classList.add('selected');
+  const col=GC[D.managers.find(m=>m.ManagerCode===code)?.ZoneGroup]||'#7a90a8';
+  const sups=D.supervisors.filter(s=>s.ManagerCode===code).sort((a,b)=>b.od_rate-a.od_rate);
+  document.getElementById('mgr-drill').innerHTML=`
+  <div class="drill-hdr"><div class="dbc"><span style="color:${col}">${MGR_LABELS[code]||code}</span> › <span>Supervisor (${sups.length})</span></div></div>
+  <div class="tsc" style="max-height:320px"><table><thead><tr>
+    <th>#</th><th>Sup</th><th>Province</th><th>Zone</th><th>Skill</th><th>Teams</th><th>Tickets</th><th>OD</th><th style="min-width:110px">เทรนด์</th><th>ระดับ</th>
+  </tr></thead><tbody>${sups.map((s,i)=>`<tr style="cursor:pointer" onclick="drillSup('${s.SupCode}','${code}',this)">
+    <td class="mono" style="color:var(--td)">${i+1}</td>
+    <td><strong style="color:${col};font-family:'JetBrains Mono',monospace">${s.SupCode}</strong></td>
+    <td>${s.ProvThai||s.Province}</td><td>${zTag(s.NewZone)}</td><td>${skillTag(s.SkillP)}</td>
+    <td class="mono">${s.teams}</td><td class="mono">${fmt(s.tickets)}</td>
+    <td class="mono" style="color:${s.od_rate>=.3?'var(--crit)':'inherit'}">${fmt(s.od)}</td>
+    <td>${spark(s.od_rate,500+i)}</td><td>${sevPill(s.od_rate)}</td>
+  </tr>`).join('')}</tbody></table></div>
+  <div id="sup-drill2"></div>`;
+}
+
+function drillSup(supCode, mgrCode, row){
+  const col=GC[D.supervisors.find(s=>s.SupCode===supCode)?.ZoneGroup]||'#7a90a8';
+  const sup=D.supervisors.find(s=>s.SupCode===supCode)||{};
+  let teams=D.teams.filter(t=>t.SupCode===supCode);
+  const fb=!teams.length;
+  if(fb) teams=D.teams.filter(t=>t.Province===sup.Province);
+  // กรองทีมที่ไม่มีชื่อจริง
+  teams=teams.filter(t=>{ const n=(t.Name||'').trim().replace(/_WW$/,'').replace(/_/g,' ').trim(); return n&&n!=='-'&&n!=='--'&&n!=='—'&&n!==t.TeamID; });
+  teams.sort((a,b)=>b.od_rate-a.od_rate);
+  document.getElementById('sup-drill2').innerHTML=`
+  <div class="drill-hdr" style="margin-top:11px">
+    <div class="dbc"><span style="color:${col}">${supCode}</span> › <span>Teams (${teams.length})</span>
+      ${fb?'<span class="fb-badge">⚠️ Fallback Province</span>':''}</div>
+    <button class="dback" onclick="document.getElementById('sup-drill2').innerHTML=''">✕</button>
+  </div>
+  <div class="tsc" style="max-height:300px"><table><thead><tr>
+    <th>#</th><th>Team ID</th><th>ชื่อช่าง</th><th>Tel</th><th>Province</th><th>Zone</th><th>Skill</th><th>CT</th>
+    <th>Tickets</th><th>OD</th><th style="min-width:110px">เทรนด์</th><th>WDays</th><th>PDT</th><th>ระดับ</th>
+  </tr></thead><tbody>${teams.map((t,i)=>{
+    const c=t.od_rate>=.4?'var(--crit)':t.od_rate>=.2?'var(--high)':'var(--med)';
+    return `<tr><td class="mono" style="color:var(--td)">${i+1}</td>
+      <td class="tid">${t.TeamID}</td>
+      <td style="color:var(--tm);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(t.Name||'—').replace(/_WW$/,'').replace(/_/g,' ')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm)">${t.Tel||'—'}</td>
+      <td>${t.ProvThai||t.Province}</td><td>${zTag(t.NewZone)}</td><td>${skillTag(t.SkillP)}</td>
+      <td><span class="ct-tag">${t.CT||'—'}</span></td>
+      <td class="mono">${t.tickets}</td>
+      <td class="mono" style="font-weight:700;color:${c}">${t.od}</td>
+      <td>${spark(t.od_rate,600+i)}</td>
+      <td class="mono">${t.workdays||'—'}</td><td class="mono">${f2(t.pdt)}</td>
+      <td>${sevPill(t.od_rate)}</td>
+    </tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function renderSup(body){
+  body.innerHTML=`<div class="ttbar">
+    <input class="srch" placeholder="ค้นหา Sup / Province..." oninput="supQ=this.value;updateSup()">
+    <div class="fg">${['ALL',...GRP_ORDER].map(g=>`<button class="fb ${g==='ALL'?'active':''}" onclick="supRegF='${g}';document.querySelectorAll('#sup-grp .fb').forEach(b=>b.classList.remove('active'));this.classList.add('active');updateSup()" id="sup-grp">${g==='ALL'?'ทั้งหมด':g}</button>`).join('')}</div>
+  </div>
+  <div class="tsc"><table><thead><tr>
+    <th>#</th><th>Sup</th><th>Province</th><th>Zone</th><th>Group</th><th>Skill</th>
+    <th>Teams</th><th>Tickets</th><th>OD</th><th style="min-width:110px">เทรนด์</th><th>ระดับ</th>
+  </tr></thead><tbody id="sup-body"></tbody></table></div>
+  <div class="pg"><span id="sup-info">—</span></div>
+  <div id="sup-tdr"></div>`;
+  updateSup();
+}
+
+function updateSup(){
+  let d=[...D.supervisors];
+  if(supRegF!=='ALL') d=d.filter(s=>s.ZoneGroup===supRegF);
+  if(supQ) d=d.filter(s=>s.SupCode.toLowerCase().includes(supQ.toLowerCase())||(s.ProvThai||s.Province||'id').includes(supQ));
+  d.sort((a,b)=>b.od_rate-a.od_rate);
+  document.getElementById('sup-body').innerHTML=d.map((s,i)=>{
+    const col=GC[s.ZoneGroup]||'#7a90a8';
+    return `<tr style="cursor:pointer" onclick="showSupTDr('${s.SupCode}')">
+      <td class="mono" style="color:var(--td)">${i+1}</td>
+      <td><strong style="font-family:'JetBrains Mono',monospace;color:${col}">${s.SupCode}</strong></td>
+      <td>${s.ProvThai||s.Province}</td><td>${zTag(s.NewZone)}</td><td>${gTag(s.ZoneGroup)}</td>
+      <td>${skillTag(s.SkillP)}</td><td class="mono">${s.teams}</td>
+      <td class="mono">${fmt(s.tickets)}</td>
+      <td class="mono" style="color:${s.od_rate>=.3?'var(--crit)':'inherit'}">${fmt(s.od)}</td>
+      <td>${spark(s.od_rate,700+i)}</td><td>${sevPill(s.od_rate)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sup-info').textContent=`${d.length} รายการ`;
+}
+
+function showSupTDr(sc){
+  const sup=D.supervisors.find(s=>s.SupCode===sc)||{};
+  let teams=D.teams.filter(t=>t.SupCode===sc);
+  const fb=!teams.length;
+  if(fb) teams=D.teams.filter(t=>t.Province===sup.Province);
+  teams.sort((a,b)=>b.od_rate-a.od_rate);
+  const col=GC[sup.ZoneGroup]||'#7a90a8';
+  document.getElementById('sup-tdr').innerHTML=`
+  <div class="drill-hdr" style="margin-top:11px">
+    <div class="dbc"><span style="color:${col}">${sc}</span> › <span>Teams (${teams.length})</span>
+      ${fb?'<span class="fb-badge">⚠️ Fallback Province</span>':''}</div>
+    <button class="dback" onclick="document.getElementById('sup-tdr').innerHTML=''">✕</button>
+  </div>
+  <div class="tsc" style="max-height:300px"><table><thead><tr>
+    <th>#</th><th>Team ID</th><th>ชื่อช่าง</th><th>Tel</th><th>Province</th><th>Zone</th><th>Skill</th><th>CT</th>
+    <th>Tickets</th><th>OD</th><th style="min-width:110px">เทรนด์</th><th>WDays</th><th>PDT</th><th>ระดับ</th>
+  </tr></thead><tbody>${teams.map((t,i)=>{
+    const c=t.od_rate>=.4?'var(--crit)':t.od_rate>=.2?'var(--high)':'var(--med)';
+    return `<tr><td class="mono" style="color:var(--td)">${i+1}</td>
+      <td class="tid">${t.TeamID}</td>
+      <td style="color:var(--tm);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(t.Name||'—').replace(/_WW$/,'').replace(/_/g,' ')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm)">${t.Tel||'—'}</td>
+      <td>${t.ProvThai||t.Province}</td><td>${zTag(t.NewZone)}</td><td>${skillTag(t.SkillP)}</td>
+      <td><span class="ct-tag">${t.CT||'—'}</span></td>
+      <td class="mono">${t.tickets}</td>
+      <td class="mono" style="font-weight:700;color:${c}">${t.od}</td>
+      <td>${spark(t.od_rate,800+i)}</td>
+      <td class="mono">${t.workdays||'—'}</td><td class="mono">${f2(t.pdt)}</td>
+      <td>${sevPill(t.od_rate)}</td>
+    </tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function renderTV(body){
+  body.innerHTML=`<div class="ttbar">
+    <input class="srch" placeholder="ค้นหา TeamID / ชื่อ / Province..." oninput="tvQ=this.value;tvPage=1;updateTV()">
+    <div class="fg" id="tv-grp">${['ALL',...GRP_ORDER].map(g=>`<button class="fb ${g==='ALL'?'active':''}" onclick="tvRegF='${g}';document.querySelectorAll('#tv-grp .fb').forEach(b=>b.classList.remove('active'));this.classList.add('active');tvPage=1;updateTV()">${g==='ALL'?'ทั้งหมด':g}</button>`).join('')}</div>
+  </div>
+  <div class="sevbar">
+    <span class="sl">ระดับ:</span>
+    ${[['ALL','all','ทั้งหมด'],['critical','cr','🔴 ≥40%'],['high','hi','🟠 20–39%'],['medium','me','🟡 10–19%'],['ok','lo','🟢 <10%']].map(([v,c,l])=>
+      `<button class="sb ${c} ${v==='ALL'?'active':''}" onclick="tvSevF='${v}';document.querySelectorAll('#hbody .sevbar .sb').forEach(b=>b.classList.remove('active'));this.classList.add('active');tvPage=1;updateTV()">${l}</button>`).join('')}
+  </div>
+  <div class="tsc"><table><thead><tr>
+    <th>#</th><th>Team ID</th><th>ชื่อช่าง</th><th>Tel</th><th>Province</th><th>Zone</th><th>Group</th><th>Skill</th><th>CT</th><th>Sup</th>
+    <th>Tickets</th><th>OD</th><th style="min-width:110px">เทรนด์</th><th>WDays</th><th>PDT</th><th>ระดับ</th>
+  </tr></thead><tbody id="tv-body"></tbody></table></div>
+  <div class="pg"><span id="tv-info">—</span><div class="pbtns" id="tv-pg"></div></div>`;
+  updateTV();
+}
+
+function updateTV(){
+  let d=[...D.teams];
+  // กรองทีมที่ไม่มีชื่อจริง
+  d=d.filter(t=>{ const n=(t.Name||'').trim().replace(/_WW$/,'').replace(/_/g,' ').trim(); return n&&n!=='-'&&n!=='--'&&n!=='—'&&n!==t.TeamID; });
+  if(tvRegF!=='ALL') d=d.filter(t=>t.ZoneGroup===tvRegF);
+  if(tvSevF!=='ALL') d=d.filter(t=>t.severity===tvSevF);
+  if(tvQ) d=d.filter(t=>t.TeamID.toLowerCase().includes(tvQ.toLowerCase())||(t.Name||'id').toLowerCase().includes(tvQ.toLowerCase())||(t.ProvThai||t.Province||'id').includes(tvQ));
+  d.sort((a,b)=>b.od_rate-a.od_rate);
+  const total=d.length, tpages=Math.ceil(total/TV_PER);
+  const slice=d.slice((tvPage-1)*TV_PER, tvPage*TV_PER);
+  document.getElementById('tv-body').innerHTML=slice.map((t,i)=>{
+    const c=t.od_rate>=.4?'var(--crit)':t.od_rate>=.2?'var(--high)':'var(--med)';
+    const col=GC[t.ZoneGroup]||'#7a90a8';
+    return `<tr>
+      <td class="mono" style="color:var(--td)">${(tvPage-1)*TV_PER+i+1}</td>
+      <td class="tid">${t.TeamID}</td>
+      <td style="color:var(--tm);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(t.Name||'—').replace(/_WW$/,'').replace(/_/g,' ')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tm)">${t.Tel||'—'}</td>
+      <td>${t.ProvThai||t.Province}</td><td>${zTag(t.NewZone)}</td><td>${gTag(t.ZoneGroup)}</td>
+      <td>${skillTag(t.SkillP)}</td><td><span class="ct-tag">${t.CT||'—'}</span></td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${col}">${t.SupCode||'—'}</span></td>
+      <td class="mono">${t.tickets}</td>
+      <td class="mono" style="font-weight:700;color:${c}">${t.tickets-t.od} <span style="opacity:.6;font-size:10px">${(sr(t.od_rate)*100).toFixed(0)}%</span></td>
+      <td>${spark(t.od_rate,900+(tvPage-1)*TV_PER+i)}</td>
+      <td class="mono">${t.workdays||'—'}</td><td class="mono">${f2(t.pdt)}</td>
+      <td>${sevPill(t.od_rate)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tv-info').textContent=`แสดง ${Math.min((tvPage-1)*TV_PER+1,total)}–${Math.min(tvPage*TV_PER,total)} จาก ${total}`;
+  const pe=document.getElementById('tv-pg'); pe.innerHTML='';
+  if(tpages>1){
+    const prev=document.createElement('button'); prev.className='pb'; prev.textContent='‹'; prev.disabled=tvPage===1;
+    prev.onclick=()=>{tvPage--;updateTV();}; pe.appendChild(prev);
+    for(let p=Math.max(1,tvPage-2);p<=Math.min(tpages,tvPage+2);p++){
+      const b=document.createElement('button'); b.className='pb'+(p===tvPage?' active':''); b.textContent=p;
+      const pp=p; b.onclick=()=>{tvPage=pp;updateTV();}; pe.appendChild(b);
+    }
+    const next=document.createElement('button'); next.className='pb'; next.textContent='›'; next.disabled=tvPage===tpages;
+    next.onclick=()=>{tvPage++;updateTV();}; pe.appendChild(next);
+  }
+}
+
+// ═══ PROVINCE ════════════════════════════════════════════════════
+let provGrpF='ALL', provSevF='ALL', provQ='', provP=1;
+const PP=20;
+function setPGrp(v,btn){ provGrpF=v; document.querySelectorAll('#prov-grp .fb').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); provP=1; renderProv(); }
+function setPSev(v,btn){ provSevF=v; document.querySelectorAll('#tab-prov .sevbar .sb').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); provP=1; renderProv(); }
+function renderProv(){
+  let d=[...D.provinces];
+  if(provGrpF!=='ALL') d=d.filter(p=>p.ZoneGroup===provGrpF);
+  if(provSevF!=='ALL') d=d.filter(p=>p.severity===provSevF);
+  if(provQ) d=d.filter(p=>(p.ProvThai||'id').includes(provQ)||p.Province.toLowerCase().includes(provQ.toLowerCase()));
+  d.sort((a,b)=>b.od_rate-a.od_rate);
+  const total=d.length, tpages=Math.ceil(total/PP), slice=d.slice((provP-1)*PP, provP*PP);
+  document.getElementById('prov-body').innerHTML=slice.map((p,i)=>`<tr>
+    <td class="mono" style="color:var(--td)">${(provP-1)*PP+i+1}</td>
+    <td><strong>${p.Province}</strong></td>
+    <td style="color:var(--tm)">${p.ProvThai||p.Province}</td>
+    <td>${zTag(p.NewZone)}</td><td>${gTag(p.ZoneGroup)}</td>
+    <td class="mono">${fmt(p.tickets)}</td>
+    <td class="mono" style="color:${p.od_rate>=.3?'var(--crit)':'inherit'}">${fmt(p.od)}</td>
+    <td class="mono">${(p.od_rate*100).toFixed(1)}%</td>
+    <td>${spark(p.od_rate,1000+(provP-1)*PP+i)}</td>
+    <td class="mono">${(p.dep_rate*100).toFixed(1)}%</td>
+    <td class="mono">${f2(p.pdt)}</td>
+    <td>${sevPill(p.od_rate)}</td>
+  </tr>`).join('');
+  document.getElementById('prov-info').textContent=`แสดง ${Math.min((provP-1)*PP+1,total)}–${Math.min(provP*PP,total)} จาก ${total}`;
+  const pe=document.getElementById('prov-pg'); pe.innerHTML='';
+  if(tpages>1){
+    const prev=document.createElement('button'); prev.className='pb'; prev.textContent='‹'; prev.disabled=provP===1;
+    prev.onclick=()=>{provP--;renderProv();}; pe.appendChild(prev);
+    for(let p=1;p<=tpages;p++){const b=document.createElement('button'); b.className='pb'+(p===provP?' active':''); b.textContent=p; const pp=p; b.onclick=()=>{provP=pp;renderProv();}; pe.appendChild(b);}
+    const next=document.createElement('button'); next.className='pb'; next.textContent='›'; next.disabled=provP===tpages;
+    next.onclick=()=>{provP++;renderProv();}; pe.appendChild(next);
+  }
+}
+
+// ═══ LATE/EARLY ══════════════════════════════════════════════════
+function renderLE(){
+  const s=[...D.late_early].sort((a,b)=>b.late_rate-a.late_rate);
+  document.getElementById('le-body').innerHTML=s.map((r,i)=>`<tr>
+    <td><strong>${r.Province}</strong></td><td style="color:var(--tm)">${r.ProvThai||r.Province}</td>
+    <td>${zTag(r.NewZone)}</td><td>${gTag(r.ZoneGroup)}</td>
+    <td class="mono">${fmt(r.team_days)}</td>
+    <td class="mono">${fmt(r.late_days)}</td><td class="mono">${(r.late_rate*100).toFixed(1)}%</td>
+    <td>${spark(r.late_rate,1100+i)}</td>
+    <td class="mono">${fmt(r.early_days)}</td><td class="mono">${(r.early_rate*100).toFixed(1)}%</td>
+    <td>${spark(r.early_rate,1200+i)}</td>
+    <td class="mono">${hrFmt(r.avg_arrive)}</td><td class="mono">${hrFmt(r.avg_complete)}</td>
+  </tr>`).join('');
+}
+
+// ═══ TAB NAV ═════════════════════════════════════════════════════
+function goTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='hier') renderH();
+  if(name==='prov') renderProv();
+  if(name==='le')   renderLE();
+}
+
+// ═══ THEME ═══════════════════════════════════════════════════════
+function toggleTheme(){
+  const d=document.body.classList.toggle('day');
+  document.getElementById('theme-lbl').textContent=d?'☀️ Day':'🌙 Night';
+  try{localStorage.setItem('ww-theme',d?'day':'night');}catch(e){}
+}
+function applyTheme(){
+  let t='night'; try{t=localStorage.getItem('ww-theme')||'night';}catch(e){}
+  if(t==='day'){document.body.classList.add('day');document.getElementById('theme-lbl').textContent='☀️ Day';}
+}
+
+// ═══ SHAREPOINT ══════════════════════════════════════════════════
+function toggleSP(){ document.getElementById('spp').classList.toggle('open'); }
+function loadDemo(){document.getElementById('sp-info').innerHTML='✅ โหลด Demo Data (MATELINE 202606)'; document.getElementById('src-lbl').textContent='Demo';}
+async function loadSP(){document.getElementById('sp-info').innerHTML='⏳ รอ Office Script...';}
+function dlScript(){
+  const s=`async function main(workbook: ExcelScript.Workbook) {
+  const sheet = workbook.getWorksheet("RAW_Data") || workbook.getActiveWorksheet();
+  const range = sheet.getUsedRange(); if(!range) return;
+  const [headers,...rows] = range.getValues() as any[][];
+  const records = rows.filter(r=>r.some((c:any)=>c!=="")).map(r=>{
+    const obj:Record<string,any>={};
+    (headers as string[]).forEach((h,i)=>{if(h) obj[h]=r[i];});
+    return obj;
+  });
+  return JSON.stringify({type:"WW_DATA",payload:records,source:workbook.getName()});
+}`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([s],{type:'text/plain'}));
+  a.download='WW_OfficeScript.ts'; a.click();
+}
+
+// ═══ INIT ════════════════════════════════════════════════════════
+applyTheme();
+buildMWFilter();
+buildZoneTabs();
+// ── Initial render with static data first (fast paint) ───────────
+renderKPI();
+renderRegContent();
+renderTop10();
+document.getElementById('upd-lbl').textContent=new Date().toLocaleTimeString('th-TH');
+// ── Then try to load live data (resets each page open) ───────────
+bootDashboard().then(()=>{
+  buildMWFilter();
+  buildZoneTabs();
+  refreshAll();
+  document.getElementById('upd-lbl').textContent=new Date().toLocaleTimeString('th-TH');
+});
+</script>
+</body>
+</html>
