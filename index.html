@@ -2315,7 +2315,7 @@ let _rawAllRows = null;
 const LA_SLA_ORDER = ["SA1","SA2","SA3","SA4","SA5","SA6","NSA1","NSA2","NSA3","NSA4"];
 
 const LA_BUCKETS = [
-  { key:"b4h",    label:"≤ 4 hr.",         sub:"0.5 - 4 hr.",      min:0.5,  max:4,   color:"#22c55e" },
+  { key:"b4h",    label:"0 - 4 hr.",      sub:"",                 min:0,    max:4,   color:"#22c55e" },
   { key:"b4_12h", label:"4 - 12 hr.",     sub:"4 - 12 hr.",       min:4,    max:12,  color:"#22c55e" },
   { key:"b12_48h",label:"12 - 48 hr.",    sub:"12 - 48 hr.",      min:12,   max:48,  color:"#22c55e" },
   { key:"b2_5d",  label:"> 2d < 5d",      sub:"48 - 120 hr.",     min:48,   max:120, color:"#22c55e" },
@@ -2523,13 +2523,13 @@ function buildLaOverviewSection(taggedRows) {
     if (!entries.length) {
       return `
       <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06)">
-        <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${titleLabel} — Over มากสุด</div>
+        <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${titleLabel} — ที่ถือ Pending Over มากที่สุด</div>
         <div style="text-align:center;color:#c2c8e0;font-size:12px;padding:20px 0">ไม่มีข้อมูล ${titleLabel}</div>
       </div>`;
     }
     return `
     <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06)">
-      <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${titleLabel} — Over มากสุด</div>
+      <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${titleLabel} — ที่ถือ Pending Over มากที่สุด</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead>
           <tr style="border-bottom:1px solid #eef1f7">
@@ -2589,19 +2589,19 @@ function buildLaOverviewSection(taggedRows) {
 
         <!-- OFC / NODE Donut Chart -->
         <div style="min-width:0">
-          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">จำนวน TT ที่ Over ตาม Skill</div>
+          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Skill : OFC / NODE</div>
           <div style="position:relative;height:220px;max-width:100%"><canvas id="la-skill-donut"></canvas></div>
         </div>
 
         <!-- Zone Bar/Doughnut Chart -->
         <div style="min-width:0">
-          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">จำนวน TT ที่ Over ตาม Zone</div>
+          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Region</div>
           <div style="position:relative;height:220px;max-width:100%"><canvas id="la-zone-donut"></canvas></div>
         </div>
 
         <!-- Province Pie Chart -->
         <div style="min-width:0">
-          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">จำนวน TT ที่ Over ตามจังหวัด (Top 10)</div>
+          <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Top 10 Pending Over</div>
           <div style="position:relative;height:260px;max-width:100%"><canvas id="la-prov-pie"></canvas></div>
         </div>
 
@@ -2611,7 +2611,7 @@ function buildLaOverviewSection(taggedRows) {
     <!-- Province Table — กรองตาม Skill ได้ + Total Pending -->
     <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06);max-height:380px;overflow-y:auto;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;position:sticky;top:0;background:var(--surface-0);padding-bottom:4px">
-        <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px">จำนวน TT ที่ Over ตามจังหวัด</div>
+        <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px">Province Pending Over</div>
         <div style="display:flex;gap:5px">
           ${skillPill("ALL", "ทั้งหมด")}
           ${skillPill("OFC", "OFC")}
@@ -2719,7 +2719,7 @@ function buildOpticalFiberTable(taggedRows) {
   const headerHtml = `
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
       <div style="font-size:15px;font-weight:800;color:var(--ink-strong);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        🔌 Optical Fiber Degrade — NSA1/NSA2 + Site (VIP/RN/PN/DN/AGN/AN)
+        🔌 NSA1 , NSA2 Warning ( Big Node )
         <span style="font-size:11px;font-weight:700;background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:10px">พบ ${ofRows.length} รายการ</span>
       </div>
       <button onclick="exportOpticalFiberAsExcel()" style="padding:6px 14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap" ${!ofRows.length ? "disabled" : ""}>📊 Export Excel</button>
@@ -2739,7 +2739,6 @@ function buildOpticalFiberTable(taggedRows) {
     { key:"Work Order ID",      label:"Work Order ID",      w:"130px" },
     { key:"_zone",               label:"Region",              w:"80px"  },
     { key:"Province",            label:"Province",            w:"110px" },
-    { key:"Alarm Description",   label:"Alarm Description",   w:"160px" },
     { key:"Subject",              label:"Subject",              w:"260px" },
   ];
 
@@ -2924,8 +2923,8 @@ function buildDoubleFaultRiskBox(taggedRows) {
   }).filter(p => p.fiberRisk > 0) // โชว์เฉพาะจังหวัดที่มีงานเสี่ยง Fiber เกิดขึ้นจริง
     .sort((a, b) => b.ratio - a.ratio);
 
-  // เก็บ WO OFC ทั้งหมด (ไม่ใช่แค่ fiberRisk) สำหรับตารางด้านล่าง — กรอง NSA1/NSA2 แล้วตั้งแต่ ofcRows
-  const allOfcRows = ofcRows;
+  // เก็บ WO OFC ทั้งหมด (ไม่ใช่แค่ fiberRisk) สำหรับตารางด้านล่าง — ต้องมี Source Ticket ID เท่านั้น
+  const allOfcRows = ofcRows.filter(r => String(r["Source Ticket ID"] || "").trim() !== "");
   window._doubleFaultData = { riskRows, provinceRisk, allOfcRows };
 
   const riskLevel = (ratio) => {
@@ -2956,6 +2955,7 @@ function buildDoubleFaultRiskBox(taggedRows) {
   // WO OFC columns
   const dfCols = [
     { key:"Work Order ID",     label:"Work Order ID",     w:"130px" },
+    { key:"Source Ticket ID",  label:"Source Ticket ID",  w:"140px" },
     { key:"_zone",              label:"Region",             w:"70px"  },
     { key:"Province",           label:"Province",           w:"110px" },
     { key:"Team",               label:"Team",               w:"130px" },
@@ -2997,7 +2997,7 @@ function buildDoubleFaultRiskBox(taggedRows) {
   return `
   <div style="margin-top:20px">
     <div style="font-size:15px;font-weight:800;color:var(--ink-strong);margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      ⚠️ วิเคราะห์ความเสี่ยง Double Fault — แยกตาม Province
+      ⚠️ เสี่ยง Double Fault — แยก Province
       <span style="font-size:11px;font-weight:700;background:${highRiskCount ? 'rgba(220,38,38,.12)' : 'rgba(34,197,94,.12)'};color:${highRiskCount ? '#dc2626' : '#22c55e'};padding:2px 10px;border-radius:10px">${highRiskCount ? `เสี่ยงสูง ${highRiskCount} จังหวัด` : "ไม่พบจังหวัดเสี่ยงสูง"}</span>
     </div>
     <div style="font-size:11px;color:var(--ink-faint);margin-bottom:12px">
@@ -3028,12 +3028,12 @@ function buildDoubleFaultRiskBox(taggedRows) {
       ไม่พบ TT ที่ Alarm Description เข้าเกณฑ์ Optical Fiber / Optic Cut / Fiber Cut / Power Low ในขณะนี้
     </div>`}
 
-    <!-- ── ตาราง WO OFC ทั้งหมด + Province filter ── -->
+    <!-- ── ตาราง WO OFC (NSA1 , NSA2) + Province filter ── -->
     <div style="background:var(--card-glass);border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(20,30,80,.06)">
       <!-- Header + filter bar -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 14px;background:var(--surface-2);border-bottom:2px solid var(--line-med)">
         <div style="font-size:13px;font-weight:800;color:var(--ink-strong);display:flex;align-items:center;gap:8px">
-          📋 WO OFC ทั้งหมด (NSA1/NSA2)
+          📋 WO OFC (NSA1 , NSA2)
           <span id="df-wo-count-badge" style="font-size:11px;font-weight:700;background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:10px">${allOfcRows.length} รายการ</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -3081,7 +3081,7 @@ function buildTopBlankTeamTable(overRows, skillGroup, accentColor) {
   if (!blankRows.length) {
     return `
     <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06);flex:1;display:flex;flex-direction:column;justify-content:center">
-      <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${skillGroup} — Suspend Reason (Blank) มากสุด</div>
+      <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม — ที่ถือ Over No Reason มากสุด</div>
       <div style="text-align:center;color:#c2c8e0;font-size:12px;padding:20px 0">ไม่มี TT ${skillGroup} ที่ Suspend Reason เป็น Blank</div>
     </div>`;
   }
@@ -3096,7 +3096,7 @@ function buildTopBlankTeamTable(overRows, skillGroup, accentColor) {
 
   return `
   <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06);flex:1;display:flex;flex-direction:column">
-    <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม ${skillGroup} — Suspend Reason (Blank) มากสุด</div>
+    <div style="font-size:12px;font-weight:800;color:${accentColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">⚠️ Top 10 ทีม — ที่ถือ Over No Reason มากสุด</div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;flex:1">
       <thead>
         <tr style="border-bottom:1px solid #eef1f7">
@@ -3178,7 +3178,7 @@ function buildSuspendReasonPivot(overRows, taggedRows) {
 
   return `
   <div style="background:var(--surface-0);border:1px solid var(--line-soft);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(20,30,80,.06)">
-    <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:${slaInView.length ? 6 : 14}px">📋 Suspend Reason ของ TT ที่ Over — แยกตาม Zone</div>
+    <div style="font-size:12px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:${slaInView.length ? 6 : 14}px">📋 SUSPEND Pending Over</div>
     ${slaInView.length ? `
     <div style="font-size:11px;color:var(--ink-soft);margin-bottom:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="color:var(--ink-faint);font-weight:600">SLA ใน Zone นี้:</span>
@@ -4252,7 +4252,7 @@ function exportLongAgingAsExcel() {
   }
   const now = new Date();
   const ws_name = `Long Aging ${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}`;
-  const headers = ["SLA", "Total Long Aging", ...LA_BUCKETS.map(b => b.label)];
+  const headers = ["SLA", "Total Pending", ...LA_BUCKETS.map(b => b.label)];
   const rows = [headers];
   
   LA_SLA_ORDER.forEach(sla => {
@@ -4372,9 +4372,10 @@ function exportDoubleFaultWoAsExcel() {
     return;
   }
 
-  // ดึง label คอลัมน์จาก thead ของตาราง WO OFC โดยเฉพาะ (9 คอลัมน์ตาม dfCols)
+  // ดึงข้อมูลจากตาราง WO OFC โดยเฉพาะ ให้คอลัมน์ตรงกับ dfCols
   const cols = [
     { label: "Work Order ID", width: 18 },
+    { label: "Source Ticket ID", width: 20 },
     { label: "Region",        width: 10 },
     { label: "Province",      width: 14 },
     { label: "Team",          width: 16 },
@@ -4398,7 +4399,7 @@ function exportDoubleFaultWoAsExcel() {
   const mm = String(now.getMonth()+1).padStart(2,"0");
   const yy = now.getFullYear();
   const filterLabel = currentFilter === "ALL" ? "ทุก Province" : currentFilter;
-  const title = `WO OFC ทั้งหมด - Double Fault Risk (${dd}-${mm}-${yy}) — ${filterLabel} — ${dataRows.length} รายการ`;
+  const title = `WO OFC (NSA1 , NSA2) - Double Fault Risk (${dd}-${mm}-${yy}) — ${filterLabel} — ${dataRows.length} รายการ`;
 
   const aoa = [
     [title],
@@ -4468,7 +4469,7 @@ function exportLongAgingAsCSV() {
     alert("ไม่มีข้อมูล — Upload ไฟล์ก่อน");
     return;
   }
-  const headers = ["SLA", "Total Long Aging", ...LA_BUCKETS.map(b => b.label)];
+  const headers = ["SLA", "Total Pending", ...LA_BUCKETS.map(b => b.label)];
   const csv = [headers.map(h => `"${h}"`).join(",")];
   
   LA_SLA_ORDER.forEach(sla => {
@@ -7985,10 +7986,10 @@ function renderLongAging() {
   const regionSummaryHtml = regionSummaryEntries.length ? `
     <div style="background:var(--surface-0);border-left:2px solid var(--line-med);border-right:2px solid var(--line-med);border-bottom:1px solid var(--line-soft);padding:10px 12px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-        <div style="font-size:11px;font-weight:900;color:var(--ink-strong);text-transform:uppercase;letter-spacing:.6px">Region Summary</div>
-        <div style="display:flex;align-items:center;gap:12px;font-size:10px;color:var(--ink-faint);font-weight:700">
-          <span>Total TT <b style="color:var(--ink-strong);font-family:'Space Grotesk',sans-serif">${grandTotal}</b></span>
-          <span>TT Over <b style="color:#dc2626;font-family:'Space Grotesk',sans-serif">${grandTotalOverdue}</b></span>
+        <div style="font-size:33px;font-weight:900;color:var(--ink-strong);text-transform:uppercase;letter-spacing:.6px">Region Summary</div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:30px;color:var(--ink-faint);font-weight:700">
+          <span>Total Pending <b style="color:var(--ink-strong);font-family:'Space Grotesk',sans-serif">${grandTotal}</b></span>
+          <span>Total Pending Over <b style="color:#dc2626;font-family:'Space Grotesk',sans-serif">${grandTotalOverdue}</b></span>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:8px">
@@ -7998,17 +7999,17 @@ function renderLongAging() {
           return `
             <div style="border:1px solid var(--line-soft);border-radius:8px;background:var(--surface-1);padding:8px 10px;min-width:0">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
-                <span style="font-size:11px;font-weight:900;color:${color};white-space:nowrap">${_zLbl(zone)}</span>
-                <span style="font-size:10px;font-weight:800;color:#dc2626;font-family:'Space Grotesk',sans-serif">${rate}%</span>
+                <span style="font-size:16.5px;font-weight:900;color:${color};white-space:nowrap">${_zLbl(zone)}</span>
+                <span style="font-size:15px;font-weight:800;color:#dc2626;font-family:'Space Grotesk',sans-serif">${rate}%</span>
               </div>
               <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
                 <div>
-                  <div style="font-size:9px;color:var(--ink-faint);font-weight:700;text-transform:uppercase">Total TT</div>
-                  <div style="font-size:18px;font-weight:900;color:var(--ink-strong);font-family:'Space Grotesk',sans-serif;line-height:1">${v.total}</div>
+                  <div style="font-size:13.5px;color:var(--ink-faint);font-weight:700;text-transform:uppercase">Total Pending</div>
+                  <div style="font-size:27px;font-weight:900;color:var(--ink-strong);font-family:'Space Grotesk',sans-serif;line-height:1">${v.total}</div>
                 </div>
                 <div style="text-align:right">
-                  <div style="font-size:9px;color:var(--ink-faint);font-weight:700;text-transform:uppercase">TT Over</div>
-                  <div style="font-size:18px;font-weight:900;color:#dc2626;font-family:'Space Grotesk',sans-serif;line-height:1">${v.over}</div>
+                  <div style="font-size:13.5px;color:var(--ink-faint);font-weight:700;text-transform:uppercase">Total Pending Over</div>
+                  <div style="font-size:27px;font-weight:900;color:#dc2626;font-family:'Space Grotesk',sans-serif;line-height:1">${v.over}</div>
                 </div>
               </div>
               <div style="height:4px;background:var(--surface-2);border-radius:999px;margin-top:7px;overflow:hidden">
@@ -8301,14 +8302,14 @@ function renderLongAging() {
           <thead>
             <tr style="background:var(--surface-2)">
               <th rowspan="2" style="padding:12px 16px;text-align:left;font-size:12px;font-weight:800;color:var(--ink-strong);border-bottom:2px solid var(--line-med);border-right:1px solid var(--line-med);min-width:90px">SLA</th>
-              <th rowspan="2" style="padding:12px 16px;text-align:center;font-size:12px;font-weight:800;color:var(--ink-strong);border-bottom:2px solid var(--line-med);border-right:1px solid var(--line-med);min-width:100px">Total<br>Long Aging</th>
-              <th rowspan="2" style="padding:12px 16px;text-align:center;font-size:12px;font-weight:800;color:#dc2626;border-bottom:2px solid var(--line-med);border-right:1px solid var(--line-med);min-width:90px">Total<br>Over</th>
+              <th rowspan="2" style="padding:12px 16px;text-align:center;font-size:12px;font-weight:800;color:var(--ink-strong);border-bottom:2px solid var(--line-med);border-right:1px solid var(--line-med);min-width:100px">Total<br>Pending</th>
+              <th rowspan="2" style="padding:12px 16px;text-align:center;font-size:12px;font-weight:800;color:#dc2626;border-bottom:2px solid var(--line-med);border-right:1px solid var(--line-med);min-width:90px">Total Pending<br>Over</th>
               <th colspan="${LA_BUCKETS.length}" style="padding:10px 16px;text-align:center;font-size:13px;font-weight:800;color:var(--ink-strong);border-bottom:1px solid var(--line-med);letter-spacing:1px">AGING</th>
             </tr>
             <tr style="background:var(--surface-2)">
               ${LA_BUCKETS.map(b => `
                 <th style="padding:8px 14px;text-align:center;font-size:12px;font-weight:700;color:var(--ink-strong);border-bottom:2px solid var(--line-med);border-left:1px solid var(--line-soft);min-width:110px">
-                  ${b.label}<br><span style="font-size:10px;font-weight:500;color:var(--ink-faint)">${b.sub}</span>
+                  ${b.label}${b.sub ? `<br><span style="font-size:10px;font-weight:500;color:var(--ink-faint)">${b.sub}</span>` : ""}
                 </th>`).join("")}
             </tr>
           </thead>
@@ -8334,7 +8335,7 @@ function renderLongAging() {
           </tbody>
           <tfoot>
             <tr class="la-tfoot-row">
-              <td style="padding:12px 16px;font-weight:800;color:var(--ink-strong);border-right:1px solid var(--la-tfoot-border)">รวมทั้งหมด</td>
+              <td style="padding:12px 16px;font-weight:800;color:var(--ink-strong);border-right:1px solid var(--la-tfoot-border)">TOTAL</td>
               <td style="padding:12px 16px;text-align:center;font-weight:900;color:var(--ink-strong);border-right:1px solid var(--la-tfoot-border);font-size:18px;font-family:'Space Grotesk',sans-serif">${grandTotal}</td>
               <td style="padding:12px 16px;text-align:center;font-weight:900;color:#dc2626;border-right:1px solid var(--la-tfoot-border);font-size:18px;font-family:'Space Grotesk',sans-serif">${grandTotalOverdue > 0 ? `<span class="la-over-cell">${grandTotalOverdue}${laBuildOverTooltip(grandTotalOverdueList)}</span>` : ""}</td>
               ${LA_BUCKETS.map(b => `
@@ -8396,7 +8397,7 @@ function renderLongAging() {
     <!-- ══ Optical Fiber Degrade Table (NSA1/NSA2 + Alarm Description กรอง Optical Fiber) ══ -->
     ${buildOpticalFiberTable(tagged)}
 
-    <!-- ══ Double Fault Risk — แยกตาม Province + ตาราง WO OFC ทั้งหมด ══ -->
+    <!-- ══ Double Fault Risk — แยกตาม Province + ตาราง WO OFC (NSA1 , NSA2) ══ -->
     ${buildDoubleFaultRiskBox(tagged)}
 
     <div class="la-no-capture" style="margin-top:14px">
