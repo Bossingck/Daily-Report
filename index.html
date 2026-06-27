@@ -7,6 +7,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
@@ -8738,17 +8739,6 @@ function renderLongAging() {
   container.innerHTML = `
   <div id="la-capture-frame" style="padding:20px;font-family:'Inter','Space Grotesk',sans-serif;background:var(--surface-3)">
 
-    <!-- Date Picker — เลือกดูข้อมูลของวันที่ Upload -->
-    <div class="la-no-capture" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;background:var(--surface-1);border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px">
-      <span style="font-size:11px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">📅 ดูข้อมูลของวัน:</span>
-      <select id="la-date-picker" onchange="laSelectUploadDate(this.value)"
-        style="padding:5px 10px;border-radius:8px;border:1px solid var(--line-med);background:var(--surface-0);color:var(--ink-base);font-size:12px;font-weight:600;cursor:pointer;min-width:180px">
-        <option value="current">📂 ข้อมูลปัจจุบัน (Upload ล่าสุด)</option>
-      </select>
-      <button onclick="laRefreshDatePicker()" style="padding:5px 12px;border-radius:8px;border:1px solid var(--line-med);background:var(--surface-0);color:var(--ink-soft);font-size:11px;font-weight:700;cursor:pointer">🔄 โหลดรายการวัน</button>
-      <span id="la-date-status" style="font-size:11px;color:var(--ink-faint)"></span>
-    </div>
-
     <!-- Zone filter pills — ซ่อนเพราะ Zone card ทำหน้าที่แทนแล้ว -->
     <div class="la-no-capture" style="display:none">
       <button onclick="laSetZone('ALL')">ทั้งหมด</button>
@@ -8940,7 +8930,6 @@ function renderLongAging() {
   // auto-fetch upload dates สำหรับ Dropdown (ครั้งแรกเท่านั้น)
   if (LA_SAVE_GAS_URL && !window._laDatePickerFetched) {
     window._laDatePickerFetched = true;
-    setTimeout(() => { if (typeof laRefreshDatePicker === "function") laRefreshDatePicker(); }, 1500);
   }
 }
 
@@ -10189,7 +10178,6 @@ async function saveLongAgingSnapshot() {
     window._laZoneTrendFetched = false;
     setTimeout(() => {
       if (typeof laFetchZoneTrend    === "function") laFetchZoneTrend();
-      if (typeof laRefreshDatePicker === "function") laRefreshDatePicker();
     }, 2500);
 
   } catch (err) {
@@ -10405,7 +10393,6 @@ async function laDeleteFromSheets() {
       ].filter(Boolean).join(", ");
       if (status) { status.style.color = "#16a34a"; status.textContent = `✅ ลบแล้ว — ${summary}`; }
       // รีเฟรช dropdown
-      setTimeout(laRefreshDatePicker, 1000);
     } else {
       throw new Error(result.message || "GAS returned error");
     }
@@ -10439,9 +10426,13 @@ function laSelectZoneCard(zone) {
 
       window._laZoneTrendChart = new Chart(canvas, {
         type:"line",
+        plugins: [ChartDataLabels],
         data:{ labels, datasets:[
-          { label:"Over (Unique WO)", data:overData,    borderColor:"#f87171", backgroundColor:"#f8717133", fill:true,  tension:0.4, pointRadius:4, pointHoverRadius:6, borderWidth:2.5 },
-          { label:"Total Pending",    data:pendingData, borderColor:color,      backgroundColor:color+"22",   fill:false, tension:0.4, pointRadius:3, borderWidth:1.5, borderDash:[4,2] }
+          { label:"Over (Unique WO)", data:overData,    borderColor:"#f87171", backgroundColor:"#f8717133", fill:true,  tension:0.4, pointRadius:4, pointHoverRadius:6, borderWidth:2.5,
+            datalabels:{ align:"top", anchor:"end", color:"#fca5a5", font:{ size:9, weight:"700" }, formatter: v => v > 0 ? v : "" } },
+          { label:"Total Pending", data:pendingData, borderColor:"rgba(255,255,255,.9)", backgroundColor:"rgba(255,255,255,.05)", fill:false, tension:0.4, pointRadius:4, pointHoverRadius:6, borderWidth:2, borderDash:[5,3],
+            pointBackgroundColor:"#fff", pointBorderColor:"#000", pointBorderWidth:1.5,
+            datalabels:{ align:"bottom", anchor:"start", color:"rgba(255,255,255,.8)", font:{ size:9, weight:"700" }, formatter: v => v > 0 ? v : "" } }
         ]},
         options:{
           responsive:true, maintainAspectRatio:false,
