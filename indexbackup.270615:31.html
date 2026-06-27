@@ -10005,6 +10005,26 @@ const _LA_GAS_DEFAULT = "https://script.google.com/macros/s/AKfycbyssbA-hCh4XHcG
 localStorage.removeItem("la_save_gas_url");
 let LA_SAVE_GAS_URL = _LA_GAS_DEFAULT;
 
+// ── Supabase — แทน GAS สำหรับ Long Aging ──────────────────────────────────
+const SUPA_URL = "https://tbuyguafjpnqvnckrrdo.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidXlndWFmanBucXZuY2tycmRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NDEwMjMsImV4cCI6MjA5ODExNzAyM30.1tUo_5NVv3kWk0p_TFWU3yBENYQ1vmuAhSvR0TAcfYc";
+
+async function supaFetch(path, method, body) {
+  const res = await fetch(SUPA_URL + "/rest/v1/" + path, {
+    method: method || "GET",
+    headers: {
+      "apikey":        SUPA_KEY,
+      "Authorization": "Bearer " + SUPA_KEY,
+      "Content-Type":  "application/json",
+      "Prefer":        method === "POST" ? "return=minimal" : ""
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) throw new Error("Supabase " + res.status + ": " + await res.text());
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
 // ── STATE ────────────────────────────────────────────────────
 let _gasPendingAction  = null;   // { type, action, rows, meta }
 let _gasToastTimer     = null;
@@ -10126,58 +10146,78 @@ async function saveLongAgingSnapshot() {
       zone, totalPending: v.totalPending, totalOver: v.totalOver, uniqueOver: v.woIds.size
     }));
 
-    // ── ส่งทุก request พร้อมกัน (no-cors) ───────────────────────────────
+    // ── ส่งไป Supabase พร้อมกัน ──────────────────────────────────────────
+    // 1. Raw rows → la_raw_data (batch insert, เก็บ raw_json ทั้ง row)
+    const rawBatch = (_rawAllRows || []).map(r => ({
+      uploaded_at:        uploadedAt,
+      filename:           filename,
+      work_order_id:      r["Work Order ID"]       || null,
+      source_ticket_id:   r["Source Ticket ID"]    || null,
+      region:             r["Region"]              || null,
+      province:           r["Province"]            || null,
+      skill:              r["Skill"]               || null,
+      team:               r["Team"]                || null,
+      status:             r["Status"]              || null,
+      severity:           r["Severity"]            || null,
+      subject:            r["Subject"]             || null,
+      alarm_description:  r["Alarm Description"]   || null,
+      suspend_reason:     r["Suspend Reason"]      || null,
+      wo_creator:         r["WO Creator"]          || null,
+      raw_json:           r
+    }));
+
+    // 2. Summary → la_summary
+    const summaryRow = {
+      recorded_at:   uploadedAt,
+      record_date:   recordDate,
+      zone_filter:   _laZoneFilter || "ALL",
+      total_pending: totalPending,
+      total_over:    totalOver,
+      by_sla:        bySla,
+      by_zone:       byZone,
+      by_skill:      bySkill,
+      by_province:   byProvince
+    };
+
+    // 3. Zone snapshot → la_zone_snapshot
+    const zoneRows = zonesPayload.map(z => ({
+      recorded_at:   uploadedAt,
+      record_date:   recordDate,
+      zone:          z.zone,
+      total_pending: z.totalPending,
+      total_over:    z.totalOver,
+      unique_over:   z.uniqueOver
+    }));
+
+    // Batch insert (Supabase รองรับ array of objects)
+    // Raw rows อาจเยอะมาก ส่งเป็น chunks 500 rows
+    const chunkSize = 500;
+    const chunks = [];
+    for (let i = 0; i < rawBatch.length; i += chunkSize) {
+      chunks.push(rawBatch.slice(i, i + chunkSize));
+    }
+
     await Promise.all([
-      // 1. Raw rows → LA_RawData (append)
-      fetch(LA_SAVE_GAS_URL, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "replace", data: _rawAllRows, meta: { uploadedAt, filename } })
-      }),
-      // 2. Summary → LA_Summary + LA_RawOver
-      fetch(LA_SAVE_GAS_URL, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify(payload)
-      }),
-      // 3. Zone snapshot → LA_ZoneSnapshot
-      fetch(LA_SAVE_GAS_URL, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "saveZoneSnapshot", timestamp, zones: zonesPayload })
-      })
+      ...chunks.map(chunk => supaFetch("la_raw_data", "POST", chunk)),
+      supaFetch("la_summary", "POST", [summaryRow]),
+      supaFetch("la_zone_snapshot", "POST", zoneRows)
     ]);
 
-    // รอ GAS บันทึกเสร็จ
-    await new Promise(r => setTimeout(r, 2000));
-
-    // Verify ด้วย JSONP GET
-    let verified = false;
-    try {
-      const vdata = await gasJsonpGet(LA_SAVE_GAS_URL, { action: "getTrend" }, 8000);
-      verified = (vdata.rows || []).some(r => r.RecordDate === recordDate);
-    } catch(_) {}
-
     const thMonths = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-    // ใช้ toLocaleString แบบ Thai timezone ให้ถูกต้อง
     const tsLabel = now.toLocaleString("th-TH", {
       timeZone: "Asia/Bangkok",
       day: "numeric", month: "short", year: "numeric",
       hour: "2-digit", minute: "2-digit", hour12: false
     }).replace(",", "") + " น.";
 
-    if (verified) {
-      btn.textContent      = `✅ บันทึกแล้ว · ${tsLabel} · Over ${totalOver}/${totalPending}`;
-      btn.style.background = "linear-gradient(135deg,#3ddba8,#2ea87a)";
-    } else {
-      btn.textContent      = `✅ ส่งแล้ว · ${tsLabel} · Over ${totalOver}/${totalPending}`;
-      btn.style.background = "linear-gradient(135deg,#f5a623,#e08e0b)";
-    }
+    btn.textContent      = `✅ บันทึกแล้ว · ${tsLabel} · Over ${totalOver}/${totalPending}`;
+    btn.style.background = "linear-gradient(135deg,#3ddba8,#2ea87a)";
+    console.log("[Supa] Saved:", rawBatch.length, "raw rows |", totalOver, "over |", zoneRows.length, "zone snapshots");
 
-    // รีเฟรช dropdown + sparkline
+    // รีเฟรช sparkline
     window._laZoneTrendFetched = false;
     setTimeout(() => {
-      if (typeof laFetchZoneTrend    === "function") laFetchZoneTrend();
+      if (typeof laFetchZoneTrend === "function") laFetchZoneTrend();
     }, 2500);
 
   } catch (err) {
@@ -10462,11 +10502,14 @@ function laSelectZoneCard(zone) {
 const _laZoneCharts = {};
 
 async function laFetchZoneTrend() {
-  if (!LA_SAVE_GAS_URL) return;
   try {
-    const data = await gasJsonpGet(LA_SAVE_GAS_URL, { action: "getZoneTrend" });
-    window._laZoneTrendData = data.rows || [];
-    renderLongAging(); // re-render เพื่อให้ sparkline อัพเดท
+    const rows = await supaFetch("la_zone_snapshot?select=recorded_at,record_date,zone,total_pending,total_over,unique_over&order=recorded_at.asc&limit=500");
+    window._laZoneTrendData = (rows || []).map(r => ({
+      Zone: r.zone, RecordDate: r.record_date, Timestamp: r.recorded_at,
+      TotalPending: r.total_pending, TotalOver: r.total_over, UniqueOver: r.unique_over
+    }));
+    console.log("[Supa] Zone trend:", window._laZoneTrendData.length, "rows");
+    renderLongAging();
   } catch(e) { console.warn("laFetchZoneTrend:", e.message); }
 }
 
@@ -10548,21 +10591,39 @@ let _laTrendMode   = "totalOver";
 
 // ดึงรายการวันจาก GAS → เติม Dropdown
 
-// ── GAS GET helper — ใช้ JSONP เพราะ fetch GET ติด CORS redirect ──────────────
-// GAS redirect chain: script.google.com → script.googleusercontent.com
-// fetch ติด CORS แม้แต่ GET, แต่ <script src=""> ไม่ติด CORS เลย
-function gasJsonpGet(url, params, timeoutMs) {
+// ── GAS GET helper — ลอง fetch ก่อน ถ้าไม่ได้ค่อย fallback JSONP ──────────────
+async function gasJsonpGet(url, params, timeoutMs) {
+  const qs  = Object.entries(params || {}).map(([k,v]) => k+"="+encodeURIComponent(v)).join("&");
+  const src = url + (url.includes("?")?"&":"?") + qs;
+  const to  = timeoutMs || 15000;
+
+  // วิธีที่ 1: fetch ปกติ (ได้ผลบน https://)
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), to);
+    const res  = await fetch(src, { signal: ctrl.signal });
+    clearTimeout(tid);
+    const text = await res.text();
+    // ถ้า response เป็น JSONP callback ให้ parse ออก
+    const m = text.match(/^[^(]+\((.+)\)\s*;?\s*$/s);
+    const data = JSON.parse(m ? m[1] : text);
+    console.log("[GAS fetch] Success:", JSON.stringify(data).slice(0,80));
+    return data;
+  } catch (fetchErr) {
+    console.warn("[GAS fetch] Failed, trying JSONP:", fetchErr.message);
+  }
+
+  // วิธีที่ 2: JSONP fallback
   return new Promise((resolve, reject) => {
-    const cb    = "_gasGet_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-    const qs    = Object.entries(params || {}).map(([k,v]) => k+"="+encodeURIComponent(v)).join("&");
-    const src   = url + (url.includes("?")?"&":"?") + qs + "&callback=" + cb;
-    console.log("[GAS JSONP] Request:", src.slice(0, 120) + "...");
-    const timer = setTimeout(() => { cleanup(); reject(new Error("GAS timeout (15s) — ตรวจสอบ GAS Deploy settings: Who has access ต้องเป็น Anyone")); }, timeoutMs || 15000);
+    const cb   = "_gasGet_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    const jsrc = src + "&callback=" + cb;
+    console.log("[GAS JSONP] Request:", jsrc.slice(0,100));
+    const timer = setTimeout(() => { cleanup(); reject(new Error("GAS timeout — ตรวจสอบ: Who has access = Anyone")); }, to);
     const el    = document.createElement("script");
     function cleanup() { delete window[cb]; el.remove(); clearTimeout(timer); }
-    window[cb] = (data) => { console.log("[GAS JSONP] Success:", JSON.stringify(data).slice(0,100)); cleanup(); resolve(data); };
-    el.onerror = () => { cleanup(); reject(new Error("GAS JSONP failed — ตรวจสอบ: 1) Who has access = Anyone 2) Deploy ล่าสุดหรือยัง")); };
-    el.src = src;
+    window[cb]  = (data) => { console.log("[GAS JSONP] Success:", JSON.stringify(data).slice(0,80)); cleanup(); resolve(data); };
+    el.onerror  = () => { cleanup(); reject(new Error("GAS request failed — ตรวจสอบ Deploy settings")); };
+    el.src = jsrc;
     document.head.appendChild(el);
   });
 }
@@ -10848,9 +10909,7 @@ async function laSaveLongAgingToSheets(rows, filename) {
 }
 
 async function laLoadLongAgingFromSheets(force) {
-  const url = LA_SAVE_GAS_URL || (typeof gasGetUrl === "function" ? gasGetUrl() : "");
-  if (!url || (_laSheetsLoadStarted && !force)) return false;
-  // JSONP ใช้ได้ทุก protocol (ไม่ติด CORS) — ลบ file:// block ออกแล้ว
+  if (_laSheetsLoadStarted && !force) return false;
   _laSheetsLoadStarted = true;
 
   const container = document.getElementById("content-long-aging");
@@ -10858,31 +10917,38 @@ async function laLoadLongAgingFromSheets(force) {
     container.innerHTML = `
       <div style="padding:60px 20px;text-align:center;color:var(--ink-faint)">
         <div style="font-size:42px;margin-bottom:12px">⏳</div>
-        <div style="font-size:15px;font-weight:700;color:#2a3a6a;margin-bottom:6px">กำลังโหลด Long Aging จาก Google Sheets</div>
-        <div style="font-size:13px">ถ้าไม่มีข้อมูล ให้ Upload Pending หนึ่งครั้งก่อน</div>
+        <div style="font-size:15px;font-weight:700;color:#2a3a6a;margin-bottom:6px">กำลังโหลด Long Aging จาก Supabase</div>
+        <div style="font-size:13px">ถ้าไม่มีข้อมูล ให้ Upload ไฟล์แล้วกด 💾 บันทึกก่อน</div>
       </div>`;
   }
 
   try {
-    const json = await gasJsonpGet(url, { action: "load", _: Date.now() });
-    if (json.status && json.status !== "ok") throw new Error(json.message || "GAS returned error");
-
-    const rows = Array.isArray(json.data) ? json.data : [];
-    if (!rows.length) {
+    // ดึง raw_json จาก uploaded_at ล่าสุด
+    const latest = await supaFetch("la_raw_data?select=uploaded_at&order=uploaded_at.desc&limit=1");
+    if (!latest || !latest.length) {
       if (container) container.innerHTML = `
         <div style="padding:60px 20px;text-align:center;color:var(--ink-faint)">
           <div style="font-size:42px;margin-bottom:12px">📂</div>
-          <div style="font-size:15px;font-weight:600;color:#2a3a6a;margin-bottom:6px">ยังไม่มีข้อมูลใน Google Sheets</div>
-          <div style="font-size:13px">กรุณา Upload ไฟล์ Pending ก่อน ระบบจะล้างข้อมูลเก่าและบันทึกชุดใหม่ให้อัตโนมัติ</div>
+          <div style="font-size:15px;font-weight:600;color:#2a3a6a;margin-bottom:6px">ยังไม่มีข้อมูลใน Supabase</div>
+          <div style="font-size:13px">กรุณา Upload ไฟล์แล้วกด 💾 บันทึกก่อน</div>
         </div>`;
       return false;
     }
 
-    _rawAllRows = rows;
-    if (json.meta && json.meta.filename) {
-      const f = document.getElementById("file-name");
-      if (f) f.textContent = `Google Sheets: ${json.meta.filename}`;
-    }
+    const lastTs = latest[0].uploaded_at;
+    // ดึง rows ทั้งหมดของ upload ล่าสุด (ผ่าน raw_json)
+    const rows = await supaFetch(
+      `la_raw_data?select=raw_json,filename&uploaded_at=eq.${encodeURIComponent(lastTs)}&limit=10000`
+    );
+
+    const parsed = (rows || []).map(r => r.raw_json).filter(Boolean);
+    if (!parsed.length) { _laSheetsLoadStarted = false; return false; }
+
+    _rawAllRows = parsed;
+    const fn = rows[0]?.filename || "";
+    const f  = document.getElementById("file-name");
+    if (f && fn) f.textContent = `Supabase: ${fn}`;
+    console.log("[Supa] Loaded", parsed.length, "rows from", lastTs);
     if (typeof renderLongAging === "function") renderLongAging();
     return true;
   } catch (err) {
@@ -10890,7 +10956,7 @@ async function laLoadLongAgingFromSheets(force) {
     if (container) container.innerHTML = `
       <div style="padding:60px 20px;text-align:center;color:var(--ink-faint)">
         <div style="font-size:42px;margin-bottom:12px">⚠️</div>
-        <div style="font-size:15px;font-weight:700;color:#dc2626;margin-bottom:6px">โหลด Long Aging จาก Google Sheets ไม่สำเร็จ</div>
+        <div style="font-size:15px;font-weight:700;color:#dc2626;margin-bottom:6px">โหลด Long Aging จาก Supabase ไม่สำเร็จ</div>
         <div style="font-size:13px">${String(err.message || err)}</div>
       </div>`;
     return false;
