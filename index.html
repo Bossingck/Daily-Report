@@ -2276,6 +2276,7 @@ function processExcel(data) {
   if (!ws) return null;
   const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
   _rawAllRows = rows; // store for export
+  _rawDataSource = "upload"; // เพิ่ง Upload ไฟล์ใหม่ — ใช้แยกจากข้อมูลที่โหลดจาก Supabase/Demo
 
   // ── Extract Region from file ────────────────────────────────────────────────
   const regionKey = Object.keys(rows[0] || {}).find(k => /^region$/i.test(k)) || "Region";
@@ -2311,6 +2312,9 @@ function processExcel(data) {
 // ── Export Dispatched OverDue ──────────────────────────────────────────────────
 // Store raw rows globally so export can access them
 let _rawAllRows = null;
+// ── ติดตามที่มาของ _rawAllRows: "upload" = เพิ่ง Upload ไฟล์ / "supabase" = โหลดจาก DB / "demo" = ข้อมูลทดลอง
+let _rawDataSource = null;
+let _rawUploadFileName = null;
 
 // ── Long Aging Report ──────────────────────────────────────────────────────────
 const LA_SLA_ORDER = ["SA1","SA2","SA3","SA4","SA5","SA6","NSA1","NSA2","NSA3","NSA4"];
@@ -4542,8 +4546,77 @@ function loadLongAgingDemo() {
   }
 
   _rawAllRows = demo;
+  _rawDataSource = "demo";
   renderLongAging();
   if (typeof dashShowToast === "function") dashShowToast("🎯 โหลด Demo Data สำเร็จ — 600 รายการ");
+}
+
+// ── Export Raw Data (เฉพาะไฟล์ที่เพิ่ง Upload — ไม่ดึงจาก Supabase/Database) ──
+function exportLongAgingRawDataAsExcel() {
+  if (!_rawAllRows || !_rawAllRows.length) {
+    alert("ไม่มีข้อมูล — กรุณา Upload ไฟล์ Excel ก่อน");
+    return;
+  }
+  if (_rawDataSource !== "upload") {
+    alert("ข้อมูลชุดนี้ไม่ใช่ไฟล์ที่เพิ่ง Upload (มาจาก Database/Demo อยู่แล้ว)\nกรุณา Upload ไฟล์ Excel ใหม่ก่อน จึงจะ Export Raw Data ได้");
+    return;
+  }
+
+  // ฟอร์แมตนาทีทั้งหมด → "Xd Xh Ym" หรือ "Xh Ym" อ่านง่าย
+  const fmtDur = totalMin => {
+    if (totalMin == null || isNaN(totalMin) || totalMin < 0) return "";
+    const d = Math.floor(totalMin / 1440);
+    const h = Math.floor((totalMin % 1440) / 60);
+    const m = Math.round(totalMin % 60);
+    return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`;
+  };
+
+  // แนบคอลัมน์คำนวณ (สถานะ Aging / SLA / Zone) เพื่อให้ตรวจสอบง่ายขึ้น โดยไม่แก้ข้อมูลต้นฉบับ
+  const exportRows = _rawAllRows.map(r => {
+    const allKeys = Object.keys(r);
+    const sevKey = allKeys.find(k => /^severity$/i.test(k)) || "Severity";
+    const createdKey = allKeys.find(k => /created.?time|created.?date|open.?time|open.?date/i.test(k));
+    const finishKey = allKeys.find(k => /require.?finish|sla.?finish|sla.?due|finish.?time|due.?time/i.test(k));
+
+    const sla = typeof laSevLabel === "function" ? laSevLabel(r[sevKey] || r.Severity || "") : "";
+    const zone = typeof laGetRegionGroup === "function" ? laGetRegionGroup(r) : (r.Region || "");
+
+    let agingStatus = "";
+    let ageHr = "";
+    let overdue = "";
+    if (typeof laParseDate === "function") {
+      const created = createdKey ? laParseDate(r[createdKey]) : null;
+      const reqFinish = finishKey ? laParseDate(r[finishKey]) : null;
+      const now = Date.now();
+
+      if (reqFinish && now > reqFinish.getTime()) {
+        // เลย SLA แล้ว → นับเวลาที่เกินมาจากเวลาครบกำหนด
+        overdue = "Over";
+        agingStatus = "Over " + fmtDur((now - reqFinish.getTime()) / 60000);
+      } else if (created) {
+        // ยังไม่เลย SLA → นับเวลาที่ค้างอยู่ตั้งแต่เปิดงาน
+        overdue = "In SLA";
+        agingStatus = "Pending " + fmtDur((now - created.getTime()) / 60000);
+      }
+      if (created) ageHr = Math.round((now - created.getTime()) / 36e5 * 10) / 10;
+    }
+
+    return { "สถานะ Aging": agingStatus, ...r, "_SLA (คำนวณ)": sla, "_Zone (คำนวณ)": zone, "_Age (ชม.)": ageHr, "_สถานะ SLA": overdue };
+  });
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yy = now.getFullYear();
+  const hhmm = String(now.getHours()).padStart(2, "0") + String(now.getMinutes()).padStart(2, "0");
+
+  const ws = XLSX.utils.json_to_sheet(exportRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Raw Data");
+  const baseName = (_rawUploadFileName || "LongAging_RawData").replace(/\.[^/.]+$/, "");
+  XLSX.writeFile(wb, `${baseName}_Raw_${dd}-${mm}-${yy}_${hhmm}.xlsx`);
+
+  if (typeof dashShowToast === "function") dashShowToast(`📊 Export Aging สำเร็จ — ${exportRows.length} รายการ`);
 }
 
 function exportLongAgingAsExcel() {
@@ -5990,6 +6063,7 @@ document.getElementById("file-input").addEventListener("change", function() {
   if (!file) return;
   document.getElementById("upload-btn").textContent = "⏳ Loading...";
   document.getElementById("file-name").textContent = file.name;
+  _rawUploadFileName = file.name;
   const reader = new FileReader();
   reader.onload = ev => {
     try {
@@ -8868,6 +8942,11 @@ function renderLongAging() {
 
     </div><!-- /grid aging+heatmap -->
 
+    <!-- Export Aging (ปุ่ม Export Raw Data — ย้ายมาไว้ใต้ตาราง Aging ตามต้องการ) -->
+    <div class="la-no-capture" style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;align-items:center">
+      <button onclick="exportLongAgingRawDataAsExcel()" title="Export เฉพาะไฟล์ที่เพิ่ง Upload — ข้อมูลเดิมอยู่บน Database แล้วไม่ต้อง Export ซ้ำ" style="padding:8px 16px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">📥 Export Aging</button>
+    </div>
+
     <!-- Legend (ซ่อนตามที่ระบุ) -->
     <div style="display:none;align-items:center;gap:18px;flex-wrap:wrap;margin-top:14px;padding:12px 16px;background:var(--surface-1);border-radius:10px">
       ${LA_BUCKETS.map(b => `
@@ -10578,6 +10657,7 @@ async function laSelectUploadDate(dateStr) {
     const data = await gasJsonpGet(LA_SAVE_GAS_URL, { action: "load", ts, _: Date.now() });
     if (data.data && data.data.length) {
       _rawAllRows = data.data;
+      _rawDataSource = "supabase";
       _laSheetsLoadStarted = false;
       if (status) status.textContent = `✅ โหลดแล้ว ${data.data.length} rows · ${data.meta?.filename || ""}`;
       renderLongAging();
@@ -10962,6 +11042,7 @@ async function laLoadLongAgingFromSheets(force) {
     if (!parsed.length) { _laSheetsLoadStarted = false; return false; }
 
     _rawAllRows = parsed;
+    _rawDataSource = "supabase";
     const fn = allRows[0]?.filename || "";
     const f  = document.getElementById("file-name");
     if (f && fn) f.textContent = `Supabase: ${fn}`;
