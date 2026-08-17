@@ -1598,6 +1598,368 @@
   html[data-theme="dark"] .tab { color: var(--ink-soft); }
   html[data-theme="dark"] .tab.active { background: var(--surface-0); color: var(--ink-strong); }
 
+  /* ── SA Suspend Summary Tab ─────────────────────────────────────────────── */
+  .sa-suspend-wrap {
+    background: var(--card-glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-card);
+    overflow-x: auto;
+  }
+  .sa-suspend-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .sa-suspend-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .sa-suspend-file {
+    font-size: 12px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    background: var(--surface-0);
+  }
+  .sa-suspend-grid {
+    display: grid;
+    grid-template-columns: minmax(720px, 1fr) minmax(720px, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .sa-suspend-panel:first-of-type { grid-column: 1 / -1; max-width: 980px; }
+  .sa-suspend-title {
+    background: #b7d3ee;
+    color: #06172a;
+    font-weight: 900;
+    font-family: Georgia, "Times New Roman", serif;
+    padding: 3px 6px;
+    width: 240px;
+    border: 1px solid #a8bfd7;
+    border-bottom: none;
+  }
+  .sa-suspend-table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 940px;
+    background: #fff;
+    color: #000;
+    font-family: Georgia, "Times New Roman", "TH Sarabun New", serif;
+    font-size: 15px;
+  }
+  .sa-suspend-table th,
+  .sa-suspend-table td {
+    border: 1px solid #111;
+    padding: 2px 4px;
+    height: 21px;
+    line-height: 1.05;
+    color: #000;
+  }
+  .sa-suspend-table th:first-child,
+  .sa-suspend-table td:first-child {
+    width: 238px;
+    text-align: left;
+    white-space: normal;
+  }
+  .sa-suspend-table th:not(:first-child),
+  .sa-suspend-table td:not(:first-child) {
+    width: 112px;
+    text-align: center;
+  }
+  .sa-suspend-table thead th {
+    background: #ff0808;
+    color: #fff;
+    font-weight: 900;
+    font-size: 16px;
+  }
+  .sa-suspend-table thead th.reason-head {
+    background: #fff;
+    color: #000;
+  }
+  .sa-suspend-table thead th.watch-head,
+  .sa-suspend-table td.watch-cell {
+    background: #ffffa6;
+    color: #000;
+    font-weight: 900;
+  }
+  .sa-suspend-table td.over-cell { background: #f59590; }
+  .sa-suspend-table tfoot td {
+    background: #fff;
+    font-weight: 900;
+    font-size: 16px;
+    border-top: 2px solid #000;
+  }
+  .sa-suspend-table tfoot td.over-total { color: #f00; }
+  .sa-suspend-empty {
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+  .sa-suspend-wrap {
+    background:
+      linear-gradient(135deg, rgba(91,141,239,.08), rgba(155,123,247,.06)),
+      var(--card-glass);
+  }
+  .sa-suspend-panel {
+    background: var(--surface-0);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .sa-suspend-title {
+    width: auto;
+    padding: 11px 14px;
+    border: none;
+    background: linear-gradient(135deg, rgba(91,141,239,.18), rgba(56,200,232,.12));
+    color: var(--ink-strong);
+    font-family: 'Inter', 'Space Grotesk', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    letter-spacing: .2px;
+  }
+  .sa-suspend-table {
+    width: 100%;
+    min-width: 900px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Space Grotesk', 'Segoe UI', sans-serif;
+    font-size: 12px;
+  }
+  .sa-suspend-table th,
+  .sa-suspend-table td {
+    border: 1px solid var(--line-soft);
+    color: var(--text-primary);
+    height: 32px;
+    padding: 7px 9px;
+  }
+  .sa-suspend-table thead th,
+  .sa-suspend-table thead th.reason-head {
+    background: linear-gradient(135deg, #5b8def, #7b5cf0);
+    color: #fff;
+    font-family: 'Inter', 'Space Grotesk', 'Segoe UI', sans-serif;
+    font-size: 12px;
+    white-space: normal;
+    line-height: 1.25;
+    vertical-align: middle;
+  }
+  .sa-suspend-panel:first-of-type {
+    max-width: none;
+    width: 100%;
+  }
+  .sa-suspend-panel {
+    min-width: 1040px;
+  }
+  .sa-suspend-table {
+    min-width: 1040px;
+  }
+  .sa-suspend-table th:first-child,
+  .sa-suspend-table td:first-child {
+    width: 190px;
+  }
+  .sa-suspend-table th:not(:first-child),
+  .sa-suspend-table td:not(:first-child) {
+    width: 122px;
+  }
+  .sa-suspend-table thead th.watch-head,
+  .sa-suspend-table td.watch-cell {
+    background: rgba(245,166,35,.12);
+    color: #b7791f;
+  }
+  .sa-suspend-table td.over-cell {
+    background: rgba(247,96,96,.08);
+  }
+  .sa-suspend-table tbody tr:hover td {
+    background: rgba(91,141,239,.08);
+  }
+  .sa-suspend-table tfoot td {
+    background: var(--surface-2);
+    color: var(--ink-strong);
+    border-top: 2px solid var(--border-med);
+  }
+  .sa-suspend-table tfoot td.over-total {
+    color: var(--accent-red);
+  }
+  .sa-suspend-count {
+    cursor: pointer;
+    font-weight: 900;
+  }
+  .sa-suspend-count:hover {
+    color: #5b8def;
+    background: rgba(91,141,239,.14) !important;
+  }
+  .sa-suspend-editable-empty {
+    color: var(--text-muted) !important;
+  }
+  .sa-suspend-editable-empty:hover {
+    background: rgba(91,141,239,.08) !important;
+  }
+  .sa-detail-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,16,36,.46);
+    backdrop-filter: blur(8px);
+    padding: 22px;
+  }
+  .sa-detail-modal.show { display: flex; }
+  .sa-detail-box {
+    width: min(1180px, 96vw);
+    max-height: 86vh;
+    overflow: hidden;
+    background: var(--surface-0);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
+    display: flex;
+    flex-direction: column;
+  }
+  .sa-detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(91,141,239,.18), rgba(155,123,247,.12));
+    border-bottom: 1px solid var(--border);
+  }
+  .sa-detail-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--ink-strong);
+  }
+  .sa-detail-sub {
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .sa-detail-close {
+    border: none;
+    border-radius: 8px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-weight: 900;
+  }
+  .sa-detail-body { overflow: auto; padding: 12px 14px 16px; }
+  .sa-detail-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--surface-0);
+    table-layout: fixed;
+  }
+  .sa-detail-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-2);
+    color: var(--ink-strong);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+  }
+  .sa-detail-table td {
+    border-bottom: 1px solid var(--line-soft);
+    padding: 7px 10px;
+    white-space: nowrap;
+    color: var(--text-primary);
+  }
+  .sa-detail-table td.subject-cell {
+    white-space: normal;
+    min-width: 360px;
+    line-height: 1.35;
+  }
+  .sa-detail-table td.wrap-cell {
+    white-space: normal;
+    line-height: 1.35;
+  }
+  .sa-detail-table td.log-cell {
+    white-space: normal;
+    min-width: 300px;
+  }
+  .sa-reason-select {
+    min-width: 130px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .sa-inoc-log-input {
+    min-width: 280px;
+    width: 100%;
+    min-height: 58px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: inherit;
+    padding: 7px 9px;
+  }
+  .sa-detail-inline {
+    margin-top: 18px;
+    background: var(--surface-0);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .sa-detail-inline .sa-detail-body {
+    max-height: min(62vh, 680px);
+  }
+  .sa-row-topic {
+    cursor: pointer;
+    font-weight: 900;
+  }
+  .sa-row-topic:hover {
+    color: #5b8def;
+    background: rgba(91,141,239,.08) !important;
+  }
+  .sa-db-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-0);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .sa-db-pill.ok { color: #0f9f6e; border-color: rgba(16,185,129,.28); background: rgba(16,185,129,.08); }
+  .sa-db-pill.warn { color: #b7791f; border-color: rgba(245,166,35,.30); background: rgba(245,166,35,.10); }
+  .sa-db-pill.error { color: #dc2626; border-color: rgba(220,38,38,.28); background: rgba(220,38,38,.08); }
+  .sa-region-filter {
+    min-width: 150px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 0 10px;
+  }
+
   /* ── Suspend Reason Pivot Table — dark-mode aware ── */
   :root {
     --sr-blank-bg:   rgba(220,38,38,.10);
@@ -1779,6 +2141,7 @@
   <div class="tab" data-tab="pdt" id="tab-pdt">🟡 PDT Report</div>
   <div class="tab" data-tab="arrive-dashboard" id="tab-arrive-dashboard">📈 1st Arrive Dashboard</div>
   <div class="tab" data-tab="long-aging" id="tab-long-aging">⏰ Long Aging Report</div>
+  <div class="tab" data-tab="sa-suspend" id="tab-sa-suspend">📋 SA Suspend Summary</div>
 </div>
 
 <!-- Content -->
@@ -1992,6 +2355,7 @@
 </div><!-- /content-arrive-dashboard -->
 
 <div id="content-long-aging" style="display:none;padding:0"></div>
+<div id="content-sa-suspend" style="display:none;padding:0"></div>
 
 <!-- Daily Report Panel (below content) -->
 <div id="daily-report-panel" style="display:none">
@@ -5920,6 +6284,9 @@ function renderAll(data) {
     "📊 Report 2 : NSA3 - NSA4 แยกตาม Severity",   "pivot-nsa34-wrap");
 
   renderSaOverview && document.getElementById("content-sa-overview").style.display !== "none" && renderSaOverview(data);
+  if (typeof renderSaSuspendSummary === "function" && document.getElementById("content-sa-suspend")?.style.display !== "none") {
+    renderSaSuspendSummary();
+  }
 
   // ── Long Aging Report — เด้ง refresh อัตโนมัติเมื่อมีการ Upload ไฟล์ใหม่ ──
   // ไม่ต้องรอให้ user กด tab ใหม่ ถ้า tab นี้ active อยู่แล้วจะเห็นข้อมูลใหม่ทันที
@@ -5932,6 +6299,513 @@ function renderAll(data) {
       renderLongAging();
     }
   }
+}
+
+// ── SA Suspend Summary — SA Mobile / Online NANO / Online NON NANO ──────────
+let _saNanoEqptSet = new Set();
+let _saNanoFilename = "";
+let _saNanoDbStatus = { state:"warn", text:"ยังไม่ได้โหลด mapping จาก Supabase" };
+let _saNanoDbLoaded = false;
+let _saNanoDbUnavailable = false;
+let _saSuspendDetailStore = {};
+let _saSuspendDetailSeq = 0;
+let _saSuspendClickTimer = null;
+let _saSuspendRegionFilter = "ALL";
+let _saSuspendSelectedDetailKey = null;
+let _saReasonOverrides = {};
+let _saInocLogOverrides = {};
+let _saInocLogSaveTimers = {};
+let _saInocLogDbUnavailable = false;
+let _saRawRowIds = new WeakMap();
+let _saRawRowsById = {};
+let _saRawRowIdSeq = 0;
+const SA_REASON_SELECT_OPTIONS = [
+  { key:"non_action", label:"Non Action" },
+  { key:"site_access", label:"Site Access" },
+  { key:"spare_part", label:"Spare Part" },
+  { key:"stolen", label:"Stolen" },
+  { key:"difficult", label:"Difficult" },
+  { key:"priority_int", label:"Priority Int." },
+];
+const SA_SUSPEND_REASON_ROWS = [
+  { key:"non_action", label:"Non Action" },
+  { key:"site_access", label:"Site Access" },
+  { key:"spare_part", label:"Spare Part" },
+  { key:"stolen", label:"Stolen" },
+  { key:"difficult", label:"Difficult" },
+  { key:"priority_int", label:"Priority Int." },
+  { key:"Accepted", label:"Accept" },
+  { key:"Departed", label:"Depart" },
+  { key:"Arrived", label:"Arrive" },
+];
+const SA_SUSPEND_BUCKETS = [
+  { key:"total", label:"จำนวน Over" },
+  { key:"over1_4", label:"Over 1-4 Hrs" },
+  { key:"over4_8", label:"Over 4-8 Hrs" },
+  { key:"over8_24", label:"Over 8-24 Hrs" },
+  { key:"over24", label:"Over>24 Hrs" },
+  { key:"watch", label:"เหลือเวลาน้อยกว่า<br>2 ชั่วโมง" },
+  { key:"total_wo", label:"Total WO" },
+];
+function saNormText(v) { return String(v == null ? "" : v).trim(); }
+function saStatusNorm(v) {
+  const s = saNormText(v).toLowerCase();
+  if (/^accept/.test(s)) return "Accepted";
+  if (/^depart/.test(s)) return "Departed";
+  if (/^arriv/.test(s)) return "Arrived";
+  if (/^dispatch/.test(s)) return "Dispatched";
+  return saNormText(v);
+}
+function saRegionNorm(r) {
+  const v = saNormText(r.Region || r.REGION || r.region).toUpperCase();
+  if (v === "BMAE" || v === "BMAW") return "BMA";
+  return v || "UNKNOWN";
+}
+function saRegionOptionsHTML(rows) {
+  const regions = Array.from(new Set((rows || []).map(saRegionNorm).filter(Boolean))).sort();
+  if (_saSuspendRegionFilter !== "ALL" && !regions.includes(_saSuspendRegionFilter)) _saSuspendRegionFilter = "ALL";
+  return `<select class="sa-region-filter" id="sa-region-filter" onchange="saSetRegionFilter(this.value)">
+    <option value="ALL"${_saSuspendRegionFilter==="ALL"?" selected":""}>Region: All</option>
+    ${regions.map(r => `<option value="${saEscape(r)}"${_saSuspendRegionFilter===r?" selected":""}>Region: ${saEscape(r)}</option>`).join("")}
+  </select>`;
+}
+function saSetRegionFilter(region) {
+  _saSuspendRegionFilter = saNormText(region || "ALL").toUpperCase() || "ALL";
+  renderSaSuspendSummary();
+}
+function saRowId(r) {
+  if (!r || typeof r !== "object") return "";
+  if (!_saRawRowIds.has(r)) _saRawRowIds.set(r, "sa_row_" + (++_saRawRowIdSeq));
+  const id = _saRawRowIds.get(r);
+  _saRawRowsById[id] = r;
+  return id;
+}
+function saIsClosed(r) { return /^closed(\s*\(auto\))?$/i.test(saNormText(r.Status)); }
+function saIsSaSeverity(r) { return /^SA[1-6]/i.test(saNormText(r.Severity)); }
+function saIsSystemCreator(r) {
+  return /^system$/i.test(saNormText(r["WO Creator"] || r.WOCreator || r.Creator));
+}
+function saNormSiteKey(v) {
+  return saNormText(v).toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+function saHasNanoSubject(r) {
+  return /\bNANO\b|นาโน/i.test(saNormText(r.Subject));
+}
+function saIsMobile(r) {
+  return !saHasNanoSubject(r) && !/broad\s*band|board\s*band|broadband|boardband/i.test(saNormText(r.Subject));
+}
+function saRowSiteTokens(r) {
+  const text = [r.EQPT_NAME, r["EQPT NAME"], r["Equipment Name"], r["Site ID"], r.Site, r.Subject, r["Alarm Description"], r["Source Ticket ID"], r["Work Order ID"]]
+    .map(saNormText).join(" ").toUpperCase();
+  const tokens = text.match(/[A-Z]{2,8}\d{2,8}[A-Z0-9_-]*/g) || [];
+  return Array.from(new Set([
+    ...tokens,
+    ...tokens.map(saNormSiteKey),
+    saNormSiteKey(text),
+  ].filter(Boolean)));
+}
+function saIsNano(r) {
+  if (saHasNanoSubject(r)) return true;
+  if (!_saNanoEqptSet.size) return false;
+  return saRowSiteTokens(r).some(t => _saNanoEqptSet.has(t) || _saNanoEqptSet.has(saNormSiteKey(t)));
+}
+function saSetDbStatus(state, text) {
+  _saNanoDbStatus = { state, text };
+  const el = document.getElementById("sa-nano-db-status");
+  if (el) {
+    el.className = "sa-db-pill " + state;
+    el.textContent = text;
+  }
+}
+async function loadSaNanoMappingFromDb(force = false) {
+  if (_saNanoDbUnavailable && !force) return;
+  if (_saNanoDbLoaded && !force) return;
+  saSetDbStatus("warn", "กำลังโหลด NANO Mapping จาก Supabase...");
+  try {
+    const rows = await supaFetch("sa_nano_eqpt_mapping?select=eqpt_name&order=eqpt_name.asc&limit=50000");
+    const set = new Set();
+    (rows || []).forEach(r => saAddNanoMappingValue(set, r.eqpt_name));
+    _saNanoEqptSet = set;
+    _saNanoFilename = set.size ? "Supabase Database" : "";
+    _saNanoDbLoaded = true;
+    saSetDbStatus("ok", `โหลดจาก Supabase แล้ว ${set.size} EQPT_NAME`);
+    renderSaSuspendSummary();
+  } catch (e) {
+    _saNanoDbLoaded = false;
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saNanoDbUnavailable = true;
+      saSetDbStatus("warn", "ยังไม่มีตาราง sa_nano_eqpt_mapping ใน Supabase");
+    } else {
+      saSetDbStatus("error", "โหลด Supabase ไม่สำเร็จ: " + msg);
+    }
+  }
+}
+function saAddNanoMappingValue(set, value) {
+  const raw = saNormText(value).toUpperCase();
+  if (!raw) return;
+  set.add(raw);
+  set.add(saNormSiteKey(raw));
+  (raw.match(/[A-Z]{2,8}\d{2,8}[A-Z0-9_-]*/g) || []).forEach(token => {
+    set.add(token);
+    set.add(saNormSiteKey(token));
+  });
+}
+async function saveSaNanoMappingToDb(set, filename) {
+  if (_saNanoDbUnavailable) {
+    saSetDbStatus("warn", "ยังไม่บันทึก DB: ต้องสร้างตาราง sa_nano_eqpt_mapping ก่อน");
+    return;
+  }
+  const values = Array.from(set || []).filter(Boolean);
+  if (!values.length) return;
+  saSetDbStatus("warn", `กำลังบันทึก ${values.length} EQPT_NAME ลง Supabase...`);
+  try {
+    const chunks = [];
+    for (let i = 0; i < values.length; i += 500) {
+      chunks.push(values.slice(i, i + 500).map(eqpt_name => ({ eqpt_name, source_filename: filename || null })));
+    }
+    await Promise.all(chunks.map(chunk => supaFetch("sa_nano_eqpt_mapping", "POST", chunk)));
+    _saNanoDbLoaded = true;
+    saSetDbStatus("ok", `บันทึกลง Supabase แล้ว ${values.length} EQPT_NAME`);
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saNanoDbUnavailable = true;
+      saSetDbStatus("warn", "ยังไม่บันทึก DB: ต้องสร้างตาราง sa_nano_eqpt_mapping ก่อน");
+    } else {
+      saSetDbStatus("error", "บันทึก Supabase ไม่สำเร็จ: " + msg);
+    }
+  }
+}
+function saParseDate(v) {
+  if (v instanceof Date) return v;
+  if (typeof v === "number") return new Date(Math.round((v - 25569) * 86400 * 1000));
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+function saCreatedDate(r) {
+  return saParseDate(r["Created Time"] || r["Create Time"] || r["WO Created Time"] || r["Created Date"]);
+}
+function saRequireFinishDate(r) {
+  return saParseDate(r["Require Finish Time"] || r["Required Finish Time"] || r["Target Finish Time"] || r["Due Date"]);
+}
+function saSlaHours(r) {
+  const created = saCreatedDate(r);
+  const requireFinish = saRequireFinishDate(r);
+  if (!created || !requireFinish) return "";
+  const h = (requireFinish.getTime() - created.getTime()) / 36e5;
+  return Number.isFinite(h) && h >= 0 ? h : "";
+}
+function saSlaDisplay(r) {
+  const h = saSlaHours(r);
+  if (h === "") return saNormText(r.SLA) || "-";
+  return `${Math.round(h * 10) / 10} Hrs`;
+}
+function saOverHours(r) {
+  const now = Date.now();
+  const d = saRequireFinishDate(r);
+  if (!d) return 0;
+  const h = (now - d.getTime()) / 36e5;
+  return h > 0 ? h : 0;
+}
+function saWithinTwoHours(r) {
+  if (!["Accepted","Departed","Arrived"].includes(saStatusNorm(r.Status))) return false;
+  const now = Date.now();
+  const d = saRequireFinishDate(r);
+  if (!d) return false;
+  const h = (d.getTime() - now) / 36e5;
+  return h >= 0 && h < 2;
+}
+function saReasonKey(r) {
+  const rowId = saRowId(r);
+  if (rowId && _saReasonOverrides[rowId]) return _saReasonOverrides[rowId];
+  const raw = saNormText(r["Suspend Reason"] || r.Acknowledge) || "8.0-อื่นๆ";
+  if (/^8\.0|8_0/i.test(raw) || (/อื่นๆ(?!.*priority)/i.test(raw) && !/^8[_\.]1|รอบุคคลอื่น/i.test(raw))) return "non_action";
+  if (/^1\.|1_1|1_2|1_3|1_4|1_5|1_6|1_7|1_8|เข้าทำงาน|การอนุญาต|Renovate|จังหวัดภาคใต้|จารจล|ประตูวง|ไม่ปลอดภัยจากสัตว์|บังคับอบรม/i.test(raw)) return "site_access";
+  if (/^6\.|6_1|6_2|อะไหล่|spare/i.test(raw)) return "spare_part";
+  if (/^4\.|4_1|ถูกขโมย/i.test(raw)) return "stolen";
+  if (/^8\.1|8_1|^9\.|9_1|ภาระงาน|ทำงานอื่น|priority สำคัญกว่า|ไปทำงานอื่น|งบยังไม่ได้รับ|งบประมาณเพิ่มเติม/i.test(raw)) return "priority_int";
+  if (/^2\.|2_1|2_2|2_3|^3\.|3_1|3_2|3_3|^5\.|5_1|5_2|5_3|5_4|^7\.|7_1|รถชนเสา|เสาไฟฟ้าล้ม|ต้นไม้ล้ม|อัคคีภัย|น้ำท่วม|พายุ|การไฟฟ้าตัด|ไฟดับ|Technical Support|3rd Party|เจ้าของพื้นที่แก้ไข|ผลกระทบจาก TRUE|ยาก|ปรับปรุงสถานที่|รอบุคคลอื่น|ต้องใช้ประมาณการ|ต้องใช้งบประมาณพิเศษ|SLA Auto Paused|Account Manager/i.test(raw)) return "difficult";
+  return "non_action";
+}
+function saOverBucket(r) {
+  const h = saOverHours(r);
+  if (h > 24) return "over24";
+  if (h > 8) return "over8_24";
+  if (h > 4) return "over4_8";
+  return "over1_4";
+}
+function saBuildMatrix(rows) {
+  const matrix = {};
+  SA_SUSPEND_REASON_ROWS.forEach(rr => {
+    matrix[rr.key] = {};
+    SA_SUSPEND_BUCKETS.forEach(b => matrix[rr.key][b.key] = []);
+  });
+  rows.forEach(r => {
+    const status = saStatusNorm(r.Status);
+    if (["Accepted","Departed","Arrived"].includes(status)) {
+      matrix[status].total_wo.push(r);
+      if (saWithinTwoHours(r)) matrix[status].watch.push(r);
+      return;
+    }
+    if (status !== "Dispatched" || !saNormText(r["Source Ticket ID"])) return;
+    const key = saReasonKey(r);
+    matrix[key].total_wo.push(r);
+    if (saOverHours(r) <= 0) return;
+    matrix[key].total.push(r);
+    matrix[key][saOverBucket(r)].push(r);
+  });
+  return matrix;
+}
+function saUniqueRows(rows) {
+  const seen = new Set();
+  return (rows || []).filter(r => {
+    const id = saRowId(r);
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+function saDetailKey(title, rowLabel, bucketLabel, rows) {
+  const key = "sa_detail_" + (++_saSuspendDetailSeq);
+  _saSuspendDetailStore[key] = { title, rowLabel, bucketLabel, rows: saUniqueRows(rows || []) };
+  return key;
+}
+function saOverrideKey(title, rowKey, bucketKey) {
+  return [_saSuspendRegionFilter, title, rowKey, bucketKey].map(v => saNormText(v).toLowerCase()).join("|");
+}
+function saCountCell(title, rr, bucket, rows, cls) {
+  const count = rows.length;
+  if (count === 0) {
+    return `<td class="${cls} sa-suspend-editable-empty">-</td>`;
+  }
+  const key = saDetailKey(title, rr.label, bucket.label.replace(/<br>/g, " "), rows);
+  const shown = count || "-";
+  return `<td class="${cls} sa-suspend-count" title="Click เพื่อดู Detail" onclick="saCellClick('${key}')">${shown}</td>`;
+}
+function saSuspendTableHTML(title, rows) {
+  const matrix = saBuildMatrix(rows);
+  const totals = {};
+  SA_SUSPEND_BUCKETS.forEach(b => totals[b.key] = []);
+  SA_SUSPEND_REASON_ROWS.forEach(rr => SA_SUSPEND_BUCKETS.forEach(b => {
+    totals[b.key].push(...(matrix[rr.key][b.key] || []));
+  }));
+  return `<div class="sa-suspend-panel"><div class="sa-suspend-title">${title}</div><table class="sa-suspend-table">
+    <thead><tr><th class="reason-head">Suspend Reason</th>${SA_SUSPEND_BUCKETS.map(b => `<th class="${b.key==="watch"?"watch-head":""}">${b.label}</th>`).join("")}</tr></thead>
+    <tbody>${SA_SUSPEND_REASON_ROWS.map(rr => {
+      const rowRows = saUniqueRows(SA_SUSPEND_BUCKETS.reduce((acc, b) => acc.concat(matrix[rr.key][b.key] || []), []));
+      const rowKey = saDetailKey(title, rr.label, "All", rowRows);
+      return `<tr><td class="sa-row-topic" title="Click เพื่อดู Detail ของหัวข้อนี้" onclick="saShowDetail('${rowKey}')">${rr.label}</td>${SA_SUSPEND_BUCKETS.map(b => {
+      const cls = b.key==="watch" ? "watch-cell" : "over-cell";
+      return saCountCell(title, rr, b, matrix[rr.key][b.key] || [], cls);
+    }).join("")}</tr>`;
+    }).join("")}</tbody>
+    <tfoot><tr><td></td>${SA_SUSPEND_BUCKETS.map(b => {
+      const cls = b.key==="total" ? "over-total" : "";
+      const count = totals[b.key].length;
+      if (!count) {
+        return `<td class="${cls} sa-suspend-editable-empty">-</td>`;
+      }
+      const key = saDetailKey(title, "Total", b.label.replace(/<br>/g, " "), totals[b.key]);
+      const shown = count || "-";
+      return `<td class="${cls} sa-suspend-count" title="Click เพื่อดู Detail" onclick="saCellClick('${key}')">${shown}</td>`;
+    }).join("")}</tr></tfoot>
+  </table></div>`;
+}
+function saEscape(v) {
+  return saNormText(v).replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
+}
+function saGetInocLog(r) {
+  const rowId = saRowId(r);
+  if (rowId && Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId)) return _saInocLogOverrides[rowId];
+  return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || "";
+}
+function saInocLogInputHTML(r) {
+  const rowId = saRowId(r);
+  return `<textarea class="sa-inoc-log-input" placeholder="INOC Log" oninput="saSetInocLog('${rowId}', this.value)">${saEscape(saGetInocLog(r))}</textarea>`;
+}
+function saSetInocLog(rowId, value) {
+  if (!rowId) return;
+  _saInocLogOverrides[rowId] = value;
+  clearTimeout(_saInocLogSaveTimers[rowId]);
+  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveInocLogToDb(rowId), 700);
+}
+async function saSaveInocLogToDb(rowId) {
+  if (_saInocLogDbUnavailable) return;
+  const row = _saRawRowsById[rowId];
+  if (!row) return;
+  const workOrderId = saNormText(row["Work Order ID"]);
+  if (!workOrderId) {
+    saSetDbStatus("warn", "INOC Log ยังไม่บันทึก: ไม่มี Work Order ID");
+    return;
+  }
+  const logText = _saInocLogOverrides[rowId] ?? "";
+  const payload = [{
+    work_order_id: workOrderId,
+    source_ticket_id: saNormText(row["Source Ticket ID"]) || null,
+    region: saRegionNorm(row),
+    severity: saNormText(row.Severity) || null,
+    status: saStatusNorm(row.Status) || null,
+    inoc_log: logText,
+    updated_at: new Date().toISOString()
+  }];
+  try {
+    await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", payload);
+    saSetDbStatus("ok", "บันทึก INOC Log ลง Supabase แล้ว");
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saInocLogDbUnavailable = true;
+      saSetDbStatus("warn", "ยังไม่บันทึก INOC Log: ต้องสร้างตาราง sa_inoc_logs ก่อน");
+    } else {
+      saSetDbStatus("error", "บันทึก INOC Log ไม่สำเร็จ: " + msg);
+    }
+  }
+}
+function saReasonSelectHTML(r) {
+  const rowId = saRowId(r);
+  const current = saReasonKey(r);
+  return `<select class="sa-reason-select" onchange="saSetRowReason('${rowId}', this.value)">
+    ${SA_REASON_SELECT_OPTIONS.map(opt => `<option value="${opt.key}"${current===opt.key?" selected":""}>${opt.label}</option>`).join("")}
+  </select>`;
+}
+function saSetRowReason(rowId, reasonKey) {
+  if (!rowId) return;
+  if (SA_REASON_SELECT_OPTIONS.some(opt => opt.key === reasonKey)) {
+    _saReasonOverrides[rowId] = reasonKey;
+  }
+  _saSuspendSelectedDetailKey = null;
+  renderSaSuspendSummary();
+}
+function saShowDetail(key) {
+  const item = _saSuspendDetailStore[key];
+  if (!item) return;
+  _saSuspendSelectedDetailKey = key;
+  const cols = [
+    { key:"_reason_select", label:"เลือกสาเหตุ", w:"150px" },
+    { key:"_inoc_log", label:"INOC Log", w:"320px" },
+    { key:"Work Order ID", label:"WO ID", w:"150px" },
+    { key:"Source Ticket ID", label:"Source Ticket", w:"150px" },
+    { key:"Status", label:"Status", w:"110px" },
+    { key:"_sla_calc", label:"SLA", w:"90px" },
+    { key:"Severity", label:"Severity", w:"95px" },
+    { key:"WO Creator", label:"WO Creator", w:"110px" },
+    { key:"Region", label:"Region", w:"90px" },
+    { key:"Province", label:"Province", w:"120px" },
+    { key:"Team", label:"Team", w:"170px" },
+    { key:"Suspend Reason", label:"Suspend Reason", w:"230px", wrap:true },
+    { key:"Acknowledge", label:"Acknowledge", w:"220px", wrap:true },
+    { key:"Subject", label:"Subject", w:"420px", subject:true },
+    { key:"Require Finish Time", label:"Require Finish", w:"170px" },
+  ];
+  const target = document.getElementById("sa-detail-inline");
+  if (!target) return;
+  target.innerHTML = `<div class="sa-detail-inline">
+    <div class="sa-detail-head">
+      <div>
+        <div class="sa-detail-title">${saEscape(item.title)} · ${saEscape(item.rowLabel)} · ${saEscape(item.bucketLabel)}</div>
+        <div class="sa-detail-sub">${item.rows.length} รายการ Raw Data</div>
+      </div>
+      <button class="sa-detail-close" onclick="saCloseDetail()">×</button>
+    </div>
+    <div class="sa-detail-body"><table class="sa-detail-table">
+    <colgroup>${cols.map(c => `<col style="width:${c.w}">`).join("")}</colgroup>
+    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join("")}</tr></thead>
+    <tbody>${item.rows.map(r => `<tr>${cols.map(c => {
+      const cls = c.subject ? " class=\"subject-cell\"" : c.wrap ? " class=\"wrap-cell\"" : c.key === "_inoc_log" ? " class=\"log-cell\"" : "";
+      if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
+      if (c.key === "_inoc_log") return `<td class="log-cell">${saInocLogInputHTML(r)}</td>`;
+      if (c.key === "_sla_calc") return `<td>${saEscape(saSlaDisplay(r)) || "-"}</td>`;
+      return `<td${cls}>${saEscape(r[c.key]) || "-"}</td>`;
+    }).join("")}</tr>`).join("")}</tbody>
+  </table></div></div>`;
+  target.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function saCellClick(key) {
+  clearTimeout(_saSuspendClickTimer);
+  _saSuspendClickTimer = setTimeout(() => saShowDetail(key), 180);
+}
+function saCloseDetail() {
+  _saSuspendSelectedDetailKey = null;
+  const target = document.getElementById("sa-detail-inline");
+  if (target) target.innerHTML = "";
+}
+function renderSaSuspendSummary() {
+  const container = document.getElementById("content-sa-suspend");
+  if (!container) return;
+  _saSuspendDetailStore = {};
+  _saSuspendDetailSeq = 0;
+  if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
+  const allRows = (_rawAllRows || []).filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  const rows = allRows.filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter);
+  if (!allRows.length) {
+    container.innerHTML = `<div class="sa-suspend-wrap">
+      <div class="sa-suspend-toolbar">
+        <button class="btn btn-blue" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
+        <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
+      </div>
+      <div class="sa-suspend-empty">Upload Daily Operation Excel ก่อนเพื่อสร้าง SA Suspend Summary</div>
+    </div>`;
+    return;
+  }
+  if (!rows.length) {
+    container.innerHTML = `<div class="sa-suspend-wrap">
+      <div class="sa-suspend-toolbar">
+        ${saRegionOptionsHTML(allRows)}
+        <button class="btn btn-blue" onclick="document.getElementById('sa-nano-file-input').click()">Upload NANO Mapping</button>
+        <button class="btn btn-green" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
+        <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
+        <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
+      </div>
+      <div class="sa-suspend-empty">ไม่มีข้อมูลใน Region: ${saEscape(_saSuspendRegionFilter)}</div>
+    </div>`;
+    return;
+  }
+  const mobileRows = rows.filter(saIsMobile);
+  const onlineRows = rows.filter(r => !saIsMobile(r));
+  const nanoRows = onlineRows.filter(saIsNano);
+  const nonNanoRows = onlineRows.filter(r => !saIsNano(r));
+  container.innerHTML = `<div class="sa-suspend-wrap">
+    <div class="sa-suspend-toolbar">
+      ${saRegionOptionsHTML(allRows)}
+      <button class="btn btn-blue" onclick="document.getElementById('sa-nano-file-input').click()">Upload NANO Mapping</button>
+      <button class="btn btn-green" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
+      <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
+      <span class="sa-suspend-file">${_saNanoFilename ? "NANO Mapping: " + _saNanoFilename + " (" + _saNanoEqptSet.size + " EQPT_NAME)" : "ยังไม่ได้เลือกไฟล์ NANO Mapping: Online ทั้งหมดจะอยู่ NON NANO"}</span>
+      <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
+      <span class="sa-suspend-note">ใช้ Suspend Reason mapping ชุดเดียวกับสาเหตุ Over SLA และนับ Watch เฉพาะ Status Accept / Depart / Arrive</span>
+    </div>
+    <div class="sa-suspend-grid">
+      ${saSuspendTableHTML("SA Mobile", mobileRows)}
+      ${saSuspendTableHTML("SA Online NANO", nanoRows)}
+      ${saSuspendTableHTML("SA Online NON NANO", nonNanoRows)}
+    </div>
+    <div id="sa-detail-inline"></div>
+  </div>`;
+  if (_saSuspendSelectedDetailKey) setTimeout(() => saShowDetail(_saSuspendSelectedDetailKey), 0);
+}
+function processSaNanoExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array" });
+      const set = new Set();
+      wb.SheetNames.forEach(name => {
+        XLSX.utils.sheet_to_json(wb.Sheets[name], { defval:"", raw:false }).forEach(r => {
+          const key = Object.keys(r).find(k => /^EQPT[_\s-]*NAME$/i.test(k));
+          if (key) saAddNanoMappingValue(set, r[key]);
+        });
+      });
+      _saNanoEqptSet = set;
+      _saNanoFilename = file.name;
+      renderSaSuspendSummary();
+      saveSaNanoMappingToDb(set, file.name);
+    } catch (e) {
+      alert("อ่านไฟล์ NANO Mapping ไม่สำเร็จ: " + e.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ── Modal / Report ─────────────────────────────────────────────────────────────
@@ -6295,6 +7169,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.getElementById("content-sa-overview").style.display      = key==="sa-overview"      ? "block" : "none";
     document.getElementById("content-arrive-dashboard").style.display = key==="arrive-dashboard" ? "block" : "none";
     document.getElementById("content-long-aging").style.display      = key==="long-aging"      ? "block" : "none";
+    document.getElementById("content-sa-suspend").style.display      = key==="sa-suspend"      ? "block" : "none";
     if (key==="arrive" && (typeof _arriveRows==="undefined"||!_arriveRows)) {
       if (typeof showArriveHint==="function") showArriveHint();
     }
@@ -6304,6 +7179,7 @@ document.querySelectorAll(".tab").forEach(tab => {
       else renderLongAging();
     }
     if (key==="sa-overview" && typeof renderSaOverview==="function") renderSaOverview(currentData);
+    if (key==="sa-suspend" && typeof renderSaSuspendSummary==="function") renderSaSuspendSummary();
   });
 });
 
@@ -6570,6 +7446,8 @@ function processArriveExcel(data, filename) {
   document.getElementById("content-pdt").style.display               = "none";
   document.getElementById("content-sa-overview").style.display        = "none";
   document.getElementById("content-arrive-dashboard").style.display   = "none";
+  document.getElementById("content-long-aging").style.display         = "none";
+  document.getElementById("content-sa-suspend").style.display         = "none";
   document.getElementById("content-arrive").style.display             = "block";
 
   // ── Toast: แจ้งว่าทั้ง 2 tab พร้อมใช้งาน ────────────────────────
@@ -6913,6 +7791,9 @@ document.getElementById("pdt-file-input").addEventListener("change", function() 
       document.getElementById("content-nsa12sa").style.display    = "none";
       document.getElementById("content-arrive").style.display     = "none";
       document.getElementById("content-sa-overview").style.display = "none";
+      document.getElementById("content-arrive-dashboard").style.display = "none";
+      document.getElementById("content-long-aging").style.display = "none";
+      document.getElementById("content-sa-suspend").style.display = "none";
       document.getElementById("content-pdt").style.display        = "";
     } catch(e) {
       alert("ไม่สามารถอ่านไฟล์ได้: " + e.message);
@@ -10101,6 +10982,25 @@ async function supaFetch(path, method, body) {
     method: method || "GET",
     headers,
     body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error("Supabase " + res.status + ": " + txt.slice(0, 200));
+  }
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+async function supaUpsert(path, body) {
+  const headers = {
+    "apikey":        SUPA_KEY,
+    "Authorization": "Bearer " + SUPA_KEY,
+    "Content-Type":  "application/json",
+    "Prefer":        "return=minimal,resolution=merge-duplicates"
+  };
+  const res = await fetch(SUPA_URL + "/rest/v1/" + path, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
   });
   if (!res.ok) {
     const txt = await res.text();
