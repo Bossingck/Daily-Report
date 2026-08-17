@@ -1629,7 +1629,7 @@
   }
   .sa-suspend-grid {
     display: grid;
-    grid-template-columns: minmax(720px, 1fr) minmax(720px, 1fr);
+    grid-template-columns: minmax(1040px, 1fr);
     gap: 22px;
     align-items: start;
   }
@@ -1755,6 +1755,7 @@
   }
   .sa-suspend-panel {
     min-width: 1040px;
+    width: 100%;
   }
   .sa-suspend-table {
     min-width: 1040px;
@@ -1924,6 +1925,27 @@
   }
   .sa-detail-inline .sa-detail-body {
     max-height: min(62vh, 680px);
+  }
+  .sa-detail-subtable {
+    margin-bottom: 18px;
+  }
+  .sa-detail-subtable:last-child {
+    margin-bottom: 0;
+  }
+  .sa-detail-subtable-title {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: rgba(91,141,239,.12);
+    color: var(--ink-strong);
+    font-size: 12px;
+    font-weight: 900;
   }
   .sa-row-topic {
     cursor: pointer;
@@ -6381,7 +6403,7 @@ function saRowId(r) {
   return id;
 }
 function saIsClosed(r) { return /^closed(\s*\(auto\))?$/i.test(saNormText(r.Status)); }
-function saIsSaSeverity(r) { return /^SA[1-6]/i.test(saNormText(r.Severity)); }
+function saIsSaSeverity(r) { return /^(SA[1-6]|CSA)\b/i.test(saNormText(r.Severity)); }
 function saIsSystemCreator(r) {
   return /^system$/i.test(saNormText(r["WO Creator"] || r.WOCreator || r.Creator));
 }
@@ -6677,6 +6699,33 @@ function saSetRowReason(rowId, reasonKey) {
   _saSuspendSelectedDetailKey = null;
   renderSaSuspendSummary();
 }
+function saCategoryTitle(r) {
+  if (saIsMobile(r)) return "SA Mobile";
+  if (saIsNano(r)) return "SA Online NANO";
+  return "SA Online NON NANO";
+}
+function saGroupDetailRows(rows) {
+  const groups = {
+    "SA Mobile": [],
+    "SA Online NANO": [],
+    "SA Online NON NANO": [],
+  };
+  (rows || []).forEach(r => groups[saCategoryTitle(r)].push(r));
+  return Object.entries(groups).filter(([, groupRows]) => groupRows.length);
+}
+function saDetailTableHTML(rows, cols) {
+  return `<table class="sa-detail-table">
+    <colgroup>${cols.map(c => `<col style="width:${c.w}">`).join("")}</colgroup>
+    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${cols.map(c => {
+      const cls = c.subject ? " class=\"subject-cell\"" : c.wrap ? " class=\"wrap-cell\"" : c.key === "_inoc_log" ? " class=\"log-cell\"" : "";
+      if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
+      if (c.key === "_inoc_log") return `<td class="log-cell">${saInocLogInputHTML(r)}</td>`;
+      if (c.key === "_sla_calc") return `<td>${saEscape(saSlaDisplay(r)) || "-"}</td>`;
+      return `<td${cls}>${saEscape(r[c.key]) || "-"}</td>`;
+    }).join("")}</tr>`).join("")}</tbody>
+  </table>`;
+}
 function saShowDetail(key) {
   const item = _saSuspendDetailStore[key];
   if (!item) return;
@@ -6700,6 +6749,12 @@ function saShowDetail(key) {
   ];
   const target = document.getElementById("sa-detail-inline");
   if (!target) return;
+  const groupedTables = saGroupDetailRows(item.rows).map(([groupTitle, groupRows]) => `
+    <div class="sa-detail-subtable">
+      <div class="sa-detail-subtable-title">${saEscape(groupTitle)} · ${groupRows.length} รายการ</div>
+      ${saDetailTableHTML(groupRows, cols)}
+    </div>
+  `).join("");
   target.innerHTML = `<div class="sa-detail-inline">
     <div class="sa-detail-head">
       <div>
@@ -6708,17 +6763,7 @@ function saShowDetail(key) {
       </div>
       <button class="sa-detail-close" onclick="saCloseDetail()">×</button>
     </div>
-    <div class="sa-detail-body"><table class="sa-detail-table">
-    <colgroup>${cols.map(c => `<col style="width:${c.w}">`).join("")}</colgroup>
-    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join("")}</tr></thead>
-    <tbody>${item.rows.map(r => `<tr>${cols.map(c => {
-      const cls = c.subject ? " class=\"subject-cell\"" : c.wrap ? " class=\"wrap-cell\"" : c.key === "_inoc_log" ? " class=\"log-cell\"" : "";
-      if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
-      if (c.key === "_inoc_log") return `<td class="log-cell">${saInocLogInputHTML(r)}</td>`;
-      if (c.key === "_sla_calc") return `<td>${saEscape(saSlaDisplay(r)) || "-"}</td>`;
-      return `<td${cls}>${saEscape(r[c.key]) || "-"}</td>`;
-    }).join("")}</tr>`).join("")}</tbody>
-  </table></div></div>`;
+    <div class="sa-detail-body">${groupedTables || `<div class="sa-suspend-empty">ไม่มี Raw Data</div>`}</div></div>`;
   target.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 function saCellClick(key) {
