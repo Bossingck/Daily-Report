@@ -6335,9 +6335,13 @@ let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
 let _saSuspendSelectedDetailKey = null;
 let _saReasonOverrides = {};
+let _saReasonOverridesByWo = {};
 let _saInocLogOverrides = {};
+let _saInocLogOverridesByWo = {};
 let _saInocLogSaveTimers = {};
 let _saInocLogDbUnavailable = false;
+let _saInocLogLoadedSig = "";
+let _saRowEditLocalLoadedSig = "";
 let _saRawRowIds = new WeakMap();
 let _saRawRowsById = {};
 let _saRawRowIdSeq = 0;
@@ -6401,6 +6405,9 @@ function saRowId(r) {
   const id = _saRawRowIds.get(r);
   _saRawRowsById[id] = r;
   return id;
+}
+function saWorkOrderId(r) {
+  return saNormText(r && r["Work Order ID"]);
 }
 function saIsClosed(r) { return /^closed(\s*\(auto\))?$/i.test(saNormText(r.Status)); }
 function saIsSaSeverity(r) { return /^(SA[1-6]|CSA)\b/i.test(saNormText(r.Severity)); }
@@ -6541,6 +6548,8 @@ function saWithinTwoHours(r) {
 function saReasonKey(r) {
   const rowId = saRowId(r);
   if (rowId && _saReasonOverrides[rowId]) return _saReasonOverrides[rowId];
+  const wo = saWorkOrderId(r);
+  if (wo && _saReasonOverridesByWo[wo]) return _saReasonOverridesByWo[wo];
   const raw = saNormText(r["Suspend Reason"] || r.Acknowledge) || "8.0-อื่นๆ";
   if (/^8\.0|8_0/i.test(raw) || (/อื่นๆ(?!.*priority)/i.test(raw) && !/^8[_\.]1|รอบุคคลอื่น/i.test(raw))) return "non_action";
   if (/^1\.|1_1|1_2|1_3|1_4|1_5|1_6|1_7|1_8|เข้าทำงาน|การอนุญาต|Renovate|จังหวัดภาคใต้|จารจล|ประตูวง|ไม่ปลอดภัยจากสัตว์|บังคับอบรม/i.test(raw)) return "site_access";
@@ -6640,6 +6649,8 @@ function saEscape(v) {
 function saGetInocLog(r) {
   const rowId = saRowId(r);
   if (rowId && Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId)) return _saInocLogOverrides[rowId];
+  const wo = saWorkOrderId(r);
+  if (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo)) return _saInocLogOverridesByWo[wo];
   return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || "";
 }
 function saInocLogInputHTML(r) {
@@ -6649,38 +6660,114 @@ function saInocLogInputHTML(r) {
 function saSetInocLog(rowId, value) {
   if (!rowId) return;
   _saInocLogOverrides[rowId] = value;
+  const row = _saRawRowsById[rowId];
+  const wo = saWorkOrderId(row);
+  if (wo) _saInocLogOverridesByWo[wo] = value;
+  saSaveRowEditLocal(rowId);
   clearTimeout(_saInocLogSaveTimers[rowId]);
-  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveInocLogToDb(rowId), 700);
+  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 700);
 }
-async function saSaveInocLogToDb(rowId) {
+function saLocalEditKey() {
+  return "sa_row_edits_v1";
+}
+function saReadLocalEdits() {
+  try { return JSON.parse(localStorage.getItem(saLocalEditKey()) || "{}") || {}; }
+  catch (_) { return {}; }
+}
+function saWriteLocalEdits(data) {
+  try { localStorage.setItem(saLocalEditKey(), JSON.stringify(data || {})); } catch (_) {}
+}
+function saSaveRowEditLocal(rowId) {
+  const row = _saRawRowsById[rowId];
+  const wo = saWorkOrderId(row);
+  if (!wo) return;
+  const data = saReadLocalEdits();
+  data[wo] = {
+    inoc_log: saGetInocLog(row),
+    reason_key: saReasonKey(row),
+    updated_at: new Date().toISOString()
+  };
+  saWriteLocalEdits(data);
+}
+function saLoadRowEditsLocal(rows) {
+  const workOrders = Array.from(new Set((rows || []).map(saWorkOrderId).filter(Boolean))).sort();
+  const sig = workOrders.join("|");
+  if (!workOrders.length || sig === _saRowEditLocalLoadedSig) return;
+  _saRowEditLocalLoadedSig = sig;
+  const data = saReadLocalEdits();
+  workOrders.forEach(wo => {
+    const rec = data[wo];
+    if (!rec) return;
+    if (Object.prototype.hasOwnProperty.call(rec, "inoc_log")) _saInocLogOverridesByWo[wo] = rec.inoc_log || "";
+    if (rec.reason_key && SA_REASON_SELECT_OPTIONS.some(opt => opt.key === rec.reason_key)) {
+      _saReasonOverridesByWo[wo] = rec.reason_key;
+    }
+  });
+}
+async function saSaveSaRowEditToDb(rowId) {
   if (_saInocLogDbUnavailable) return;
   const row = _saRawRowsById[rowId];
   if (!row) return;
-  const workOrderId = saNormText(row["Work Order ID"]);
+  const workOrderId = saWorkOrderId(row);
+  saSaveRowEditLocal(rowId);
   if (!workOrderId) {
-    saSetDbStatus("warn", "INOC Log ยังไม่บันทึก: ไม่มี Work Order ID");
+    saSetDbStatus("warn", "ข้อมูลยังไม่บันทึก: ไม่มี Work Order ID");
     return;
   }
-  const logText = _saInocLogOverrides[rowId] ?? "";
+  const logText = saGetInocLog(row);
+  const reasonKey = saReasonKey(row);
   const payload = [{
     work_order_id: workOrderId,
     source_ticket_id: saNormText(row["Source Ticket ID"]) || null,
     region: saRegionNorm(row),
     severity: saNormText(row.Severity) || null,
     status: saStatusNorm(row.Status) || null,
+    reason_key: reasonKey,
     inoc_log: logText,
     updated_at: new Date().toISOString()
   }];
   try {
     await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", payload);
-    saSetDbStatus("ok", "บันทึก INOC Log ลง Supabase แล้ว");
+    saSetDbStatus("ok", "บันทึกเลือกสาเหตุ / INOC Log ลง Supabase แล้ว");
   } catch (e) {
     const msg = e.message || "";
     if (/PGRST205|Could not find the table|404/i.test(msg)) {
       _saInocLogDbUnavailable = true;
-      saSetDbStatus("warn", "ยังไม่บันทึก INOC Log: ต้องสร้างตาราง sa_inoc_logs ก่อน");
+      saSetDbStatus("warn", "ยังไม่บันทึกข้อมูล: ต้องสร้างตาราง sa_inoc_logs ก่อน");
     } else {
-      saSetDbStatus("error", "บันทึก INOC Log ไม่สำเร็จ: " + msg);
+      saSetDbStatus("error", "บันทึกข้อมูลไม่สำเร็จ: " + msg);
+    }
+  }
+}
+async function saLoadSaRowEditsFromDb(rows) {
+  if (_saInocLogDbUnavailable) return;
+  const workOrders = Array.from(new Set((rows || []).map(saWorkOrderId).filter(Boolean))).sort();
+  const sig = workOrders.join("|");
+  if (!workOrders.length || sig === _saInocLogLoadedSig) return;
+  _saInocLogLoadedSig = sig;
+  try {
+    const chunks = [];
+    for (let i = 0; i < workOrders.length; i += 80) chunks.push(workOrders.slice(i, i + 80));
+    const pgInValue = v => `%22${encodeURIComponent(String(v).replace(/"/g, '\\"'))}%22`;
+    const results = await Promise.all(chunks.map(ids =>
+      supaFetch(`sa_inoc_logs?select=work_order_id,inoc_log,reason_key&work_order_id=in.(${ids.map(pgInValue).join(",")})`)
+    ));
+    results.flat().forEach(rec => {
+      const wo = saNormText(rec.work_order_id);
+      if (!wo) return;
+      if (Object.prototype.hasOwnProperty.call(rec, "inoc_log")) _saInocLogOverridesByWo[wo] = rec.inoc_log || "";
+      if (rec.reason_key && SA_REASON_SELECT_OPTIONS.some(opt => opt.key === rec.reason_key)) {
+        _saReasonOverridesByWo[wo] = rec.reason_key;
+      }
+    });
+    renderSaSuspendSummary();
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saInocLogDbUnavailable = true;
+      saSetDbStatus("warn", "ยังโหลดข้อมูลเดิมไม่ได้: ต้องสร้างตาราง sa_inoc_logs ก่อน");
+    } else {
+      saSetDbStatus("error", "โหลดข้อมูลเดิมไม่สำเร็จ: " + msg);
     }
   }
 }
@@ -6695,8 +6782,13 @@ function saSetRowReason(rowId, reasonKey) {
   if (!rowId) return;
   if (SA_REASON_SELECT_OPTIONS.some(opt => opt.key === reasonKey)) {
     _saReasonOverrides[rowId] = reasonKey;
+    const row = _saRawRowsById[rowId];
+    const wo = saWorkOrderId(row);
+    if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
+  saSaveRowEditLocal(rowId);
   _saSuspendSelectedDetailKey = null;
+  saSaveSaRowEditToDb(rowId);
   renderSaSuspendSummary();
 }
 function saCategoryTitle(r) {
@@ -6782,6 +6874,8 @@ function renderSaSuspendSummary() {
   _saSuspendDetailSeq = 0;
   if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
   const allRows = (_rawAllRows || []).filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  saLoadRowEditsLocal(allRows);
+  setTimeout(() => saLoadSaRowEditsFromDb(allRows), 0);
   const rows = allRows.filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter);
   if (!allRows.length) {
     container.innerHTML = `<div class="sa-suspend-wrap">
