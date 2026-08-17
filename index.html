@@ -1636,6 +1636,33 @@
     border-color: rgba(91,141,239,.65);
     box-shadow: 0 0 0 3px rgba(91,141,239,.12);
   }
+  .sa-province-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-0);
+  }
+  .sa-province-filter-title {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 900;
+  }
+  .sa-province-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .sa-province-check input {
+    accent-color: #5b8def;
+  }
   .sa-suspend-file {
     font-size: 12px;
     color: var(--text-muted);
@@ -6375,6 +6402,7 @@ let _saSuspendDetailSeq = 0;
 let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
 let _saSuspendSearch = "";
+let _saSuspendEasProvinceFilter = new Set();
 let _saSuspendSelectedDetailKey = null;
 let _saReasonOverrides = {};
 let _saReasonOverridesByWo = {};
@@ -6449,6 +6477,10 @@ function saRegionNorm(r) {
   if (v === "BMAE" || v === "BMAW") return "BMA";
   return v || "UNKNOWN";
 }
+const SA_EAS_PROVINCES = ["CBR", "CCS", "SKO", "RYG", "NKN", "PCR", "CTB", "TRT"];
+function saProvinceNorm(r) {
+  return saNormText(r && (r.Province || r.PROVINCE || r.province)).toUpperCase();
+}
 function saTeamCodeNorm(r) {
   return saNormText(r && (r["Team Code"] || r.TeamCode || r.TEAM_CODE || r.team_code)).toUpperCase();
 }
@@ -6466,6 +6498,23 @@ function saRegionOptionsHTML(rows) {
 function saSetRegionFilter(region) {
   _saSuspendRegionFilter = saNormText(region || "ALL").toUpperCase() || "ALL";
   renderSaSuspendSummary();
+}
+function saEasProvinceFilterHTML() {
+  if (_saSuspendRegionFilter !== "EAS") return "";
+  return `<div class="sa-province-filter">
+    <span class="sa-province-filter-title">Province</span>
+    ${SA_EAS_PROVINCES.map(p => `<label class="sa-province-check"><input type="checkbox" value="${p}" ${_saSuspendEasProvinceFilter.has(p) ? "checked" : ""} onchange="saToggleEasProvince('${p}', this.checked)">${p}</label>`).join("")}
+  </div>`;
+}
+function saToggleEasProvince(province, checked) {
+  const p = saNormText(province).toUpperCase();
+  if (checked) _saSuspendEasProvinceFilter.add(p);
+  else _saSuspendEasProvinceFilter.delete(p);
+  renderSaSuspendSummary();
+}
+function saMatchesEasProvince(r) {
+  if (_saSuspendRegionFilter !== "EAS" || !_saSuspendEasProvinceFilter.size) return true;
+  return _saSuspendEasProvinceFilter.has(saProvinceNorm(r));
 }
 function saSearchHTML() {
   return `<input class="sa-search-input" id="sa-suspend-search" value="${saEscape(_saSuspendSearch)}" placeholder="Search: Work Order ID / Source Ticket ID / SDM TT / External Ticket ID" oninput="saSetSearch(this.value)">`;
@@ -7223,6 +7272,7 @@ function renderSaSuspendSummary() {
   setTimeout(() => saLoadSaRowEditsFromDb(allRows), 0);
   const rows = allRows
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
+    .filter(saMatchesEasProvince)
     .filter(saMatchesSearch);
   if (!allRows.length) {
     container.innerHTML = `<div class="sa-suspend-wrap">
@@ -7238,6 +7288,7 @@ function renderSaSuspendSummary() {
     container.innerHTML = `<div class="sa-suspend-wrap">
       <div class="sa-suspend-toolbar">
         ${saRegionOptionsHTML(allRows)}
+        ${saEasProvinceFilterHTML()}
         ${saSearchHTML()}
         <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
         <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
@@ -7254,6 +7305,7 @@ function renderSaSuspendSummary() {
   container.innerHTML = `<div class="sa-suspend-wrap">
     <div class="sa-suspend-toolbar">
       ${saRegionOptionsHTML(allRows)}
+      ${saEasProvinceFilterHTML()}
       ${saSearchHTML()}
       <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
