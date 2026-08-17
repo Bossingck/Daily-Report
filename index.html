@@ -6397,6 +6397,7 @@ const SA_REASON_SELECT_OPTIONS = [
   { key:"spare_part", label:"Spare Part" },
   { key:"stolen", label:"Stolen" },
   { key:"difficult", label:"Difficult" },
+  { key:"third_party", label:"3rd Party" },
   { key:"work_load", label:"Work load" },
   { key:"working", label:"Working" },
   { key:"priority_int", label:"Priority Int." },
@@ -6407,6 +6408,7 @@ const SA_SUSPEND_REASON_ROWS = [
   { key:"spare_part", label:"Spare Part" },
   { key:"stolen", label:"Stolen" },
   { key:"difficult", label:"Difficult" },
+  { key:"third_party", label:"3rd Party" },
   { key:"work_load", label:"Work load" },
   { key:"working", label:"Working" },
   { key:"priority_int", label:"Priority Int." },
@@ -6741,10 +6743,11 @@ function saReasonKey(r) {
   if (/^1\.|1_1|1_2|1_3|1_4|1_5|1_6|1_7|1_8|เข้าทำงาน|การอนุญาต|Renovate|จังหวัดภาคใต้|จารจล|ประตูวง|ไม่ปลอดภัยจากสัตว์|บังคับอบรม/i.test(raw)) return "site_access";
   if (/^6\.|6_1|6_2|อะไหล่|spare/i.test(raw)) return "spare_part";
   if (/^4\.|4_1|ถูกขโมย/i.test(raw)) return "stolen";
+  if (/3rd\s*party|third\s*party/i.test(raw)) return "third_party";
   if (/work\s*load|ภาระงาน|ทำงานอื่น|ไปทำงานอื่น/i.test(raw)) return "work_load";
   if (/working|work\s*in\s*progress|กำลังทำงาน|กำลังดำเนินการ|อยู่ระหว่างดำเนินการ/i.test(raw)) return "working";
   if (/^8\.1|8_1|^9\.|9_1|priority สำคัญกว่า|งบยังไม่ได้รับ|งบประมาณเพิ่มเติม/i.test(raw)) return "priority_int";
-  if (/^2\.|2_1|2_2|2_3|^3\.|3_1|3_2|3_3|^5\.|5_1|5_2|5_3|5_4|^7\.|7_1|รถชนเสา|เสาไฟฟ้าล้ม|ต้นไม้ล้ม|อัคคีภัย|น้ำท่วม|พายุ|การไฟฟ้าตัด|ไฟดับ|Technical Support|3rd Party|เจ้าของพื้นที่แก้ไข|ผลกระทบจาก TRUE|ยาก|ปรับปรุงสถานที่|รอบุคคลอื่น|ต้องใช้ประมาณการ|ต้องใช้งบประมาณพิเศษ|SLA Auto Paused|Account Manager/i.test(raw)) return "difficult";
+  if (/^2\.|2_1|2_2|2_3|^3\.|3_1|3_2|3_3|^5\.|5_1|5_2|5_3|5_4|^7\.|7_1|รถชนเสา|เสาไฟฟ้าล้ม|ต้นไม้ล้ม|อัคคีภัย|น้ำท่วม|พายุ|การไฟฟ้าตัด|ไฟดับ|Technical Support|เจ้าของพื้นที่แก้ไข|ผลกระทบจาก TRUE|ยาก|ปรับปรุงสถานที่|รอบุคคลอื่น|ต้องใช้ประมาณการ|ต้องใช้งบประมาณพิเศษ|SLA Auto Paused|Account Manager/i.test(raw)) return "difficult";
   return "non_action";
 }
 function saOverBucket(r) {
