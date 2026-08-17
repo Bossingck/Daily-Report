@@ -6575,8 +6575,7 @@ function saIsDeletedWorkOrder(r) {
   return !!(wo && saReadDeletedWorkOrders().has(wo));
 }
 function saSourceRows() {
-  const rows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_rawAllRows || []);
-  return (rows || []).filter(r => !saIsDeletedWorkOrder(r));
+  return Array.isArray(_saSuspendRows) ? _saSuspendRows : [];
 }
 function saSaveSuspendRowsLocal(rows, filename) {
   try {
@@ -6923,26 +6922,20 @@ async function saDeleteSuspendRow(rowId) {
   const wo = saWorkOrderId(row);
   if (!wo) return;
   if (!confirm(`ลบ Work Order ${wo} ออกจาก SA Suspend Summary?`)) return;
-  const deleted = saReadDeletedWorkOrders();
-  deleted.add(wo);
-  saWriteDeletedWorkOrders(deleted);
-  const keep = r => saWorkOrderId(r) !== wo;
-  if (Array.isArray(_saSuspendRows)) _saSuspendRows = _saSuspendRows.filter(keep);
-  if (Array.isArray(_rawAllRows)) _rawAllRows = _rawAllRows.filter(keep);
-  saSaveSuspendRowsLocal(saSourceRows(), _rawUploadFileName || "SA Suspend Summary");
   _saSuspendSelectedDetailKey = null;
-  renderSaSuspendSummary();
   try {
     const filter = `work_order_id=eq.${encodeURIComponent(wo)}`;
     await supaFetch(`sa_suspend_raw_rows?${filter}`, "DELETE");
     try { await supaFetch(`sa_inoc_logs?${filter}`, "DELETE"); } catch (_) {}
+    _saSuspendRowsDbLoaded = false;
+    await loadSaSuspendRowsFromDb(true);
     saSetDbStatus("ok", `ลบ ${wo} ออกจากระบบแล้ว`);
   } catch (e) {
     const msg = e.message || "";
     if (/PGRST205|Could not find the table|404/i.test(msg)) {
-      saSetDbStatus("warn", `ลบ ${wo} ออกจากหน้านี้แล้ว แต่ยังไม่มีตาราง Supabase`);
+      saSetDbStatus("error", `ลบ ${wo} ไม่สำเร็จ: ยังไม่มีตาราง Supabase`);
     } else {
-      saSetDbStatus("warn", `ลบ ${wo} ออกจากหน้านี้แล้ว แต่ลบ Supabase ไม่สำเร็จ: ${msg}`);
+      saSetDbStatus("error", `ลบ ${wo} จาก Supabase ไม่สำเร็จ: ${msg}`);
     }
   }
 }
@@ -7024,17 +7017,14 @@ function processSaSuspendExcelFile(file) {
       const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array", cellDates:true });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval:"", raw:true });
-      _saSuspendRows = rows;
-      _rawAllRows = rows;
       _rawDataSource = "upload";
       _rawUploadFileName = file.name;
-      saSaveSuspendRowsLocal(rows, file.name);
-      _saSuspendRowsDbLoaded = true;
-      renderSaSuspendSummary();
       try {
         await saSaveRawRowsToDb(rows, file.name);
+        _saSuspendRowsDbLoaded = false;
+        await loadSaSuspendRowsFromDb(true);
       } catch (saveErr) {
-        saSetDbStatus("warn", "อ่านไฟล์สำเร็จ แต่ยังบันทึก Supabase ไม่ได้: ต้องสร้างตาราง sa_suspend_raw_rows ก่อน");
+        saSetDbStatus("error", "อ่านไฟล์สำเร็จ แต่บันทึก Supabase ไม่สำเร็จ: " + (saveErr.message || saveErr));
       }
       renderSaSuspendSummary();
     } catch (e) {
@@ -7265,8 +7255,7 @@ function renderSaSuspendSummary() {
   _saSuspendDetailStore = {};
   _saSuspendDetailSeq = 0;
   if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
-  saLoadSuspendRowsLocal();
-  if (!_saSuspendRowsDbLoaded && !saSourceRows().length) setTimeout(() => loadSaSuspendRowsFromDb(false), 0);
+  if (!_saSuspendRowsDbLoaded) setTimeout(() => loadSaSuspendRowsFromDb(false), 0);
   const allRows = saSourceRows().filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
   saLoadRowEditsLocal(allRows);
   setTimeout(() => saLoadSaRowEditsFromDb(allRows), 0);
