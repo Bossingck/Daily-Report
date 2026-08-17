@@ -1619,6 +1619,23 @@
     color: var(--text-secondary);
     font-weight: 600;
   }
+  .sa-search-input {
+    min-width: 340px;
+    max-width: 520px;
+    flex: 1 1 340px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+  }
+  .sa-search-input:focus {
+    border-color: rgba(91,141,239,.65);
+    box-shadow: 0 0 0 3px rgba(91,141,239,.12);
+  }
   .sa-suspend-file {
     font-size: 12px;
     color: var(--text-muted);
@@ -1950,10 +1967,34 @@
   .sa-row-topic {
     cursor: pointer;
     font-weight: 900;
+    font-size: 13px;
   }
   .sa-row-topic:hover {
     color: #5b8def;
     background: rgba(91,141,239,.08) !important;
+  }
+  .sa-suspend-table tr.sa-section-row td {
+    background: var(--surface-2);
+    color: var(--ink-strong);
+    font-weight: 900;
+    font-size: 15px;
+    height: 38px;
+    text-align: left;
+    border-top: 2px solid var(--border-med);
+  }
+  .sa-delete-row-btn {
+    border: 1px solid rgba(220,38,38,.28);
+    background: rgba(220,38,38,.08);
+    color: #dc2626;
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sa-delete-row-btn:hover {
+    background: rgba(220,38,38,.16);
   }
   .sa-db-pill {
     display: inline-flex;
@@ -6333,6 +6374,7 @@ let _saSuspendDetailStore = {};
 let _saSuspendDetailSeq = 0;
 let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
+let _saSuspendSearch = "";
 let _saSuspendSelectedDetailKey = null;
 let _saReasonOverrides = {};
 let _saReasonOverridesByWo = {};
@@ -6345,12 +6387,17 @@ let _saRowEditLocalLoadedSig = "";
 let _saRawRowIds = new WeakMap();
 let _saRawRowsById = {};
 let _saRawRowIdSeq = 0;
+let _saSuspendRows = null;
+let _saSuspendRowsDbLoaded = false;
+let _saSuspendRowsDbLoading = false;
+let _saSuspendRowsDbUnavailable = false;
 const SA_REASON_SELECT_OPTIONS = [
   { key:"non_action", label:"Non Action" },
   { key:"site_access", label:"Site Access" },
   { key:"spare_part", label:"Spare Part" },
   { key:"stolen", label:"Stolen" },
   { key:"difficult", label:"Difficult" },
+  { key:"work_load", label:"Work load" },
   { key:"priority_int", label:"Priority Int." },
 ];
 const SA_SUSPEND_REASON_ROWS = [
@@ -6359,11 +6406,16 @@ const SA_SUSPEND_REASON_ROWS = [
   { key:"spare_part", label:"Spare Part" },
   { key:"stolen", label:"Stolen" },
   { key:"difficult", label:"Difficult" },
+  { key:"work_load", label:"Work load" },
   { key:"priority_int", label:"Priority Int." },
-  { key:"Accepted", label:"Accept" },
-  { key:"Departed", label:"Depart" },
-  { key:"Arrived", label:"Arrive" },
 ];
+const SA_SUSPEND_STATUS_ORDER = ["Dispatched", "Accepted", "Departed", "Arrived"];
+const SA_SUSPEND_STATUS_LABELS = {
+  Dispatched: "Dispatched",
+  Accepted: "Accept",
+  Departed: "Depart",
+  Arrived: "Arrive",
+};
 const SA_SUSPEND_BUCKETS = [
   { key:"total", label:"จำนวน Over" },
   { key:"over1_4", label:"Over 1-4 Hrs" },
@@ -6382,10 +6434,22 @@ function saStatusNorm(v) {
   if (/^dispatch/.test(s)) return "Dispatched";
   return saNormText(v);
 }
+function saStatusRows(rows) {
+  const statuses = new Set((rows || []).map(r => saStatusNorm(r.Status)).filter(Boolean));
+  const ordered = SA_SUSPEND_STATUS_ORDER.filter(s => statuses.has(s));
+  const rest = Array.from(statuses).filter(s => !SA_SUSPEND_STATUS_ORDER.includes(s)).sort((a, b) => a.localeCompare(b));
+  return ordered.concat(rest).map(key => ({ key, label: SA_SUSPEND_STATUS_LABELS[key] || key }));
+}
 function saRegionNorm(r) {
   const v = saNormText(r.Region || r.REGION || r.region).toUpperCase();
   if (v === "BMAE" || v === "BMAW") return "BMA";
   return v || "UNKNOWN";
+}
+function saTeamCodeNorm(r) {
+  return saNormText(r && (r["Team Code"] || r.TeamCode || r.TEAM_CODE || r.team_code)).toUpperCase();
+}
+function saSkipDbRow(r) {
+  return saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT";
 }
 function saRegionOptionsHTML(rows) {
   const regions = Array.from(new Set((rows || []).map(saRegionNorm).filter(Boolean))).sort();
@@ -6399,6 +6463,34 @@ function saSetRegionFilter(region) {
   _saSuspendRegionFilter = saNormText(region || "ALL").toUpperCase() || "ALL";
   renderSaSuspendSummary();
 }
+function saSearchHTML() {
+  return `<input class="sa-search-input" id="sa-suspend-search" value="${saEscape(_saSuspendSearch)}" placeholder="Search: Work Order ID / Source Ticket ID / SDM TT / External Ticket ID" oninput="saSetSearch(this.value)">`;
+}
+function saSetSearch(value) {
+  _saSuspendSearch = saNormText(value);
+  renderSaSuspendSummary();
+  const el = document.getElementById("sa-suspend-search");
+  if (el) {
+    el.focus();
+    const len = el.value.length;
+    try { el.setSelectionRange(len, len); } catch (e) {}
+  }
+}
+function saMatchesSearch(r) {
+  const q = saNormText(_saSuspendSearch).toLowerCase();
+  if (!q) return true;
+  const fields = [
+    r["Work Order ID"],
+    r["Source Ticket ID"],
+    r["SDM TT"],
+    r.SDMTT,
+    r["SDM_TT"],
+    r["External Ticket ID"],
+    r.ExternalTicketID,
+    r["External_Ticket_ID"],
+  ];
+  return fields.some(v => saNormText(v).toLowerCase().includes(q));
+}
 function saRowId(r) {
   if (!r || typeof r !== "object") return "";
   if (!_saRawRowIds.has(r)) _saRawRowIds.set(r, "sa_row_" + (++_saRawRowIdSeq));
@@ -6408,6 +6500,53 @@ function saRowId(r) {
 }
 function saWorkOrderId(r) {
   return saNormText(r && r["Work Order ID"]);
+}
+function saSuspendRawLocalKey() {
+  return "sa_suspend_raw_rows_v1";
+}
+function saDeletedWoLocalKey() {
+  return "sa_deleted_work_orders_v1";
+}
+function saReadDeletedWorkOrders() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(saDeletedWoLocalKey()) || "[]").filter(Boolean));
+  } catch (e) {
+    return new Set();
+  }
+}
+function saWriteDeletedWorkOrders(set) {
+  try { localStorage.setItem(saDeletedWoLocalKey(), JSON.stringify(Array.from(set || []))); } catch (e) {}
+}
+function saIsDeletedWorkOrder(r) {
+  const wo = saWorkOrderId(r);
+  return !!(wo && saReadDeletedWorkOrders().has(wo));
+}
+function saSourceRows() {
+  const rows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_rawAllRows || []);
+  return (rows || []).filter(r => !saIsDeletedWorkOrder(r));
+}
+function saSaveSuspendRowsLocal(rows, filename) {
+  try {
+    localStorage.setItem(saSuspendRawLocalKey(), JSON.stringify({
+      filename: filename || "",
+      saved_at: new Date().toISOString(),
+      rows: (rows || []).filter(r => !saIsDeletedWorkOrder(r))
+    }));
+  } catch (e) {}
+}
+function saLoadSuspendRowsLocal() {
+  if (Array.isArray(_saSuspendRows) && _saSuspendRows.length) return true;
+  try {
+    const rec = JSON.parse(localStorage.getItem(saSuspendRawLocalKey()) || "null");
+    if (rec && Array.isArray(rec.rows) && rec.rows.length) {
+      _saSuspendRows = rec.rows;
+      _rawAllRows = rec.rows;
+      _rawDataSource = "upload";
+      _rawUploadFileName = rec.filename || "SA Suspend Summary";
+      return true;
+    }
+  } catch (e) {}
+  return false;
 }
 function saIsClosed(r) { return /^closed(\s*\(auto\))?$/i.test(saNormText(r.Status)); }
 function saIsSaSeverity(r) { return /^(SA[1-6]|CSA)\b/i.test(saNormText(r.Severity)); }
@@ -6433,9 +6572,19 @@ function saRowSiteTokens(r) {
     saNormSiteKey(text),
   ].filter(Boolean)));
 }
+function saSubjectMatchesNanoEqpt(r) {
+  const subjectKey = saNormSiteKey(r && r.Subject);
+  if (!subjectKey || !_saNanoEqptSet.size) return false;
+  for (const eqpt of _saNanoEqptSet) {
+    const siteId = saNormSiteKey(eqpt);
+    if (siteId.length >= 4 && subjectKey.includes(siteId)) return true;
+  }
+  return false;
+}
 function saIsNano(r) {
   if (saHasNanoSubject(r)) return true;
   if (!_saNanoEqptSet.size) return false;
+  if (saSubjectMatchesNanoEqpt(r)) return true;
   return saRowSiteTokens(r).some(t => _saNanoEqptSet.has(t) || _saNanoEqptSet.has(saNormSiteKey(t)));
 }
 function saSetDbStatus(state, text) {
@@ -6509,7 +6658,24 @@ async function saveSaNanoMappingToDb(set, filename) {
 function saParseDate(v) {
   if (v instanceof Date) return v;
   if (typeof v === "number") return new Date(Math.round((v - 25569) * 86400 * 1000));
-  const d = new Date(v);
+  const s = saNormText(v);
+  if (!s) return null;
+  const thaiDate = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?)?/);
+  if (thaiDate) {
+    let year = Number(thaiDate[3]);
+    if (year < 100) year += 2000;
+    if (year > 2400) year -= 543;
+    const d = new Date(
+      year,
+      Number(thaiDate[2]) - 1,
+      Number(thaiDate[1]),
+      Number(thaiDate[4] || 0),
+      Number(thaiDate[5] || 0),
+      Number(thaiDate[6] || 0)
+    );
+    return isNaN(d) ? null : d;
+  }
+  const d = new Date(s);
   return isNaN(d) ? null : d;
 }
 function saCreatedDate(r) {
@@ -6537,6 +6703,24 @@ function saOverHours(r) {
   const h = (now - d.getTime()) / 36e5;
   return h > 0 ? h : 0;
 }
+function saRemainHours(r) {
+  const now = Date.now();
+  const d = saRequireFinishDate(r);
+  if (!d) return "";
+  const h = (d.getTime() - now) / 36e5;
+  return h > 0 ? h : 0;
+}
+function saHourText(h) {
+  if (h === "") return "-";
+  return `${Math.round(h * 10) / 10} Hrs`;
+}
+function saStepStatusDisplay(r) {
+  const over = saOverHours(r);
+  if (over > 0) return `Over ${saHourText(over)}`;
+  const remain = saRemainHours(r);
+  if (remain === "") return "Total WO";
+  return `Total WO · เหลือ ${saHourText(remain)}`;
+}
 function saWithinTwoHours(r) {
   if (!["Accepted","Departed","Arrived"].includes(saStatusNorm(r.Status))) return false;
   const now = Date.now();
@@ -6555,7 +6739,8 @@ function saReasonKey(r) {
   if (/^1\.|1_1|1_2|1_3|1_4|1_5|1_6|1_7|1_8|เข้าทำงาน|การอนุญาต|Renovate|จังหวัดภาคใต้|จารจล|ประตูวง|ไม่ปลอดภัยจากสัตว์|บังคับอบรม/i.test(raw)) return "site_access";
   if (/^6\.|6_1|6_2|อะไหล่|spare/i.test(raw)) return "spare_part";
   if (/^4\.|4_1|ถูกขโมย/i.test(raw)) return "stolen";
-  if (/^8\.1|8_1|^9\.|9_1|ภาระงาน|ทำงานอื่น|priority สำคัญกว่า|ไปทำงานอื่น|งบยังไม่ได้รับ|งบประมาณเพิ่มเติม/i.test(raw)) return "priority_int";
+  if (/work\s*load|ภาระงาน|ทำงานอื่น|ไปทำงานอื่น/i.test(raw)) return "work_load";
+  if (/^8\.1|8_1|^9\.|9_1|priority สำคัญกว่า|งบยังไม่ได้รับ|งบประมาณเพิ่มเติม/i.test(raw)) return "priority_int";
   if (/^2\.|2_1|2_2|2_3|^3\.|3_1|3_2|3_3|^5\.|5_1|5_2|5_3|5_4|^7\.|7_1|รถชนเสา|เสาไฟฟ้าล้ม|ต้นไม้ล้ม|อัคคีภัย|น้ำท่วม|พายุ|การไฟฟ้าตัด|ไฟดับ|Technical Support|3rd Party|เจ้าของพื้นที่แก้ไข|ผลกระทบจาก TRUE|ยาก|ปรับปรุงสถานที่|รอบุคคลอื่น|ต้องใช้ประมาณการ|ต้องใช้งบประมาณพิเศษ|SLA Auto Paused|Account Manager/i.test(raw)) return "difficult";
   return "non_action";
 }
@@ -6564,27 +6749,33 @@ function saOverBucket(r) {
   if (h > 24) return "over24";
   if (h > 8) return "over8_24";
   if (h > 4) return "over4_8";
-  return "over1_4";
+  if (h > 1) return "over1_4";
+  return "";
 }
-function saBuildMatrix(rows) {
+function saBuildMatrix(rows, statusRows) {
   const matrix = {};
-  SA_SUSPEND_REASON_ROWS.forEach(rr => {
+  [...SA_SUSPEND_REASON_ROWS, ...statusRows].forEach(rr => {
     matrix[rr.key] = {};
     SA_SUSPEND_BUCKETS.forEach(b => matrix[rr.key][b.key] = []);
   });
   rows.forEach(r => {
     const status = saStatusNorm(r.Status);
-    if (["Accepted","Departed","Arrived"].includes(status)) {
+    if (matrix[status]) {
       matrix[status].total_wo.push(r);
       if (saWithinTwoHours(r)) matrix[status].watch.push(r);
-      return;
+      if (saOverHours(r) > 0) {
+        matrix[status].total.push(r);
+        const bucket = saOverBucket(r);
+        if (bucket) matrix[status][bucket].push(r);
+      }
     }
-    if (status !== "Dispatched" || !saNormText(r["Source Ticket ID"])) return;
+    if (!saNormText(r["Source Ticket ID"])) return;
     const key = saReasonKey(r);
     matrix[key].total_wo.push(r);
     if (saOverHours(r) <= 0) return;
     matrix[key].total.push(r);
-    matrix[key][saOverBucket(r)].push(r);
+    const bucket = saOverBucket(r);
+    if (bucket) matrix[key][bucket].push(r);
   });
   return matrix;
 }
@@ -6615,29 +6806,34 @@ function saCountCell(title, rr, bucket, rows, cls) {
   return `<td class="${cls} sa-suspend-count" title="Click เพื่อดู Detail" onclick="saCellClick('${key}')">${shown}</td>`;
 }
 function saSuspendTableHTML(title, rows) {
-  const matrix = saBuildMatrix(rows);
+  const statusRows = saStatusRows(rows);
+  const matrix = saBuildMatrix(rows, statusRows);
   const totals = {};
   SA_SUSPEND_BUCKETS.forEach(b => totals[b.key] = []);
-  SA_SUSPEND_REASON_ROWS.forEach(rr => SA_SUSPEND_BUCKETS.forEach(b => {
+  [...SA_SUSPEND_REASON_ROWS, ...statusRows].forEach(rr => SA_SUSPEND_BUCKETS.forEach(b => {
     totals[b.key].push(...(matrix[rr.key][b.key] || []));
   }));
+  const sectionHTML = (sectionLabel, sectionRows) => `
+      <tr class="sa-section-row"><td colspan="${SA_SUSPEND_BUCKETS.length + 1}">${sectionLabel}</td></tr>
+      ${sectionRows.map(rr => {
+        const rowRows = saUniqueRows(SA_SUSPEND_BUCKETS.reduce((acc, b) => acc.concat(matrix[rr.key][b.key] || []), []));
+        const rowKey = saDetailKey(title, rr.label, "All", rowRows);
+        return `<tr><td class="sa-row-topic" title="Click เพื่อดู Detail ของหัวข้อนี้" onclick="saShowDetail('${rowKey}')">${rr.label}</td>${SA_SUSPEND_BUCKETS.map(b => {
+        const cls = b.key==="watch" ? "watch-cell" : "over-cell";
+        return saCountCell(title, rr, b, matrix[rr.key][b.key] || [], cls);
+      }).join("")}</tr>`;
+      }).join("")}`;
   return `<div class="sa-suspend-panel"><div class="sa-suspend-title">${title}</div><table class="sa-suspend-table">
-    <thead><tr><th class="reason-head">Suspend Reason</th>${SA_SUSPEND_BUCKETS.map(b => `<th class="${b.key==="watch"?"watch-head":""}">${b.label}</th>`).join("")}</tr></thead>
-    <tbody>${SA_SUSPEND_REASON_ROWS.map(rr => {
-      const rowRows = saUniqueRows(SA_SUSPEND_BUCKETS.reduce((acc, b) => acc.concat(matrix[rr.key][b.key] || []), []));
-      const rowKey = saDetailKey(title, rr.label, "All", rowRows);
-      return `<tr><td class="sa-row-topic" title="Click เพื่อดู Detail ของหัวข้อนี้" onclick="saShowDetail('${rowKey}')">${rr.label}</td>${SA_SUSPEND_BUCKETS.map(b => {
-      const cls = b.key==="watch" ? "watch-cell" : "over-cell";
-      return saCountCell(title, rr, b, matrix[rr.key][b.key] || [], cls);
-    }).join("")}</tr>`;
-    }).join("")}</tbody>
+    <thead><tr><th class="reason-head">Suspend Reason / Status</th>${SA_SUSPEND_BUCKETS.map(b => `<th class="${b.key==="watch"?"watch-head":""}">${b.label}</th>`).join("")}</tr></thead>
+    <tbody>${sectionHTML("สาเหตุ", SA_SUSPEND_REASON_ROWS)}${sectionHTML("Status", statusRows)}</tbody>
     <tfoot><tr><td></td>${SA_SUSPEND_BUCKETS.map(b => {
       const cls = b.key==="total" ? "over-total" : "";
-      const count = totals[b.key].length;
+      const totalRows = saUniqueRows(totals[b.key]);
+      const count = totalRows.length;
       if (!count) {
         return `<td class="${cls} sa-suspend-editable-empty">-</td>`;
       }
-      const key = saDetailKey(title, "Total", b.label.replace(/<br>/g, " "), totals[b.key]);
+      const key = saDetailKey(title, "Total", b.label.replace(/<br>/g, " "), totalRows);
       const shown = count || "-";
       return `<td class="${cls} sa-suspend-count" title="Click เพื่อดู Detail" onclick="saCellClick('${key}')">${shown}</td>`;
     }).join("")}</tr></tfoot>
@@ -6666,6 +6862,134 @@ function saSetInocLog(rowId, value) {
   saSaveRowEditLocal(rowId);
   clearTimeout(_saInocLogSaveTimers[rowId]);
   _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 700);
+}
+async function saDeleteSuspendRow(rowId) {
+  const row = _saRawRowsById[rowId];
+  const wo = saWorkOrderId(row);
+  if (!wo) return;
+  if (!confirm(`ลบ Work Order ${wo} ออกจาก SA Suspend Summary?`)) return;
+  const deleted = saReadDeletedWorkOrders();
+  deleted.add(wo);
+  saWriteDeletedWorkOrders(deleted);
+  const keep = r => saWorkOrderId(r) !== wo;
+  if (Array.isArray(_saSuspendRows)) _saSuspendRows = _saSuspendRows.filter(keep);
+  if (Array.isArray(_rawAllRows)) _rawAllRows = _rawAllRows.filter(keep);
+  saSaveSuspendRowsLocal(saSourceRows(), _rawUploadFileName || "SA Suspend Summary");
+  _saSuspendSelectedDetailKey = null;
+  renderSaSuspendSummary();
+  try {
+    const filter = `work_order_id=eq.${encodeURIComponent(wo)}`;
+    await supaFetch(`sa_suspend_raw_rows?${filter}`, "DELETE");
+    try { await supaFetch(`sa_inoc_logs?${filter}`, "DELETE"); } catch (_) {}
+    saSetDbStatus("ok", `ลบ ${wo} ออกจากระบบแล้ว`);
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      saSetDbStatus("warn", `ลบ ${wo} ออกจากหน้านี้แล้ว แต่ยังไม่มีตาราง Supabase`);
+    } else {
+      saSetDbStatus("warn", `ลบ ${wo} ออกจากหน้านี้แล้ว แต่ลบ Supabase ไม่สำเร็จ: ${msg}`);
+    }
+  }
+}
+function saDbRawRowPayload(r, filename) {
+  const workOrderId = saWorkOrderId(r);
+  if (!workOrderId || saSkipDbRow(r)) return null;
+  return {
+    work_order_id: workOrderId,
+    source_ticket_id: saNormText(r["Source Ticket ID"]) || null,
+    region: saRegionNorm(r),
+    team_code: saTeamCodeNorm(r) || null,
+    severity: saNormText(r.Severity) || null,
+    status: saStatusNorm(r.Status) || null,
+    filename: filename || null,
+    raw_data: r,
+    uploaded_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+async function saSaveRawRowsToDb(rows, filename) {
+  const payload = (rows || []).map(r => saDbRawRowPayload(r, filename)).filter(Boolean);
+  if (!payload.length) {
+    saSetDbStatus("warn", "ไม่มีข้อมูลที่บันทึก Supabase ได้หลังตัด UNKNOWN / BBT");
+    return;
+  }
+  saSetDbStatus("warn", `กำลังบันทึก SA Suspend Summary ${payload.length} รายการ...`);
+  const chunks = [];
+  for (let i = 0; i < payload.length; i += 500) chunks.push(payload.slice(i, i + 500));
+  try {
+    await Promise.all(chunks.map(chunk => supaUpsert("sa_suspend_raw_rows?on_conflict=work_order_id", chunk)));
+    _saSuspendRowsDbLoaded = true;
+    _saSuspendRowsDbUnavailable = false;
+    saSetDbStatus("ok", `บันทึก SA Suspend Summary ลง Supabase แล้ว ${payload.length} รายการ`);
+  } catch (e) {
+    const msg = e.message || "";
+    if (/team_code|schema cache|PGRST204/i.test(msg)) {
+      const fallbackChunks = chunks.map(chunk => chunk.map(({ team_code, ...rest }) => rest));
+      await Promise.all(fallbackChunks.map(chunk => supaUpsert("sa_suspend_raw_rows?on_conflict=work_order_id", chunk)));
+      saSetDbStatus("warn", "บันทึกแล้ว แต่ควรอัปเดต SQL เพื่อเพิ่ม column team_code");
+    } else if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saSuspendRowsDbUnavailable = true;
+      saSetDbStatus("warn", "ยังไม่บันทึก raw data: ต้องสร้างตาราง sa_suspend_raw_rows ก่อน");
+    } else {
+      saSetDbStatus("error", "บันทึก SA Suspend Summary ไม่สำเร็จ: " + msg);
+    }
+  }
+}
+async function loadSaSuspendRowsFromDb(force = false) {
+  if (_saSuspendRowsDbUnavailable && !force) return;
+  if (_saSuspendRowsDbLoaded && !force) return;
+  if (_saSuspendRowsDbLoading) return;
+  _saSuspendRowsDbLoading = true;
+  saSetDbStatus("warn", "กำลังโหลด SA Suspend Summary จาก Supabase...");
+  try {
+    const rows = await supaFetch("sa_suspend_raw_rows?select=raw_data&order=uploaded_at.desc&limit=50000");
+    _saSuspendRows = (rows || []).map(r => r.raw_data).filter(Boolean);
+    _saSuspendRowsDbLoaded = true;
+    _saSuspendRowsDbUnavailable = false;
+    saSetDbStatus("ok", `โหลด SA Suspend Summary จาก Supabase แล้ว ${_saSuspendRows.length} รายการ`);
+    renderSaSuspendSummary();
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saSuspendRowsDbUnavailable = true;
+      saSetDbStatus("warn", "ยังโหลดข้อมูล SA ไม่ได้: ต้องสร้างตาราง sa_suspend_raw_rows ก่อน");
+    } else {
+      saSetDbStatus("error", "โหลด SA Suspend Summary ไม่สำเร็จ: " + msg);
+    }
+  } finally {
+    _saSuspendRowsDbLoading = false;
+  }
+}
+function processSaSuspendExcelFile(file) {
+  if (!file) return;
+  saSetDbStatus("warn", "กำลังอ่านไฟล์ SA Suspend Summary...");
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array", cellDates:true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval:"", raw:true });
+      _saSuspendRows = rows;
+      _rawAllRows = rows;
+      _rawDataSource = "upload";
+      _rawUploadFileName = file.name;
+      saSaveSuspendRowsLocal(rows, file.name);
+      _saSuspendRowsDbLoaded = true;
+      renderSaSuspendSummary();
+      try {
+        await saSaveRawRowsToDb(rows, file.name);
+      } catch (saveErr) {
+        saSetDbStatus("warn", "อ่านไฟล์สำเร็จ แต่ยังบันทึก Supabase ไม่ได้: ต้องสร้างตาราง sa_suspend_raw_rows ก่อน");
+      }
+      renderSaSuspendSummary();
+    } catch (e) {
+      saSetDbStatus("error", "อ่านไฟล์ SA Suspend Summary ไม่สำเร็จ: " + (e.message || e));
+    } finally {
+      const input = document.getElementById("sa-suspend-file-input");
+      if (input) input.value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 function saLocalEditKey() {
   return "sa_row_edits_v1";
@@ -6714,12 +7038,17 @@ async function saSaveSaRowEditToDb(rowId) {
     saSetDbStatus("warn", "ข้อมูลยังไม่บันทึก: ไม่มี Work Order ID");
     return;
   }
+  if (saSkipDbRow(row)) {
+    saSetDbStatus("warn", "ไม่บันทึก Supabase: ตัด Region UNKNOWN / Team Code BBT ออก");
+    return;
+  }
   const logText = saGetInocLog(row);
   const reasonKey = saReasonKey(row);
   const payload = [{
     work_order_id: workOrderId,
     source_ticket_id: saNormText(row["Source Ticket ID"]) || null,
     region: saRegionNorm(row),
+    team_code: saTeamCodeNorm(row) || null,
     severity: saNormText(row.Severity) || null,
     status: saStatusNorm(row.Status) || null,
     reason_key: reasonKey,
@@ -6734,6 +7063,10 @@ async function saSaveSaRowEditToDb(rowId) {
     if (/PGRST205|Could not find the table|404/i.test(msg)) {
       _saInocLogDbUnavailable = true;
       saSetDbStatus("warn", "ยังไม่บันทึกข้อมูล: ต้องสร้างตาราง sa_inoc_logs ก่อน");
+    } else if (/team_code|schema cache|PGRST204/i.test(msg)) {
+      const fallbackPayload = payload.map(({ team_code, ...rest }) => rest);
+      await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", fallbackPayload);
+      saSetDbStatus("warn", "บันทึกแล้ว แต่ควรอัปเดต SQL เพื่อเพิ่ม column team_code");
     } else {
       saSetDbStatus("error", "บันทึกข้อมูลไม่สำเร็จ: " + msg);
     }
@@ -6811,8 +7144,10 @@ function saDetailTableHTML(rows, cols) {
     <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join("")}</tr></thead>
     <tbody>${rows.map(r => `<tr>${cols.map(c => {
       const cls = c.subject ? " class=\"subject-cell\"" : c.wrap ? " class=\"wrap-cell\"" : c.key === "_inoc_log" ? " class=\"log-cell\"" : "";
+      if (c.key === "_delete") return `<td><button class="sa-delete-row-btn" onclick="saDeleteSuspendRow('${saRowId(r)}')">ลบ</button></td>`;
       if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
       if (c.key === "_inoc_log") return `<td class="log-cell">${saInocLogInputHTML(r)}</td>`;
+      if (c.key === "_step_status") return `<td>${saEscape(saStepStatusDisplay(r)) || "-"}</td>`;
       if (c.key === "_sla_calc") return `<td>${saEscape(saSlaDisplay(r)) || "-"}</td>`;
       return `<td${cls}>${saEscape(r[c.key]) || "-"}</td>`;
     }).join("")}</tr>`).join("")}</tbody>
@@ -6823,11 +7158,13 @@ function saShowDetail(key) {
   if (!item) return;
   _saSuspendSelectedDetailKey = key;
   const cols = [
+    { key:"_delete", label:"ลบ", w:"70px" },
     { key:"_reason_select", label:"เลือกสาเหตุ", w:"150px" },
     { key:"_inoc_log", label:"INOC Log", w:"320px" },
     { key:"Work Order ID", label:"WO ID", w:"150px" },
     { key:"Source Ticket ID", label:"Source Ticket", w:"150px" },
     { key:"Status", label:"Status", w:"110px" },
+    { key:"_step_status", label:"Step Status", w:"160px" },
     { key:"_sla_calc", label:"SLA", w:"90px" },
     { key:"Severity", label:"Severity", w:"95px" },
     { key:"WO Creator", label:"WO Creator", w:"110px" },
@@ -6873,17 +7210,21 @@ function renderSaSuspendSummary() {
   _saSuspendDetailStore = {};
   _saSuspendDetailSeq = 0;
   if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
-  const allRows = (_rawAllRows || []).filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  saLoadSuspendRowsLocal();
+  if (!_saSuspendRowsDbLoaded && !saSourceRows().length) setTimeout(() => loadSaSuspendRowsFromDb(false), 0);
+  const allRows = saSourceRows().filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
   saLoadRowEditsLocal(allRows);
   setTimeout(() => saLoadSaRowEditsFromDb(allRows), 0);
-  const rows = allRows.filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter);
+  const rows = allRows
+    .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
+    .filter(saMatchesSearch);
   if (!allRows.length) {
     container.innerHTML = `<div class="sa-suspend-wrap">
       <div class="sa-suspend-toolbar">
-        <button class="btn btn-blue" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
-        <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
+        <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+        <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       </div>
-      <div class="sa-suspend-empty">Upload Daily Operation Excel ก่อนเพื่อสร้าง SA Suspend Summary</div>
+      <div class="sa-suspend-empty">Upload SA Suspend Summary หรือ Load SA DB ก่อนเพื่อสร้างตาราง</div>
     </div>`;
     return;
   }
@@ -6891,10 +7232,10 @@ function renderSaSuspendSummary() {
     container.innerHTML = `<div class="sa-suspend-wrap">
       <div class="sa-suspend-toolbar">
         ${saRegionOptionsHTML(allRows)}
-        <button class="btn btn-blue" onclick="document.getElementById('sa-nano-file-input').click()">Upload NANO Mapping</button>
-        <button class="btn btn-green" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
+        ${saSearchHTML()}
+        <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+        <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
         <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
-        <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
       </div>
       <div class="sa-suspend-empty">ไม่มีข้อมูลใน Region: ${saEscape(_saSuspendRegionFilter)}</div>
     </div>`;
@@ -6907,12 +7248,10 @@ function renderSaSuspendSummary() {
   container.innerHTML = `<div class="sa-suspend-wrap">
     <div class="sa-suspend-toolbar">
       ${saRegionOptionsHTML(allRows)}
-      <button class="btn btn-blue" onclick="document.getElementById('sa-nano-file-input').click()">Upload NANO Mapping</button>
-      <button class="btn btn-green" onclick="loadSaNanoMappingFromDb(true)">Load DB Mapping</button>
+      ${saSearchHTML()}
+      <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+      <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
-      <span class="sa-suspend-file">${_saNanoFilename ? "NANO Mapping: " + _saNanoFilename + " (" + _saNanoEqptSet.size + " EQPT_NAME)" : "ยังไม่ได้เลือกไฟล์ NANO Mapping: Online ทั้งหมดจะอยู่ NON NANO"}</span>
-      <span id="sa-nano-db-status" class="sa-db-pill ${_saNanoDbStatus.state}">${_saNanoDbStatus.text}</span>
-      <span class="sa-suspend-note">ใช้ Suspend Reason mapping ชุดเดียวกับสาเหตุ Over SLA และนับ Watch เฉพาะ Status Accept / Depart / Arrive</span>
     </div>
     <div class="sa-suspend-grid">
       ${saSuspendTableHTML("SA Mobile", mobileRows)}
