@@ -6549,7 +6549,7 @@ const SA_SUSPEND_BUCKETS = [
   { key:"over4_8", label:"Over 4-8 Hrs" },
   { key:"over8_24", label:"Over 8-24 Hrs" },
   { key:"over24", label:"Over>24 Hrs" },
-  { key:"watch", label:"เหลือเวลาน้อยกว่า<br>2 ชั่วโมง" },
+  { key:"watch", label:"เหลือเวลาน้อยกว่า<br>4 ชั่วโมง" },
   { key:"total_wo", label:"Total WO" },
 ];
 const SA_SUSPEND_REQUIRED_COLUMNS = [
@@ -7083,13 +7083,13 @@ function saToggleStepStatusSort() {
   _saDetailStepSort = _saDetailStepSort === "desc" ? "asc" : "desc";
   if (_saSuspendSelectedDetailKey) saShowDetail(_saSuspendSelectedDetailKey, { keepScroll: true });
 }
-function saWithinTwoHours(r) {
+function saWithinFourHours(r) {
   if (!["Accepted","Departed","Arrived"].includes(saStatusNorm(r.Status))) return false;
   const now = Date.now();
   const d = saRequireFinishDate(r);
   if (!d) return false;
   const h = (d.getTime() - now) / 36e5;
-  return h >= 0 && h < 2;
+  return h >= 0 && h < 4;
 }
 function saReasonKey(r) {
   const rowId = saRowId(r);
@@ -7116,7 +7116,7 @@ function saBuildMatrix(rows, statusRows) {
     const status = saStatusNorm(r.Status);
     if (matrix[status]) {
       matrix[status].total_wo.push(r);
-      if (saWithinTwoHours(r)) matrix[status].watch.push(r);
+      if (saWithinFourHours(r)) matrix[status].watch.push(r);
       if (saOverHours(r) > 0) {
         matrix[status].total.push(r);
         const bucket = saOverBucket(r);
