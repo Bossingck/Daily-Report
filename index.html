@@ -1689,6 +1689,19 @@
     grid-template-columns: minmax(1040px, 1fr);
     gap: 22px;
     align-items: start;
+    transition: opacity .28s ease, transform .28s ease, filter .28s ease;
+  }
+  .sa-suspend-wrap.sa-refreshing .sa-suspend-grid {
+    opacity: .58;
+    transform: translateY(3px);
+    filter: saturate(.92);
+  }
+  .sa-suspend-wrap.sa-fade-in .sa-suspend-grid {
+    animation: saGridFadeIn .24s ease both;
+  }
+  @keyframes saGridFadeIn {
+    from { opacity: .62; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .sa-suspend-panel:first-of-type { grid-column: 1 / -1; max-width: 980px; }
   .sa-suspend-panel.collapsed .sa-suspend-table { display: none; }
@@ -1707,16 +1720,38 @@
     border-bottom: none;
   }
   .sa-suspend-toggle {
-    width: 24px;
-    height: 22px;
-    border: 1px solid rgba(6,23,42,.22);
+    min-width: 58px;
+    height: 28px;
+    border: 1px solid rgba(47,111,237,.35);
     border-radius: 6px;
-    background: rgba(255,255,255,.65);
-    color: #06172a;
+    background: rgba(255,255,255,.9);
+    color: #1e4fbf;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 900;
     line-height: 1;
+  }
+  .sa-table-toggle-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .sa-table-toggle-btn {
+    border: 1px solid rgba(91,141,239,.34);
+    border-radius: 8px;
+    background: rgba(255,255,255,.92);
+    color: #1e4fbf;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  .sa-table-toggle-btn.is-hidden {
+    background: rgba(245,166,35,.13);
+    border-color: rgba(245,166,35,.42);
+    color: #9a5d00;
   }
   .sa-suspend-table {
     border-collapse: collapse;
@@ -6991,6 +7026,17 @@ function saToggleSuspendTable(title) {
   else _saSuspendCollapsedTables.add(key);
   renderSaSuspendSummary();
 }
+function saTableToggleControlsHTML() {
+  const items = [
+    ["SA Mobile", "Mobile"],
+    ["SA Online NANO", "NANO"],
+    ["SA Online NON NANO", "NON NANO"],
+  ];
+  return `<div class="sa-table-toggle-bar">${items.map(([title, shortLabel]) => {
+    const hidden = _saSuspendCollapsedTables.has(saTableCollapseKey(title));
+    return `<button class="sa-table-toggle-btn${hidden ? " is-hidden" : ""}" onclick="saToggleSuspendTable('${saEscape(title)}')">${hidden ? "Show" : "Hide"} ${shortLabel}</button>`;
+  }).join("")}</div>`;
+}
 function saCountCell(title, rr, bucket, rows, cls) {
   const count = rows.length;
   if (count === 0) {
@@ -7020,7 +7066,7 @@ function saSuspendTableHTML(title, rows) {
         return saCountCell(title, rr, b, matrix[rr.key][b.key] || [], cls);
       }).join("")}</tr>`;
       }).join("")}`;
-  return `<div class="sa-suspend-panel${collapsed ? " collapsed" : ""}"><div class="sa-suspend-title"><span>${title}</span><button class="sa-suspend-toggle" title="${collapsed ? "ขยายตาราง" : "ย่อตาราง"}" onclick="saToggleSuspendTable('${saEscape(title)}')">${collapsed ? "+" : "−"}</button></div><table class="sa-suspend-table">
+  return `<div class="sa-suspend-panel${collapsed ? " collapsed" : ""}"><div class="sa-suspend-title"><span>${title}</span><button class="sa-suspend-toggle" title="${collapsed ? "ขยายตาราง" : "ย่อตาราง"}" onclick="saToggleSuspendTable('${saEscape(title)}')">${collapsed ? "Show" : "Hide"}</button></div><table class="sa-suspend-table">
     <thead><tr><th class="reason-head">Suspend Reason / Status</th>${SA_SUSPEND_BUCKETS.map(b => `<th class="${b.key==="watch"?"watch-head":""}">${b.label}</th>`).join("")}</tr></thead>
     <tbody>${sectionHTML("สาเหตุ", SA_SUSPEND_REASON_ROWS)}${sectionHTML("Status", statusRows)}</tbody>
     <tfoot><tr><td></td>${SA_SUSPEND_BUCKETS.map(b => {
@@ -7344,6 +7390,22 @@ function saReasonSelectHTML(r) {
     ${SA_REASON_SELECT_OPTIONS.map(opt => `<option value="${opt.key}"${current===opt.key?" selected":""}>${opt.label}</option>`).join("")}
   </select>`;
 }
+function saScheduleReasonRefresh() {
+  clearTimeout(_saReasonRenderTimer);
+  _saReasonRenderTimer = setTimeout(() => {
+    const wrap = document.querySelector("#content-sa-suspend .sa-suspend-wrap");
+    if (wrap) wrap.classList.add("sa-refreshing");
+    setTimeout(() => {
+      renderSaSuspendSummary();
+      requestAnimationFrame(() => {
+        const nextWrap = document.querySelector("#content-sa-suspend .sa-suspend-wrap");
+        if (!nextWrap) return;
+        nextWrap.classList.add("sa-fade-in");
+        setTimeout(() => nextWrap.classList.remove("sa-fade-in"), 320);
+      });
+    }, 260);
+  }, 1800);
+}
 function saSetRowReason(rowId, reasonKey) {
   if (!rowId) return;
   if (SA_REASON_SELECT_OPTIONS.some(opt => opt.key === reasonKey)) {
@@ -7353,10 +7415,7 @@ function saSetRowReason(rowId, reasonKey) {
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
   saSaveSaRowEditToDb(rowId);
-  clearTimeout(_saReasonRenderTimer);
-  _saReasonRenderTimer = setTimeout(() => {
-    renderSaSuspendSummary();
-  }, 900);
+  saScheduleReasonRefresh();
 }
 function saCategoryTitle(r) {
   if (saIsMobile(r)) return "SA Mobile";
@@ -7498,6 +7557,7 @@ function renderSaSuspendSummary() {
       ${saRegionOptionsHTML(allRows)}
       ${saEasProvinceFilterHTML()}
       ${saSearchHTML()}
+      ${saTableToggleControlsHTML()}
       <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
