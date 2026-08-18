@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Daily Operation Report — Field Service Management</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -6549,7 +6550,7 @@ const SA_SUSPEND_REQUIRED_COLUMNS = [
   { label:"Severity", aliases:["Severity"] },
   { label:"Region", aliases:["Region", "REGION"] },
   { label:"Province", aliases:["Province", "PROVINCE"] },
-  { label:"Team Code", aliases:["Team Code", "TeamCode", "TEAM_CODE", "team_code"] },
+  { label:"Team Code", aliases:["Team Code", "TeamCode", "TEAM_CODE", "team_code", "Team"] },
   { label:"Suspend Reason", aliases:["Suspend Reason"] },
   { label:"Suspend Description", aliases:["Suspend Description"] },
   { label:"Acknowledge", aliases:["Acknowledge"] },
@@ -6579,7 +6580,7 @@ function saProvinceNorm(r) {
   return saNormText(r && (r.Province || r.PROVINCE || r.province)).toUpperCase();
 }
 function saTeamCodeNorm(r) {
-  return saNormText(r && (r["Team Code"] || r.TeamCode || r.TEAM_CODE || r.team_code)).toUpperCase();
+  return saNormText(r && (r["Team Code"] || r.TeamCode || r.TEAM_CODE || r.team_code || r.Team)).toUpperCase();
 }
 function saSkipDbRow(r) {
   return saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT";
@@ -6610,7 +6611,8 @@ function saDateTimeDisplay(v) {
   });
 }
 function saUploadLogHTML() {
-  return `<span class="sa-upload-log">Upload ล่าสุด: ${saEscape(saDateTimeDisplay(_saSuspendLastUploadAt))}</span>`;
+  return `<span class="sa-upload-log">Upload ล่าสุด: ${saEscape(saDateTimeDisplay(_saSuspendLastUploadAt))}</span>
+    <span id="sa-nano-db-status" class="sa-db-pill ${saEscape(_saNanoDbStatus.state)}">${saEscape(_saNanoDbStatus.text)}</span>`;
 }
 function saColumnKey(v) {
   return saNormText(v).toLowerCase().replace(/[\s_\-]+/g, "");
@@ -6628,6 +6630,121 @@ function saValidateSaSuspendColumns(rows) {
     return !(col.aliases || [col.label]).some(alias => headerSet.has(saColumnKey(alias)));
   }).map(col => col.label);
   return { ok: missing.length === 0, missing };
+}
+function saRepairWorksheetRange(ws) {
+  if (!ws || !window.XLSX || !XLSX.utils) return ws;
+  const cells = Object.keys(ws).filter(k => k && k[0] !== "!");
+  if (!cells.length) return ws;
+  let range = null;
+  cells.forEach(addr => {
+    const cell = XLSX.utils.decode_cell(addr);
+    if (!range) range = { s:{ r:cell.r, c:cell.c }, e:{ r:cell.r, c:cell.c } };
+    range.s.r = Math.min(range.s.r, cell.r);
+    range.s.c = Math.min(range.s.c, cell.c);
+    range.e.r = Math.max(range.e.r, cell.r);
+    range.e.c = Math.max(range.e.c, cell.c);
+  });
+  if (range) ws["!ref"] = XLSX.utils.encode_range(range);
+  return ws;
+}
+function saColumnIndexFromRef(ref) {
+  const m = saNormText(ref).match(/^([A-Z]+)/i);
+  if (!m) return 0;
+  return m[1].toUpperCase().split("").reduce((acc, ch) => acc * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+}
+function saXmlText(node) {
+  return node ? node.textContent || "" : "";
+}
+async function saRowsFromMalformedXlsx(arrayBuffer) {
+  if (!arrayBuffer) return [];
+  let sheetText = "";
+  let sharedText = "";
+  if (window.JSZip) {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const sheetFile = zip.file("xl/worksheets/sheet1.xml");
+    if (sheetFile) sheetText = await sheetFile.async("text");
+    const sharedFile = zip.file("xl/sharedStrings.xml");
+    if (sharedFile) sharedText = await sharedFile.async("text");
+  }
+  if (!sheetText) sheetText = await saZipEntryText(arrayBuffer, "xl/worksheets/sheet1.xml");
+  if (!sharedText) sharedText = await saZipEntryText(arrayBuffer, "xl/sharedStrings.xml");
+  if (!sheetText) return [];
+  const parser = new DOMParser();
+  const sheetXml = parser.parseFromString(sheetText, "application/xml");
+  const shared = [];
+  if (sharedText) {
+    const sharedXml = parser.parseFromString(sharedText, "application/xml");
+    Array.from(sharedXml.getElementsByTagNameNS("*", "si")).forEach(si => {
+      shared.push(Array.from(si.getElementsByTagNameNS("*", "t")).map(t => t.textContent || "").join(""));
+    });
+  }
+  const rowNodes = Array.from(sheetXml.getElementsByTagNameNS("*", "row"));
+  const table = rowNodes.map(row => {
+    const values = [];
+    Array.from(row.getElementsByTagNameNS("*", "c")).forEach(cell => {
+      const idx = saColumnIndexFromRef(cell.getAttribute("r"));
+      const type = cell.getAttribute("t");
+      let value = "";
+      if (type === "inlineStr") {
+        value = Array.from(cell.getElementsByTagNameNS("*", "t")).map(t => t.textContent || "").join("");
+      } else {
+        value = saXmlText(cell.getElementsByTagNameNS("*", "v")[0]);
+        if (type === "s") value = shared[Number(value)] || "";
+      }
+      values[idx] = value;
+    });
+    return values.map(v => v == null ? "" : v);
+  }).filter(row => row.some(v => saNormText(v)));
+  const header = (table.shift() || []).map(saNormText);
+  if (!header.length) return [];
+  return table.map(row => {
+    const obj = {};
+    header.forEach((h, i) => {
+      if (h) obj[h] = row[i] == null ? "" : row[i];
+    });
+    return obj;
+  });
+}
+async function saInflateRaw(bytes) {
+  if (!("DecompressionStream" in window)) return null;
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return await new Response(stream).arrayBuffer();
+}
+async function saZipEntryText(arrayBuffer, wantedName) {
+  const view = new DataView(arrayBuffer);
+  const bytes = new Uint8Array(arrayBuffer);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 66000); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) return "";
+  const entries = view.getUint16(eocd + 10, true);
+  let ptr = view.getUint32(eocd + 16, true);
+  const decoder = new TextDecoder();
+  for (let i = 0; i < entries; i++) {
+    if (view.getUint32(ptr, true) !== 0x02014b50) break;
+    const method = view.getUint16(ptr + 10, true);
+    const compSize = view.getUint32(ptr + 20, true);
+    const nameLen = view.getUint16(ptr + 28, true);
+    const extraLen = view.getUint16(ptr + 30, true);
+    const commentLen = view.getUint16(ptr + 32, true);
+    const localOffset = view.getUint32(ptr + 42, true);
+    const name = decoder.decode(bytes.slice(ptr + 46, ptr + 46 + nameLen));
+    if (name === wantedName) {
+      const localNameLen = view.getUint16(localOffset + 26, true);
+      const localExtraLen = view.getUint16(localOffset + 28, true);
+      const dataStart = localOffset + 30 + localNameLen + localExtraLen;
+      const compBytes = bytes.slice(dataStart, dataStart + compSize);
+      if (method === 0) return decoder.decode(compBytes);
+      if (method === 8) {
+        const inflated = await saInflateRaw(compBytes);
+        return inflated ? decoder.decode(inflated) : "";
+      }
+      return "";
+    }
+    ptr += 46 + nameLen + extraLen + commentLen;
+  }
+  return "";
 }
 function saUploadPipelineColumnMessage(missing, fileName) {
   const parts = [
@@ -7243,10 +7360,19 @@ function processSaSuspendExcelFile(file) {
   const reader = new FileReader();
   reader.onload = async ev => {
     try {
-      const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array", cellDates:true });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { defval:"", raw:true });
-      const validation = saValidateSaSuspendColumns(rows);
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array", cellDates:true, nodim:true });
+      const ws = saRepairWorksheetRange(wb.Sheets[wb.SheetNames[0]]);
+      let rows = XLSX.utils.sheet_to_json(ws, { defval:"", raw:true });
+      let validation = saValidateSaSuspendColumns(rows);
+      if (!validation.ok || !rows.length) {
+        const fallbackRows = await saRowsFromMalformedXlsx(ev.target.result);
+        const fallbackValidation = saValidateSaSuspendColumns(fallbackRows);
+        if (fallbackRows.length && fallbackValidation.ok) {
+          rows = fallbackRows;
+          validation = fallbackValidation;
+          saSetDbStatus("warn", `อ่านไฟล์รูปแบบพิเศษได้ ${rows.length} รายการ กำลังบันทึก...`);
+        }
+      }
       if (!validation.ok) {
         saSetDbStatus("error", saUploadPipelineColumnMessage(validation.missing, file.name));
         renderSaSuspendSummary();
