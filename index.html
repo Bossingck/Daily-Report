@@ -1691,7 +1691,12 @@
     align-items: start;
   }
   .sa-suspend-panel:first-of-type { grid-column: 1 / -1; max-width: 980px; }
+  .sa-suspend-panel.collapsed .sa-suspend-table { display: none; }
   .sa-suspend-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     background: #b7d3ee;
     color: #06172a;
     font-weight: 900;
@@ -1700,6 +1705,18 @@
     width: 240px;
     border: 1px solid #a8bfd7;
     border-bottom: none;
+  }
+  .sa-suspend-toggle {
+    width: 24px;
+    height: 22px;
+    border: 1px solid rgba(6,23,42,.22);
+    border-radius: 6px;
+    background: rgba(255,255,255,.65);
+    color: #06172a;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1;
   }
   .sa-suspend-table {
     border-collapse: collapse;
@@ -6428,6 +6445,7 @@ let _saSuspendSearch = "";
 let _saSuspendSearchDraft = "";
 let _saSuspendSearchTimer = null;
 let _saDetailStepSort = "none";
+let _saSuspendCollapsedTables = new Set();
 let _saSuspendEasProvinceFilter = new Set();
 let _saSuspendSelectedDetailKey = null;
 let _saReasonOverrides = {};
@@ -6617,6 +6635,8 @@ function saSetSearch(value) {
   clearTimeout(_saSuspendSearchTimer);
   _saSuspendSearchTimer = setTimeout(() => {
     _saSuspendSearch = saNormText(_saSuspendSearchDraft);
+    if (_saSuspendSearch) _saSuspendSelectedDetailKey = "__search__";
+    else if (_saSuspendSelectedDetailKey === "__search__") _saSuspendSelectedDetailKey = null;
     renderSaSuspendSummary();
     requestAnimationFrame(saRestoreSearchFocus);
   }, 80);
@@ -6955,8 +6975,21 @@ function saDetailKey(title, rowLabel, bucketLabel, rows) {
   _saSuspendDetailStore[key] = { title, rowLabel, bucketLabel, rows: saUniqueRows(rows || []) };
   return key;
 }
+function saSetDetailStoreKey(key, title, rowLabel, bucketLabel, rows) {
+  _saSuspendDetailStore[key] = { title, rowLabel, bucketLabel, rows: saUniqueRows(rows || []) };
+  return key;
+}
 function saOverrideKey(title, rowKey, bucketKey) {
   return [_saSuspendRegionFilter, title, rowKey, bucketKey].map(v => saNormText(v).toLowerCase()).join("|");
+}
+function saTableCollapseKey(title) {
+  return saNormText(title).toLowerCase().replace(/[^a-z0-9]+/g, "_");
+}
+function saToggleSuspendTable(title) {
+  const key = saTableCollapseKey(title);
+  if (_saSuspendCollapsedTables.has(key)) _saSuspendCollapsedTables.delete(key);
+  else _saSuspendCollapsedTables.add(key);
+  renderSaSuspendSummary();
 }
 function saCountCell(title, rr, bucket, rows, cls) {
   const count = rows.length;
@@ -6968,6 +7001,8 @@ function saCountCell(title, rr, bucket, rows, cls) {
   return `<td class="${cls} sa-suspend-count" title="Click เพื่อดู Detail" onclick="saCellClick('${key}')">${shown}</td>`;
 }
 function saSuspendTableHTML(title, rows) {
+  const collapseKey = saTableCollapseKey(title);
+  const collapsed = _saSuspendCollapsedTables.has(collapseKey);
   const statusRows = saStatusRows(rows);
   const matrix = saBuildMatrix(rows, statusRows);
   const totals = {};
@@ -6985,7 +7020,7 @@ function saSuspendTableHTML(title, rows) {
         return saCountCell(title, rr, b, matrix[rr.key][b.key] || [], cls);
       }).join("")}</tr>`;
       }).join("")}`;
-  return `<div class="sa-suspend-panel"><div class="sa-suspend-title">${title}</div><table class="sa-suspend-table">
+  return `<div class="sa-suspend-panel${collapsed ? " collapsed" : ""}"><div class="sa-suspend-title"><span>${title}</span><button class="sa-suspend-toggle" title="${collapsed ? "ขยายตาราง" : "ย่อตาราง"}" onclick="saToggleSuspendTable('${saEscape(title)}')">${collapsed ? "+" : "−"}</button></div><table class="sa-suspend-table">
     <thead><tr><th class="reason-head">Suspend Reason / Status</th>${SA_SUSPEND_BUCKETS.map(b => `<th class="${b.key==="watch"?"watch-head":""}">${b.label}</th>`).join("")}</tr></thead>
     <tbody>${sectionHTML("สาเหตุ", SA_SUSPEND_REASON_ROWS)}${sectionHTML("Status", statusRows)}</tbody>
     <tfoot><tr><td></td>${SA_SUSPEND_BUCKETS.map(b => {
@@ -7454,6 +7489,10 @@ function renderSaSuspendSummary() {
   const onlineRows = rows.filter(r => !saIsMobile(r));
   const nanoRows = onlineRows.filter(saIsNano);
   const nonNanoRows = onlineRows.filter(r => !saIsNano(r));
+  if (_saSuspendSearch) {
+    saSetDetailStoreKey("__search__", "Search Result", _saSuspendSearch, "All", rows);
+    _saSuspendSelectedDetailKey = "__search__";
+  }
   container.innerHTML = `<div class="sa-suspend-wrap">
     <div class="sa-suspend-toolbar">
       ${saRegionOptionsHTML(allRows)}
@@ -7471,7 +7510,7 @@ function renderSaSuspendSummary() {
     </div>
     <div id="sa-detail-inline"></div>
   </div>`;
-  if (_saSuspendSelectedDetailKey) setTimeout(() => saShowDetail(_saSuspendSelectedDetailKey), 0);
+  if (_saSuspendSelectedDetailKey) setTimeout(() => saShowDetail(_saSuspendSelectedDetailKey, { keepScroll: _saSuspendSelectedDetailKey === "__search__" }), 0);
 }
 function processSaNanoExcelFile(file) {
   if (!file) return;
