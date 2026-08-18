@@ -1690,19 +1690,17 @@
     grid-template-columns: minmax(1040px, 1fr);
     gap: 22px;
     align-items: start;
-    transition: opacity .28s ease, transform .28s ease, filter .28s ease;
+    transition: opacity .32s ease;
   }
   .sa-suspend-wrap.sa-refreshing .sa-suspend-grid {
-    opacity: .58;
-    transform: translateY(3px);
-    filter: saturate(.92);
+    opacity: 0;
   }
   .sa-suspend-wrap.sa-fade-in .sa-suspend-grid {
-    animation: saGridFadeIn .24s ease both;
+    animation: saGridFadeIn .32s ease both;
   }
   @keyframes saGridFadeIn {
-    from { opacity: .62; transform: translateY(3px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   .sa-suspend-panel:first-of-type { grid-column: 1 / -1; max-width: 980px; }
   .sa-suspend-panel.collapsed .sa-suspend-table { display: none; }
@@ -1999,6 +1997,14 @@
     white-space: nowrap;
     color: var(--text-primary);
   }
+  .sa-detail-table tbody tr {
+    opacity: 1;
+    transition: opacity .38s ease;
+  }
+  .sa-detail-table tbody tr.sa-row-fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
   .sa-detail-table td.subject-cell {
     white-space: normal;
     min-width: 360px;
@@ -2110,6 +2116,13 @@
     color: var(--text-secondary);
     font-size: 12px;
     font-weight: 700;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .sa-db-pill.sa-db-pill-fade {
+    opacity: 0;
+    transform: translateY(-4px);
   }
   .sa-db-pill.ok { color: #0f9f6e; border-color: rgba(16,185,129,.28); background: rgba(16,185,129,.08); }
   .sa-db-pill.warn { color: #b7791f; border-color: rgba(245,166,35,.30); background: rgba(245,166,35,.10); }
@@ -6903,12 +6916,20 @@ function saIsNano(r) {
   if (saSubjectMatchesNanoEqpt(r)) return true;
   return saRowSiteTokens(r).some(t => _saNanoEqptSet.has(t) || _saNanoEqptSet.has(saNormSiteKey(t)));
 }
+let _saDbStatusFadeTimer = null;
 function saSetDbStatus(state, text) {
   _saNanoDbStatus = { state, text };
   const el = document.getElementById("sa-nano-db-status");
   if (el) {
+    clearTimeout(_saDbStatusFadeTimer);
     el.className = "sa-db-pill " + state;
     el.textContent = text;
+    void el.offsetWidth;
+    if (state === "ok") {
+      _saDbStatusFadeTimer = setTimeout(() => {
+        el.classList.add("sa-db-pill-fade");
+      }, 1800);
+    }
   }
 }
 async function loadSaNanoMappingFromDb(force = false) {
@@ -7516,21 +7537,38 @@ function saReasonSelectHTML(r) {
     ${SA_REASON_SELECT_OPTIONS.map(opt => `<option value="${opt.key}"${current===opt.key?" selected":""}>${opt.label}</option>`).join("")}
   </select>`;
 }
+let _saGridRefreshTimer = null;
+function saScheduleGridRefresh(delay) {
+  clearTimeout(_saGridRefreshTimer);
+  _saGridRefreshTimer = setTimeout(saRefreshSuspendGridOnly, delay == null ? 200 : delay);
+}
+function saRefreshSuspendGridOnly() {
+  const grid = document.querySelector("#content-sa-suspend .sa-suspend-grid");
+  if (!grid) { renderSaSuspendSummary(); return; }
+  const allRows = saSourceRows().filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  const rows = allRows
+    .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
+    .filter(saMatchesEasProvince)
+    .filter(saMatchesSearch);
+  const mobileRows = rows.filter(saIsMobile);
+  const onlineRows = rows.filter(r => !saIsMobile(r));
+  const nanoRows = onlineRows.filter(saIsNano);
+  const nonNanoRows = onlineRows.filter(r => !saIsNano(r));
+  grid.innerHTML = `${saSuspendTableHTML("SA Mobile", mobileRows)}${saSuspendTableHTML("SA Online NANO", nanoRows)}${saSuspendTableHTML("SA Online NON NANO", nonNanoRows)}`;
+  if (_saSuspendSelectedDetailKey && _saSuspendDetailStore[_saSuspendSelectedDetailKey]) {
+    saShowDetail(_saSuspendSelectedDetailKey, { keepScroll: true });
+  }
+}
+function saRemoveRowFromDetailStore(rowId) {
+  Object.values(_saSuspendDetailStore).forEach(item => {
+    if (!item || !Array.isArray(item.rows)) return;
+    const idx = item.rows.findIndex(r => saRowId(r) === rowId);
+    if (idx !== -1) item.rows.splice(idx, 1);
+  });
+}
 function saScheduleReasonRefresh() {
-  clearTimeout(_saReasonRenderTimer);
-  _saReasonRenderTimer = setTimeout(() => {
-    const wrap = document.querySelector("#content-sa-suspend .sa-suspend-wrap");
-    if (wrap) wrap.classList.add("sa-refreshing");
-    setTimeout(() => {
-      renderSaSuspendSummary();
-      requestAnimationFrame(() => {
-        const nextWrap = document.querySelector("#content-sa-suspend .sa-suspend-wrap");
-        if (!nextWrap) return;
-        nextWrap.classList.add("sa-fade-in");
-        setTimeout(() => nextWrap.classList.remove("sa-fade-in"), 320);
-      });
-    }, 260);
-  }, 1800);
+  // no-op: reason changes now save in place (realtime) without a full table refresh.
+  // Kept as a stub in case other code still calls it.
 }
 function saSetRowReason(rowId, reasonKey) {
   if (!rowId) return;
@@ -7541,7 +7579,17 @@ function saSetRowReason(rowId, reasonKey) {
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
   saSaveSaRowEditToDb(rowId);
-  saScheduleReasonRefresh();
+  const trList = document.querySelectorAll(`.sa-detail-table tr[data-row-id="${rowId}"]`);
+  if (trList.length) {
+    trList.forEach(tr => tr.classList.add("sa-row-fade-out"));
+    setTimeout(() => {
+      trList.forEach(tr => tr.remove());
+      saRemoveRowFromDetailStore(rowId);
+      saScheduleGridRefresh(0);
+    }, 380);
+  } else {
+    saScheduleGridRefresh();
+  }
 }
 function saCategoryTitle(r) {
   if (saIsMobile(r)) return "SA Mobile";
@@ -7568,7 +7616,7 @@ function saDetailTableHTML(rows, cols) {
       }
       return `<th>${c.label}</th>`;
     }).join("")}</tr></thead>
-    <tbody>${detailRows.map(r => `<tr>${cols.map(c => {
+    <tbody>${detailRows.map(r => `<tr data-row-id="${saRowId(r)}">${cols.map(c => {
       const cls = c.subject ? " class=\"subject-cell\"" : c.wrap ? " class=\"wrap-cell\"" : c.key === "_inoc_log" ? " class=\"log-cell\"" : "";
       if (c.key === "_delete") return `<td><button class="sa-delete-row-btn" onclick="saDeleteSuspendRow('${saRowId(r)}')">ลบ</button></td>`;
       if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
