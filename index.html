@@ -6435,6 +6435,7 @@ let _saReasonOverridesByWo = {};
 let _saInocLogOverrides = {};
 let _saInocLogOverridesByWo = {};
 let _saInocLogSaveTimers = {};
+let _saReasonRenderTimer = null;
 let _saInocLogDbUnavailable = false;
 let _saInocLogLoadedSig = "";
 let _saRowEditLocalLoadedSig = "";
@@ -6483,6 +6484,22 @@ const SA_SUSPEND_BUCKETS = [
   { key:"over24", label:"Over>24 Hrs" },
   { key:"watch", label:"เหลือเวลาน้อยกว่า<br>2 ชั่วโมง" },
   { key:"total_wo", label:"Total WO" },
+];
+const SA_SUSPEND_REQUIRED_COLUMNS = [
+  { label:"Work Order ID", aliases:["Work Order ID"] },
+  { label:"Source Ticket ID", aliases:["Source Ticket ID"] },
+  { label:"Status", aliases:["Status"] },
+  { label:"Subject", aliases:["Subject"] },
+  { label:"Created Time", aliases:["Created Time", "Create Time", "WO Created Time", "Created Date"] },
+  { label:"Require Finish Time", aliases:["Require Finish Time", "Required Finish Time", "Target Finish Time", "Due Date"] },
+  { label:"WO Creator", aliases:["WO Creator"] },
+  { label:"Severity", aliases:["Severity"] },
+  { label:"Region", aliases:["Region", "REGION"] },
+  { label:"Province", aliases:["Province", "PROVINCE"] },
+  { label:"Team Code", aliases:["Team Code", "TeamCode", "TEAM_CODE", "team_code"] },
+  { label:"Suspend Reason", aliases:["Suspend Reason"] },
+  { label:"Suspend Description", aliases:["Suspend Description"] },
+  { label:"Acknowledge", aliases:["Acknowledge"] },
 ];
 function saNormText(v) { return String(v == null ? "" : v).trim(); }
 function saStatusNorm(v) {
@@ -6541,6 +6558,31 @@ function saDateTimeDisplay(v) {
 }
 function saUploadLogHTML() {
   return `<span class="sa-upload-log">Upload ล่าสุด: ${saEscape(saDateTimeDisplay(_saSuspendLastUploadAt))}</span>`;
+}
+function saColumnKey(v) {
+  return saNormText(v).toLowerCase().replace(/[\s_\-]+/g, "");
+}
+function saUploadPipelineTime() {
+  return saDateTimeDisplay(new Date());
+}
+function saValidateSaSuspendColumns(rows) {
+  const headerSet = new Set();
+  (rows || []).slice(0, 50).forEach(r => {
+    if (!r || typeof r !== "object") return;
+    Object.keys(r).forEach(k => headerSet.add(saColumnKey(k)));
+  });
+  const missing = SA_SUSPEND_REQUIRED_COLUMNS.filter(col => {
+    return !(col.aliases || [col.label]).some(alias => headerSet.has(saColumnKey(alias)));
+  }).map(col => col.label);
+  return { ok: missing.length === 0, missing };
+}
+function saUploadPipelineColumnMessage(missing, fileName) {
+  const parts = [
+    `Upload ${saUploadPipelineTime()}`,
+    fileName ? `ไฟล์: ${fileName}` : "",
+    `Column ไม่ครบ: ${missing.join(", ")}`,
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 function saEasProvinceFilterHTML() {
   if (_saSuspendRegionFilter !== "EAS") return "";
@@ -7123,6 +7165,12 @@ function processSaSuspendExcelFile(file) {
       const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array", cellDates:true });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval:"", raw:true });
+      const validation = saValidateSaSuspendColumns(rows);
+      if (!validation.ok) {
+        saSetDbStatus("error", saUploadPipelineColumnMessage(validation.missing, file.name));
+        renderSaSuspendSummary();
+        return;
+      }
       _rawDataSource = "upload";
       _rawUploadFileName = file.name;
       try {
@@ -7269,9 +7317,11 @@ function saSetRowReason(rowId, reasonKey) {
     const wo = saWorkOrderId(row);
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
-  _saSuspendSelectedDetailKey = null;
   saSaveSaRowEditToDb(rowId);
-  renderSaSuspendSummary();
+  clearTimeout(_saReasonRenderTimer);
+  _saReasonRenderTimer = setTimeout(() => {
+    renderSaSuspendSummary();
+  }, 900);
 }
 function saCategoryTitle(r) {
   if (saIsMobile(r)) return "SA Mobile";
