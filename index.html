@@ -6502,6 +6502,7 @@ let _saReasonOverridesByWo = {};
 let _saInocLogOverrides = {};
 let _saInocLogOverridesByWo = {};
 let _saInocLogSaveTimers = {};
+let _saPendingRowEditIds = new Set();
 let _saReasonRenderTimer = null;
 let _saInocLogDbUnavailable = false;
 let _saInocLogLoadedSig = "";
@@ -6514,6 +6515,7 @@ let _saSuspendRowsDbLoaded = false;
 let _saSuspendRowsDbLoading = false;
 let _saSuspendRowsDbUnavailable = false;
 let _saSuspendLastUploadAt = "";
+let _saSuspendDbRawCount = 0;
 const SA_REASON_SELECT_OPTIONS = [
   { key:"non_action", label:"Non Action" },
   { key:"site_access", label:"Site Access" },
@@ -6624,8 +6626,19 @@ function saDateTimeDisplay(v) {
   });
 }
 function saUploadLogHTML() {
-  return `<span class="sa-upload-log">Upload ล่าสุด: ${saEscape(saDateTimeDisplay(_saSuspendLastUploadAt))}</span>
-    <span id="sa-nano-db-status" class="sa-db-pill ${saEscape(_saNanoDbStatus.state)}">${saEscape(_saNanoDbStatus.text)}</span>`;
+  return `<span class="sa-upload-log">Upload ล่าสุด: ${saEscape(saDateTimeDisplay(_saSuspendLastUploadAt))}</span>`;
+}
+function saDbCountLogHTML(totalRows, visibleRows) {
+  if (!_saSuspendDbRawCount && totalRows == null) return "";
+  const loaded = Number(_saSuspendDbRawCount || 0).toLocaleString("en-US");
+  const base = totalRows == null ? "" : ` · ผ่านเงื่อนไข ${Number(totalRows || 0).toLocaleString("en-US")}`;
+  const shown = visibleRows == null ? "" : ` · โชว์ ${Number(visibleRows || 0).toLocaleString("en-US")}`;
+  const countText = `โหลด DB ${loaded} รายการ${base}${shown}`;
+  const statusText = saNormText(_saNanoDbStatus.text);
+  const label = /Column ไม่ครบ|ไม่สำเร็จ|ยังไม่|ไม่มีข้อมูล|ตัด Region|ต้องสร้างตาราง/i.test(statusText)
+    ? statusText
+    : countText;
+  return `<span id="sa-nano-db-status" class="sa-upload-log sa-db-pill ${saEscape(_saNanoDbStatus.state)}">${saEscape(label)}</span>`;
 }
 function saColumnKey(v) {
   return saNormText(v).toLowerCase().replace(/[\s_\-]+/g, "");
@@ -6922,14 +6935,9 @@ function saSetDbStatus(state, text) {
   const el = document.getElementById("sa-nano-db-status");
   if (el) {
     clearTimeout(_saDbStatusFadeTimer);
-    el.className = "sa-db-pill " + state;
+    el.className = "sa-upload-log sa-db-pill " + state;
     el.textContent = text;
     void el.offsetWidth;
-    if (state === "ok") {
-      _saDbStatusFadeTimer = setTimeout(() => {
-        el.classList.add("sa-db-pill-fade");
-      }, 1800);
-    }
   }
 }
 async function loadSaNanoMappingFromDb(force = false) {
@@ -7232,16 +7240,22 @@ function saGetInocLog(r) {
 }
 function saInocLogInputHTML(r) {
   const rowId = saRowId(r);
-  return `<textarea class="sa-inoc-log-input" placeholder="INOC Log" oninput="saSetInocLog('${rowId}', this.value)">${saEscape(saGetInocLog(r))}</textarea>`;
+  return `<textarea class="sa-inoc-log-input" placeholder="INOC Log" oninput="saSetInocLog('${rowId}', this.value)" onchange="saSaveSaRowEditNow('${rowId}')" onblur="saSaveSaRowEditNow('${rowId}')">${saEscape(saGetInocLog(r))}</textarea>`;
 }
 function saSetInocLog(rowId, value) {
   if (!rowId) return;
   _saInocLogOverrides[rowId] = value;
+  _saPendingRowEditIds.add(rowId);
   const row = _saRawRowsById[rowId];
   const wo = saWorkOrderId(row);
   if (wo) _saInocLogOverridesByWo[wo] = value;
   clearTimeout(_saInocLogSaveTimers[rowId]);
-  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 700);
+  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 350);
+}
+function saSaveSaRowEditNow(rowId) {
+  if (!rowId) return;
+  clearTimeout(_saInocLogSaveTimers[rowId]);
+  saSaveSaRowEditToDb(rowId);
 }
 async function saDeleteSuspendRow(rowId) {
   const row = _saRawRowsById[rowId];
@@ -7356,12 +7370,20 @@ async function loadSaSuspendRowsFromDb(force = false) {
   _saSuspendRowsDbLoading = true;
   saSetDbStatus("warn", "กำลังโหลด SA Suspend Summary จาก Supabase...");
   try {
-    const rows = await supaFetch("sa_suspend_raw_rows?select=raw_data,uploaded_at&order=uploaded_at.desc&limit=50000");
+    const rows = [];
+    const limit = 1000;
+    for (let offset = 0; ; offset += limit) {
+      const page = await supaFetch(`sa_suspend_raw_rows?select=raw_data,uploaded_at&order=uploaded_at.desc&limit=${limit}&offset=${offset}`);
+      if (!page || !page.length) break;
+      rows.push(...page);
+      if (page.length < limit) break;
+    }
+    _saSuspendDbRawCount = rows.length;
     _saSuspendRows = (rows || []).map(r => r.raw_data).filter(Boolean);
     _saSuspendLastUploadAt = saNormText((rows || [])[0] && rows[0].uploaded_at);
     _saSuspendRowsDbLoaded = true;
     _saSuspendRowsDbUnavailable = false;
-    saSetDbStatus("ok", `โหลด SA Suspend Summary จาก Supabase แล้ว ${_saSuspendRows.length} รายการ`);
+    saSetDbStatus("ok", "โหลด SA Suspend Summary สำเร็จ");
     renderSaSuspendSummary();
   } catch (e) {
     const msg = e.message || "";
@@ -7457,20 +7479,42 @@ function saLoadRowEditsLocal(rows) {
 }
 async function saSaveSaRowEditToDb(rowId) {
   if (_saInocLogDbUnavailable) return;
+  const payload = saRowEditPayload(rowId);
+  if (!payload) return;
+  try {
+    await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", [payload]);
+    _saPendingRowEditIds.delete(rowId);
+    saSetDbStatus("ok", "บันทึกเลือกสาเหตุ / INOC Log ลง Supabase แล้ว");
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) {
+      _saInocLogDbUnavailable = true;
+      saSetDbStatus("warn", "ยังไม่บันทึกข้อมูล: ต้องสร้างตาราง sa_inoc_logs ก่อน");
+    } else if (/team_code|schema cache|PGRST204/i.test(msg)) {
+      const { team_code, ...fallbackPayload } = payload;
+      await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", [fallbackPayload]);
+      _saPendingRowEditIds.delete(rowId);
+      saSetDbStatus("warn", "บันทึกแล้ว แต่ควรอัปเดต SQL เพื่อเพิ่ม column team_code");
+    } else {
+      saSetDbStatus("error", "บันทึกข้อมูลไม่สำเร็จ: " + msg);
+    }
+  }
+}
+function saRowEditPayload(rowId) {
   const row = _saRawRowsById[rowId];
-  if (!row) return;
+  if (!row) return null;
   const workOrderId = saWorkOrderId(row);
   if (!workOrderId) {
     saSetDbStatus("warn", "ข้อมูลยังไม่บันทึก: ไม่มี Work Order ID");
-    return;
+    return null;
   }
   if (saSkipDbRow(row)) {
     saSetDbStatus("warn", "ไม่บันทึก Supabase: ตัด Region UNKNOWN / Team Code BBT ออก");
-    return;
+    return null;
   }
   const logText = saGetInocLog(row);
   const reasonKey = saReasonKey(row);
-  const payload = [{
+  return {
     work_order_id: workOrderId,
     source_ticket_id: saNormText(row["Source Ticket ID"]) || null,
     region: saRegionNorm(row),
@@ -7480,24 +7524,33 @@ async function saSaveSaRowEditToDb(rowId) {
     reason_key: reasonKey,
     inoc_log: logText,
     updated_at: new Date().toISOString()
-  }];
-  try {
-    await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", payload);
-    saSetDbStatus("ok", "บันทึกเลือกสาเหตุ / INOC Log ลง Supabase แล้ว");
-  } catch (e) {
-    const msg = e.message || "";
-    if (/PGRST205|Could not find the table|404/i.test(msg)) {
-      _saInocLogDbUnavailable = true;
-      saSetDbStatus("warn", "ยังไม่บันทึกข้อมูล: ต้องสร้างตาราง sa_inoc_logs ก่อน");
-    } else if (/team_code|schema cache|PGRST204/i.test(msg)) {
-      const fallbackPayload = payload.map(({ team_code, ...rest }) => rest);
-      await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", fallbackPayload);
-      saSetDbStatus("warn", "บันทึกแล้ว แต่ควรอัปเดต SQL เพื่อเพิ่ม column team_code");
-    } else {
-      saSetDbStatus("error", "บันทึกข้อมูลไม่สำเร็จ: " + msg);
-    }
-  }
+  };
 }
+function saFlushPendingRowEdits() {
+  if (!_saPendingRowEditIds.size || _saInocLogDbUnavailable) return;
+  const payload = Array.from(_saPendingRowEditIds).map(rowId => {
+    clearTimeout(_saInocLogSaveTimers[rowId]);
+    return saRowEditPayload(rowId);
+  }).filter(Boolean);
+  if (!payload.length) return;
+  try {
+    fetch(SUPA_URL + "/rest/v1/sa_inoc_logs?on_conflict=work_order_id", {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        "apikey": SUPA_KEY,
+        "Authorization": "Bearer " + SUPA_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal,resolution=merge-duplicates"
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (_) {}
+}
+window.addEventListener("beforeunload", saFlushPendingRowEdits);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") saFlushPendingRowEdits();
+});
 async function saLoadSaRowEditsFromDb(rows) {
   if (_saInocLogDbUnavailable) return;
   const workOrders = Array.from(new Set((rows || []).map(saWorkOrderId).filter(Boolean))).sort();
@@ -7572,13 +7625,14 @@ function saScheduleReasonRefresh() {
 }
 function saSetRowReason(rowId, reasonKey) {
   if (!rowId) return;
+  _saPendingRowEditIds.add(rowId);
   if (SA_REASON_SELECT_OPTIONS.some(opt => opt.key === reasonKey)) {
     _saReasonOverrides[rowId] = reasonKey;
     const row = _saRawRowsById[rowId];
     const wo = saWorkOrderId(row);
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
-  saSaveSaRowEditToDb(rowId);
+  saSaveSaRowEditNow(rowId);
   const trList = document.querySelectorAll(`.sa-detail-table tr[data-row-id="${rowId}"]`);
   if (trList.length) {
     trList.forEach(tr => tr.classList.add("sa-row-fade-out"));
@@ -7698,6 +7752,7 @@ function renderSaSuspendSummary() {
         <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
         <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
         ${saUploadLogHTML()}
+        ${saDbCountLogHTML(0, 0)}
       </div>
       <div class="sa-suspend-empty">Upload SA Suspend Summary หรือ Load SA DB ก่อนเพื่อสร้างตาราง</div>
     </div>`;
@@ -7713,6 +7768,7 @@ function renderSaSuspendSummary() {
         <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
         <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
         ${saUploadLogHTML()}
+        ${saDbCountLogHTML(allRows.length, rows.length)}
       </div>
       <div class="sa-suspend-empty">ไม่มีข้อมูลใน Region: ${saEscape(_saSuspendRegionFilter)}</div>
     </div>`;
@@ -7736,6 +7792,7 @@ function renderSaSuspendSummary() {
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
       ${saUploadLogHTML()}
+      ${saDbCountLogHTML(allRows.length, rows.length)}
     </div>
     <div class="sa-suspend-grid">
       ${saSuspendTableHTML("SA Mobile", mobileRows)}
