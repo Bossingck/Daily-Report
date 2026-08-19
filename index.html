@@ -6597,8 +6597,11 @@ function saProvinceNorm(r) {
 function saTeamCodeNorm(r) {
   return saNormText(r && (r["Team Code"] || r.TeamCode || r.TEAM_CODE || r.team_code || r.Team)).toUpperCase();
 }
+function saHasEzTicketSubject(r) {
+  return /ezticket/i.test(saNormText(r && r.Subject));
+}
 function saSkipDbRow(r) {
-  return saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT";
+  return saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT" || saHasEzTicketSubject(r);
 }
 function saRegionOptionsHTML(rows) {
   const regions = Array.from(new Set((rows || []).map(saRegionNorm).filter(Boolean))).sort();
@@ -7397,6 +7400,14 @@ async function loadSaSuspendRowsFromDb(force = false) {
     _saSuspendRowsDbLoading = false;
   }
 }
+async function saRefreshSuspendFromDb() {
+  _saSuspendRowsDbLoaded = false;
+  _saSuspendRowsDbUnavailable = false;
+  _saInocLogLoadedSig = "";
+  _saSuspendSelectedDetailKey = null;
+  saCloseDetail();
+  await loadSaSuspendRowsFromDb(true);
+}
 function processSaSuspendExcelFile(file) {
   if (!file) return;
   saSetDbStatus("warn", "กำลังอ่านไฟล์ SA Suspend Summary...");
@@ -7598,7 +7609,7 @@ function saScheduleGridRefresh(delay) {
 function saRefreshSuspendGridOnly() {
   const grid = document.querySelector("#content-sa-suspend .sa-suspend-grid");
   if (!grid) { renderSaSuspendSummary(); return; }
-  const allRows = saSourceRows().filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  const allRows = saSourceRows().filter(r => !saHasEzTicketSubject(r) && !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
   const rows = allRows
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(saMatchesEasProvince)
@@ -7633,17 +7644,7 @@ function saSetRowReason(rowId, reasonKey) {
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
   saSaveSaRowEditNow(rowId);
-  const trList = document.querySelectorAll(`.sa-detail-table tr[data-row-id="${rowId}"]`);
-  if (trList.length) {
-    trList.forEach(tr => tr.classList.add("sa-row-fade-out"));
-    setTimeout(() => {
-      trList.forEach(tr => tr.remove());
-      saRemoveRowFromDetailStore(rowId);
-      saScheduleGridRefresh(0);
-    }, 380);
-  } else {
-    saScheduleGridRefresh();
-  }
+  saScheduleGridRefresh();
 }
 function saCategoryTitle(r) {
   if (saIsMobile(r)) return "SA Mobile";
@@ -7740,7 +7741,7 @@ function renderSaSuspendSummary() {
   _saSuspendDetailSeq = 0;
   if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
   if (!_saSuspendRowsDbLoaded) setTimeout(() => loadSaSuspendRowsFromDb(false), 0);
-  const allRows = saSourceRows().filter(r => !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+  const allRows = saSourceRows().filter(r => !saHasEzTicketSubject(r) && !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
   setTimeout(() => saLoadSaRowEditsFromDb(allRows), 0);
   const rows = allRows
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
@@ -7750,6 +7751,7 @@ function renderSaSuspendSummary() {
     container.innerHTML = `<div class="sa-suspend-wrap">
       <div class="sa-suspend-toolbar">
         <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+        <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
         <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
         ${saUploadLogHTML()}
         ${saDbCountLogHTML(0, 0)}
@@ -7765,6 +7767,7 @@ function renderSaSuspendSummary() {
         ${saEasProvinceFilterHTML()}
         ${saSearchHTML()}
         <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+        <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
         <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
         <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
         ${saUploadLogHTML()}
@@ -7789,6 +7792,7 @@ function renderSaSuspendSummary() {
       ${saSearchHTML()}
       ${saTableToggleControlsHTML()}
       <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
+      <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
       ${saUploadLogHTML()}
