@@ -6547,7 +6547,7 @@ const SA_SUSPEND_STATUS_LABELS = {
 };
 const SA_SUSPEND_BUCKETS = [
   { key:"total", label:"จำนวน Over" },
-  { key:"over1_4", label:"Over 1-4 Hrs" },
+  { key:"over1_4", label:"Over 0-4 Hrs" },
   { key:"over4_8", label:"Over 4-8 Hrs" },
   { key:"over8_24", label:"Over 8-24 Hrs" },
   { key:"over24", label:"Over>24 Hrs" },
@@ -7111,7 +7111,7 @@ function saOverBucket(r) {
   if (h > 24) return "over24";
   if (h > 8) return "over8_24";
   if (h > 4) return "over4_8";
-  if (h > 1) return "over1_4";
+  if (h > 0) return "over1_4";
   return "";
 }
 function saBuildMatrix(rows, statusRows) {
