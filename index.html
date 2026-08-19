@@ -7138,6 +7138,7 @@ function saBuildMatrix(rows, statusRows) {
     const key = saReasonKey(r);
     if (!key || !matrix[key]) return;
     matrix[key].total_wo.push(r);
+    if (saWithinFourHours(r)) matrix[key].watch.push(r);
     if (saOverHours(r) <= 0) return;
     matrix[key].total.push(r);
     const bucket = saOverBucket(r);
@@ -7644,7 +7645,17 @@ function saSetRowReason(rowId, reasonKey) {
     if (wo) _saReasonOverridesByWo[wo] = reasonKey;
   }
   saSaveSaRowEditNow(rowId);
-  saScheduleGridRefresh();
+  const trList = document.querySelectorAll(`.sa-detail-table tr[data-row-id="${rowId}"]`);
+  if (trList.length) {
+    trList.forEach(tr => tr.classList.add("sa-row-fade-out"));
+    setTimeout(() => {
+      trList.forEach(tr => tr.remove());
+      saRemoveRowFromDetailStore(rowId);
+      saScheduleGridRefresh(0);
+    }, 380);
+  } else {
+    saScheduleGridRefresh();
+  }
 }
 function saCategoryTitle(r) {
   if (saIsMobile(r)) return "SA Mobile";
