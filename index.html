@@ -2041,6 +2041,13 @@
     font-family: inherit;
     padding: 7px 9px;
   }
+  .sa-inoc-log-updated {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
   .sa-detail-inline {
     margin-top: 18px;
     background: var(--surface-0);
@@ -6501,6 +6508,8 @@ let _saReasonOverrides = {};
 let _saReasonOverridesByWo = {};
 let _saInocLogOverrides = {};
 let _saInocLogOverridesByWo = {};
+let _saRowEditUpdatedAt = {};
+let _saRowEditUpdatedAtByWo = {};
 let _saInocLogSaveTimers = {};
 let _saPendingRowEditIds = new Set();
 let _saReasonRenderTimer = null;
@@ -7242,12 +7251,31 @@ function saGetInocLog(r) {
   if (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo)) return _saInocLogOverridesByWo[wo];
   return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || "";
 }
+function saSetRowEditUpdatedAt(rowId, iso) {
+  if (!rowId || !iso) return;
+  _saRowEditUpdatedAt[rowId] = iso;
+  const row = _saRawRowsById[rowId];
+  const wo = saWorkOrderId(row);
+  if (wo) _saRowEditUpdatedAtByWo[wo] = iso;
+}
+function saGetRowEditUpdatedAt(r) {
+  const rowId = saRowId(r);
+  if (rowId && Object.prototype.hasOwnProperty.call(_saRowEditUpdatedAt, rowId)) return _saRowEditUpdatedAt[rowId];
+  const wo = saWorkOrderId(r);
+  if (wo && Object.prototype.hasOwnProperty.call(_saRowEditUpdatedAtByWo, wo)) return _saRowEditUpdatedAtByWo[wo];
+  return r.updated_at || r["Last Update"] || r["Updated At"] || "";
+}
+function saRowEditLastUpdateHTML(r) {
+  const label = saDateTimeDisplay(saGetRowEditUpdatedAt(r));
+  return `<span class="sa-inoc-log-updated">Last Update: ${saEscape(label || "-")}</span>`;
+}
 function saInocLogInputHTML(r) {
   const rowId = saRowId(r);
-  return `<textarea class="sa-inoc-log-input" placeholder="INOC Log" oninput="saSetInocLog('${rowId}', this.value)" onchange="saSaveSaRowEditNow('${rowId}')" onblur="saSaveSaRowEditNow('${rowId}')">${saEscape(saGetInocLog(r))}</textarea>`;
+  return `<textarea class="sa-inoc-log-input" placeholder="INOC Log" oninput="saSetInocLog('${rowId}', this.value)" onchange="saSaveSaRowEditNow('${rowId}')" onblur="saSaveSaRowEditNow('${rowId}')">${saEscape(saGetInocLog(r))}</textarea>${saRowEditLastUpdateHTML(r)}`;
 }
 function saSetInocLog(rowId, value) {
   if (!rowId) return;
+  saSetRowEditUpdatedAt(rowId, new Date().toISOString());
   _saInocLogOverrides[rowId] = value;
   _saPendingRowEditIds.add(rowId);
   const row = _saRawRowsById[rowId];
@@ -7466,11 +7494,13 @@ function saSaveRowEditLocal(rowId) {
   const row = _saRawRowsById[rowId];
   const wo = saWorkOrderId(row);
   if (!wo) return;
+  const updatedAt = new Date().toISOString();
+  saSetRowEditUpdatedAt(rowId, updatedAt);
   const data = saReadLocalEdits();
   data[wo] = {
     inoc_log: saGetInocLog(row),
     reason_key: saReasonKey(row) || "",
-    updated_at: new Date().toISOString()
+    updated_at: updatedAt
   };
   saWriteLocalEdits(data);
 }
@@ -7484,6 +7514,7 @@ function saLoadRowEditsLocal(rows) {
     const rec = data[wo];
     if (!rec) return;
     if (Object.prototype.hasOwnProperty.call(rec, "inoc_log")) _saInocLogOverridesByWo[wo] = rec.inoc_log || "";
+    if (rec.updated_at) _saRowEditUpdatedAtByWo[wo] = rec.updated_at;
     if (rec.reason_key && SA_REASON_SELECT_OPTIONS.some(opt => opt.key === rec.reason_key)) {
       _saReasonOverridesByWo[wo] = rec.reason_key;
     }
@@ -7526,6 +7557,8 @@ function saRowEditPayload(rowId) {
   }
   const logText = saGetInocLog(row);
   const reasonKey = saReasonKey(row);
+  const updatedAt = new Date().toISOString();
+  saSetRowEditUpdatedAt(rowId, updatedAt);
   return {
     work_order_id: workOrderId,
     source_ticket_id: saNormText(row["Source Ticket ID"]) || null,
@@ -7535,7 +7568,7 @@ function saRowEditPayload(rowId) {
     status: saStatusNorm(row.Status) || null,
     reason_key: reasonKey,
     inoc_log: logText,
-    updated_at: new Date().toISOString()
+    updated_at: updatedAt
   };
 }
 function saFlushPendingRowEdits() {
@@ -7574,12 +7607,13 @@ async function saLoadSaRowEditsFromDb(rows) {
     for (let i = 0; i < workOrders.length; i += 80) chunks.push(workOrders.slice(i, i + 80));
     const pgInValue = v => `%22${encodeURIComponent(String(v).replace(/"/g, '\\"'))}%22`;
     const results = await Promise.all(chunks.map(ids =>
-      supaFetch(`sa_inoc_logs?select=work_order_id,inoc_log,reason_key&work_order_id=in.(${ids.map(pgInValue).join(",")})`)
+      supaFetch(`sa_inoc_logs?select=work_order_id,inoc_log,reason_key,updated_at&work_order_id=in.(${ids.map(pgInValue).join(",")})`)
     ));
     results.flat().forEach(rec => {
       const wo = saNormText(rec.work_order_id);
       if (!wo) return;
       if (Object.prototype.hasOwnProperty.call(rec, "inoc_log")) _saInocLogOverridesByWo[wo] = rec.inoc_log || "";
+    if (rec.updated_at) _saRowEditUpdatedAtByWo[wo] = rec.updated_at;
       if (rec.reason_key && SA_REASON_SELECT_OPTIONS.some(opt => opt.key === rec.reason_key)) {
         _saReasonOverridesByWo[wo] = rec.reason_key;
       }
@@ -7637,6 +7671,7 @@ function saScheduleReasonRefresh() {
 }
 function saSetRowReason(rowId, reasonKey) {
   if (!rowId) return;
+  saSetRowEditUpdatedAt(rowId, new Date().toISOString());
   _saPendingRowEditIds.add(rowId);
   if (SA_REASON_SELECT_OPTIONS.some(opt => opt.key === reasonKey)) {
     _saReasonOverrides[rowId] = reasonKey;
