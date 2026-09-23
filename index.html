@@ -1640,6 +1640,13 @@
     color: var(--text-primary); padding: 7px 10px; font-size: 12px; font-weight: 700; outline: none;
   }
   .sa-ov-region-block { display: contents; }
+  .sa-ov-main-title {
+    background: linear-gradient(135deg,#2b3f8c,#5b8def);
+    color: #fff; text-align: center; letter-spacing: .6px;
+    font-size: 30px; font-weight: 900; padding: 20px 10px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    margin-bottom: -1px;
+  }
   .sa-ov-snapshot {
     flex: 0 0 190px; width: 190px;
     background: var(--surface-0); border: 1px dashed var(--border-med);
@@ -8183,6 +8190,7 @@ function saSuspendOverviewHTML(allRows) {
   </div>
   <div class="sa-ov-layout" id="sa-ov-capture-frame">
     <div class="sa-ov-main">
+      <div class="sa-ov-main-title">Suspend Summary</div>
       <div class="sa-ov-grid" style="grid-template-columns:104px 1fr repeat(${SA_SUSPEND_REASON_ROWS.length},1fr)">
         ${bodyRows}
       </div>
