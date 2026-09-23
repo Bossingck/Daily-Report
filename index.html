@@ -8065,7 +8065,56 @@ function saOvSevKey(r) {
   const m = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])\b/);
   return m ? "SA" + m[1] : null;
 }
+let _saOvExportRows = [];
+function saOvStatusOverLabel(r) {
+  if (saWithinFourHours(r)) return "Less than 4 hr";
+  const b = saOverBucket(r);
+  const found = SA_SUSPEND_BUCKETS.find(x => x.key === b);
+  return found ? found.label : "";
+}
+function saOvReasonLabel(r) {
+  const key = saReasonKey(r);
+  const found = SA_SUSPEND_REASON_ROWS.find(x => x.key === key);
+  return found ? found.label : (key || "");
+}
+function exportSaOvRawData() {
+  const rows = _saOvExportRows || [];
+  if (!rows.length) {
+    alert("ไม่มีข้อมูล — กรุณา Upload หรือ Load SA Suspend Summary ก่อน");
+    return;
+  }
+  const exportRows = rows.map(r => {
+    const front = {
+      "Status Over": saOvStatusOverLabel(r),
+      "สาเหตุ": saOvReasonLabel(r),
+      "Team": r.Team ?? "",
+      "Skill": r.Skill ?? "",
+      "Region": r.Region ?? "",
+      "Work Order ID": r["Work Order ID"] ?? "",
+      "Source Ticket ID": r["Source Ticket ID"] ?? "",
+      "External Ticket ID": r["External Ticket ID"] ?? "",
+      "Severity": r.Severity ?? "",
+      "Site ID": r["Site ID"] ?? "",
+      "Subject": r.Subject ?? "",
+    };
+    const usedKeys = new Set([...Object.keys(front), "SLA"]);
+    const rest = {};
+    Object.keys(r).forEach(k => { if (!usedKeys.has(k)) rest[k] = r[k]; });
+    return { ...front, ...rest, "SLA": r.SLA ?? "" };
+  });
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yy = now.getFullYear();
+  const hhmm = String(now.getHours()).padStart(2, "0") + String(now.getMinutes()).padStart(2, "0");
+  const ws = XLSX.utils.json_to_sheet(exportRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "SA Suspend Raw");
+  XLSX.writeFile(wb, `SA_Suspend_Overview_Raw_${dd}-${mm}-${yy}_${hhmm}.xlsx`);
+  if (typeof dashShowToast === "function") dashShowToast(`📊 Export Raw Data สำเร็จ — ${exportRows.length} รายการ`);
+}
 function saSuspendOverviewHTML(allRows) {
+  _saOvExportRows = allRows;
   if (!allRows.length) {
     return `<div class="sa-suspend-empty">Upload SA Suspend Summary หรือ Load SA DB ก่อนเพื่อสร้าง Overview</div>`;
   }
@@ -8187,6 +8236,7 @@ function saSuspendOverviewHTML(allRows) {
   return `<div class="sa-ov-toolbar">
     <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
     <button type="button" class="nsa-capture-btn blue sa-ov-capture-btn" data-target="sa-ov-capture-frame" data-fname="SA_Suspend_Overview">📷 แคปภาพ</button>
+    <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
   <div class="sa-ov-layout" id="sa-ov-capture-frame">
     <div class="sa-ov-main">
