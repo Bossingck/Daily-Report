@@ -1615,6 +1615,134 @@
     flex-wrap: wrap;
     margin-bottom: 14px;
   }
+  /* ── SA Suspend: Sub-Tabs (Overview / Report) ── */
+  .sa-subtabs {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .sa-subtab-btn {
+    padding: 9px 22px; border-radius: 50px;
+    border: 1px solid var(--border);
+    cursor: pointer; font-weight: 700; font-size: 13px;
+    background: var(--surface-0); color: var(--text-secondary);
+    transition: all .2s;
+  }
+  .sa-subtab-btn:hover { border-color: rgba(155,123,247,.4); color: #7b5cf0; }
+  .sa-subtab-btn.active {
+    background: linear-gradient(135deg, #5b8def, #9b7bf7);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 16px rgba(91,141,239,.30);
+  }
+  /* ── SA Suspend: Overview Page ── */
+  .sa-ov-layout { display: flex; gap: 16px; align-items: stretch; }
+  .sa-ov-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sa-ov-capture-select {
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-0);
+    color: var(--text-primary); padding: 7px 10px; font-size: 12px; font-weight: 700; outline: none;
+  }
+  .sa-ov-region-block { display: contents; }
+  .sa-ov-snapshot {
+    flex: 0 0 190px; width: 190px;
+    background: var(--surface-0); border: 1px dashed var(--border-med);
+    border-radius: var(--radius-md); padding: 14px 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; text-align: center;
+  }
+  .sa-ov-snap-regions { flex: 1 1 auto; justify-content: space-around; }
+  .sa-ov-snapshot-title { font-size: 11px; font-weight: 800; color: var(--text-secondary); letter-spacing: .3px; }
+  .sa-ov-snap-total { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 10px; }
+  .sa-ov-snap-total-num { font-size: 34px; font-weight: 900; color: var(--ink-strong); line-height: 1; }
+  .sa-ov-snap-total-label { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+  .sa-ov-snap-rows { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .sa-ov-snap-row {
+    display: flex; align-items: center; gap: 6px; width: 100%;
+    background: var(--surface-0); border: 1px solid var(--border-med); border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .sa-ov-snap-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .sa-ov-snap-name { font-size: 11px; font-weight: 700; color: var(--text-secondary); flex: 1 1 auto; text-align: left; }
+  .sa-ov-snap-val { font-size: 15px; font-weight: 900; color: var(--ink-strong); }
+  .sa-ov-snap-regions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .sa-ov-snap-region {
+    width: 100%; background: var(--surface-0); border: 1px solid var(--border-med);
+    border-radius: var(--radius-sm); padding: 8px 8px 6px;
+  }
+  .sa-ov-snap-region-label {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
+    color: var(--text-secondary); margin-bottom: 6px; justify-content: center;
+  }
+  .sa-ov-snap-bars { display: flex; align-items: flex-end; justify-content: center; gap: 14px; min-height: 78px; }
+  .sa-ov-snap-barcol { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 22px; }
+  .sa-ov-snap-barval { font-size: 12px; font-weight: 900; color: var(--text-primary); line-height: 1; }
+  .sa-ov-snap-bar { width: 16px; border-radius: 3px 3px 0 0; min-height: 2px; transition: height .3s ease; }
+  .sa-ov-snap-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 2px; }
+  .sa-ov-snap-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: var(--text-secondary); }
+  .sa-ov-snap-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .sa-ov-snap-table th {
+    background: linear-gradient(135deg,#7b8ef7,#9b7bf7); color: #fff; font-weight: 800;
+    padding: 6px 4px; line-height: 1.25; border: 1px solid var(--border-med);
+  }
+  .sa-ov-snap-table td {
+    padding: 7px 4px; text-align: center; font-weight: 700; color: var(--text-primary);
+    border: 1px solid var(--line-med); background: var(--surface-0);
+  }
+  .sa-ov-snap-td-region { display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 800; }
+  .sa-ov-snap-table tfoot td { background: var(--surface-2); font-weight: 900; }
+  .sa-ov-snapshot-sub { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+  .sa-ov-snapshot-chart {
+    width: 100%; height: 90px; border-radius: 8px;
+    background: repeating-linear-gradient(-45deg, rgba(155,123,247,.06) 0 6px, transparent 6px 12px);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sa-ov-snapshot-chart span { font-size: 10px; color: var(--text-muted); }
+  .sa-ov-main { flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+  .sa-ov-grid { display: grid; min-width: 1080px; border: 1px solid var(--border-med); border-radius: var(--radius-sm); overflow: hidden; }
+  .sa-ov-headrow { display: contents; }
+  .sa-ov-corner, .sa-ov-reasonhead {
+    padding: 5px 6px; text-align: center; font-size: 11px; font-weight: 800;
+    color: #fff; letter-spacing: .2px; line-height: 1.3;
+  }
+  .sa-ov-corner {
+    background: linear-gradient(135deg,#5b8def,#9b7bf7);
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .sa-ov-reasonhead {
+    background: linear-gradient(135deg,#7b8ef7,#9b7bf7);
+    border-left: 1px solid rgba(255,255,255,.4);
+  }
+  .sa-ov-headspacer {
+    background: linear-gradient(135deg,#7b8ef7,#9b7bf7);
+    border-left: 1px solid rgba(255,255,255,.4);
+  }
+  .sa-ov-total-head { background: linear-gradient(135deg,#2f7a4f,#1f5d3a); }
+  .sa-ov-total-cell { background: rgba(45,140,90,.08); }
+  .sa-ov-regionlabel {
+    display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center;
+    padding: 8px 8px; font-size: 12px; font-weight: 900; letter-spacing: .2px;
+    color: #fff;
+    border-right: 1px solid var(--border-med); border-bottom: 1px solid var(--border-med);
+    line-height: 1.3;
+  }
+  .sa-ov-overlabel {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 8px 8px; font-size: 12px; font-weight: 800; color: var(--text-primary);
+    border-right: 1px solid var(--line-med); border-bottom: 1px solid var(--line-med);
+    line-height: 1.3; background: var(--surface-1);
+  }
+  .sa-ov-regiondot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .sa-ov-cell {
+    border-bottom: 1px solid var(--line-med); border-left: 1px solid var(--line-med);
+    padding: 8px 5px 6px; display: flex; align-items: flex-end; justify-content: center;
+    gap: 5px; min-height: 130px;
+  }
+  .sa-ov-bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 26px; }
+  .sa-ov-bar { width: 18px; border-radius: 3px 3px 0 0; min-height: 2px; transition: height .3s ease; }
+  .sa-ov-bar-val { font-size: 14px; font-weight: 900; color: var(--text-primary); line-height: 1; }
+  .sa-ov-bar-label { font-size: 9px; font-weight: 800; color: #111; line-height: 1; margin-top: 2px; }
+  .sa-ov-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; padding-left: 2px; }
+  .sa-ov-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+  .sa-ov-legend-dot { width: 9px; height: 9px; border-radius: 3px; }
+  @media(max-width:760px) { .sa-ov-layout { flex-direction: column; } .sa-ov-snapshot { width: 100%; flex: none; } }
   .sa-suspend-note {
     font-size: 12px;
     color: var(--text-secondary);
@@ -2212,6 +2340,48 @@
   }
   .la-over-tooltip .la-over-row { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
   .la-over-tooltip .la-over-row + .la-over-row { border-top: 1px dashed var(--line-soft); }
+
+  /* ══════════ 📉 Late Trend tab (% Late 1st Arrived after 10:00) ══════════ */
+  .lt-wrap { padding: 20px; }
+  .lt-card { background: var(--surface-0); border: 1px solid var(--line-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-card); margin-bottom: 18px; overflow: hidden; }
+  .lt-card-h { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line-soft); }
+  .lt-card-t { font-size: 14px; font-weight: 800; color: var(--ink-strong); }
+  .lt-card-b { padding: 14px 16px; }
+  .lt-paste { border: 2px dashed var(--border-med); border-radius: var(--radius-md); background: var(--card-glass); padding: 22px 16px; text-align: center; color: var(--ink-soft); cursor: pointer; margin-bottom: 18px; outline: none; transition: all .18s; }
+  .lt-paste:hover, .lt-paste:focus, .lt-paste.lt-drag { border-color: var(--accent-blue); background: rgba(91,141,239,.08); color: var(--ink-strong); }
+  .lt-paste b { font-size: 15px; color: var(--ink-strong); }
+  .lt-paste small { display:block; margin-top:4px; font-size:12px; color: var(--ink-faint); }
+  .lt-status { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--bg-subtle); color: var(--ink-soft); white-space: nowrap; }
+  .lt-status.ok  { background: rgba(61,219,168,.18); color: #0f9d75; }
+  .lt-status.bad { background: rgba(245,166,35,.2);  color: #b45309; }
+  .lt-scroll { overflow-x: auto; }
+  .lt-tbl { border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%; color: var(--ink-base); }
+  .lt-tbl th, .lt-tbl td { border: 1px solid var(--line-med); padding: 7px 8px; text-align: center; min-width: 58px; white-space: nowrap; }
+  .lt-tbl th { background: #d9ead3; color: #1f3a1a; font-weight: 800; }
+  .lt-tbl-cnt th { background: var(--surface-2); color: var(--ink-strong); }
+  .lt-tbl td.lt-reg, .lt-tbl th.lt-reg { position: sticky; left: 0; z-index: 1; text-align: left; font-weight: 800; min-width: 70px; }
+  .lt-tbl td.lt-reg { background: var(--surface-0); color: var(--ink-strong); }
+  .lt-tbl th.lt-sel { box-shadow: inset 0 -3px 0 #5b8def; }
+  .lt-tbl th[data-d] { cursor: pointer; }
+  .lt-tbl td.lt-mon { font-weight: 800; background: var(--surface-2); }
+  html[data-theme="dark"] .lt-tbl th { background: rgba(61,219,168,.16); color: var(--ink-strong); }
+  html[data-theme="dark"] .lt-tbl-cnt th { background: var(--surface-2); color: var(--ink-strong); }
+  .lt-chart-box { position: relative; height: 380px; }
+  .lt-img-box { text-align: center; }
+  .lt-img-box img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line-med); box-shadow: var(--shadow-card); }
+  .lt-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .lt-chip { padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line-med); background: var(--surface-1); color: var(--ink-soft); font-size: 11px; font-weight: 700; cursor: pointer; }
+  .lt-chip.active { background: linear-gradient(135deg,#5b8def,#9b7bf7); color:#fff; border-color: transparent; }
+  .lt-rv-grid { display:grid; grid-template-columns: minmax(260px, 1fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .lt-rv-grid { grid-template-columns: 1fr; } }
+  .lt-rv-thumb img { width: 100%; border-radius: 8px; border: 1px solid var(--line-med); }
+  .lt-inp { width: 84px; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border-med); background: var(--bg-subtle); color: var(--text-primary); text-align: center; font-size: 13px; font-weight: 700; }
+  .lt-inp.lt-warn { border-color: #f5a623; background: rgba(245,166,35,.15); }
+  .lt-flag { font-size: 11px; color: #b45309; text-align: left; }
+  .lt-flag.ok { color: #0f9d75; }
+  .lt-note { font-size: 12px; color: var(--ink-faint); margin: 8px 0; line-height: 1.6; }
+  .lt-sql { background: var(--surface-1); border: 1px solid var(--line-med); border-radius: 8px; padding: 10px 12px; font-size: 11px; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--ink-base); font-family: ui-monospace, Menlo, Consolas, monospace; }
+
 </style>
 </head>
 <body>
@@ -2328,6 +2498,7 @@
   <div class="tab" data-tab="arrive-dashboard" id="tab-arrive-dashboard">📈 1st Arrive Dashboard</div>
   <div class="tab" data-tab="long-aging" id="tab-long-aging">⏰ Long Aging Report</div>
   <div class="tab" data-tab="sa-suspend" id="tab-sa-suspend">📋 SA Suspend Summary</div>
+  <div class="tab" data-tab="late-trend" id="tab-late-trend">📉 % Late Trend</div>
 </div>
 
 <!-- Content -->
@@ -2542,6 +2713,70 @@
 
 <div id="content-long-aging" style="display:none;padding:0"></div>
 <div id="content-sa-suspend" style="display:none;padding:0"></div>
+<div id="content-late-trend" style="display:none;padding:0">
+<div class="lt-wrap">
+
+  <!-- Control Bar -->
+  <div class="dash-ctrl-bar">
+    <span class="dash-ctrl-label">เดือน</span>
+    <div class="dash-toggle-pills">
+      <button class="dash-tp-btn" id="lt-prev" title="เดือนก่อนหน้า">◀</button>
+      <button class="dash-tp-btn" id="lt-next" title="เดือนถัดไป">▶</button>
+    </div>
+    <input type="month" id="lt-month" class="dash-select" style="padding-right:10px">
+    <span class="lt-status" id="lt-status">กำลังโหลด…</span>
+  </div>
+
+  <!-- รูปที่วาง (ต้นฉบับ) + รูปสรุปสร้างใหม่โทนเดิม -->
+  <div class="lt-card">
+    <div class="lt-card-h"><div class="lt-card-t" id="lt-img-title">รูปที่วาง</div>
+      <button class="btn" id="lt-del" style="display:none;background:linear-gradient(135deg,#f76060,#f5a623);padding:5px 12px;font-size:12px">🗑 ลบข้อมูลวันนี้</button></div>
+    <div class="lt-card-b"><div class="lt-chips" id="lt-chips"></div>
+      <div class="lt-rv-grid">
+        <div><div class="lt-note" style="margin-top:0">ต้นฉบับที่วาง</div><div class="lt-img-box" id="lt-img-box"></div></div>
+        <div><div class="lt-note" style="margin-top:0">สร้างใหม่ (โทนสีเดิม)</div><div class="lt-img-box" id="lt-img-gen-box"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paste zone -->
+  <div class="lt-paste" id="lt-paste" tabindex="0">
+    <b>📋 คัดลอกรูปตาราง 1st Arrived แล้วกด Ctrl + V วางที่นี่ได้เลย</b>
+    <small>ระบบจะอ่านค่า Working Plan และ 1st Arrived or Resume after 10:00 AM ของแต่ละ Region ให้อัตโนมัติ · หรือ <u id="lt-pick">เลือกไฟล์รูป</u> / ลากรูปมาวาง</small>
+    <input type="file" id="lt-file" accept="image/*" style="display:none">
+  </div>
+
+  <!-- Review (หลังวางรูป) -->
+  <div class="lt-card" id="lt-review" style="display:none"></div>
+
+  <!-- Storage warning + SQL -->
+  <div class="lt-card" id="lt-sqlbox" style="display:none"></div>
+
+  <!-- ตาราง Late / Team (จำนวน) รายวัน -->
+  <div class="lt-card">
+    <div class="lt-card-h"><div class="lt-card-t">Late / Team</div>
+      <div style="font-size:11px;color:var(--ink-faint)">จำนวนคนมาสาย / 1st Arrived or Resume after 10:00 AM</div></div>
+    <div class="lt-scroll"><div id="lt-table-cnt"></div></div>
+  </div>
+
+  <!-- ตาราง % Late รายวัน -->
+  <div class="lt-card">
+    <div class="lt-card-h"><div class="lt-card-t">% Late</div>
+      <div style="font-size:11px;color:var(--ink-faint)">% Late = 1st Arrived or Resume after 10:00 AM ÷ Working Plan · คลิกหัววันที่เพื่อดูรูปของวันนั้น</div></div>
+    <div class="lt-scroll"><div id="lt-table"></div></div>
+  </div>
+
+  <!-- กราฟ Trend -->
+  <div class="lt-card">
+    <div class="lt-card-h"><div class="lt-card-t">Report % Late 1st Arrived (After 10:00am)</div>
+      <label style="font-size:12px;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;gap:6px"><input type="checkbox" id="lt-nums" checked> แสดงตัวเลขบนกราฟ</label></div>
+    <div class="lt-card-b"><div class="lt-chart-box"><canvas id="lt-chart"></canvas></div>
+      <div class="lt-note" id="lt-chart-empty" style="display:none;text-align:center">ยังไม่มีข้อมูลในเดือนนี้ — วางรูปด้านบนเพื่อเริ่มบันทึก</div></div>
+  </div>
+
+</div>
+</div>
+
 
 <!-- Daily Report Panel (below content) -->
 <div id="daily-report-panel" style="display:none">
@@ -6497,6 +6732,7 @@ let _saSuspendDetailStore = {};
 let _saSuspendDetailSeq = 0;
 let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
+let _saSuspendView = "overview";
 let _saSuspendSearch = "";
 let _saSuspendSearchDraft = "";
 let _saSuspendSearchTimer = null;
@@ -6560,7 +6796,7 @@ const SA_SUSPEND_BUCKETS = [
   { key:"over4_8", label:"Over 4-8 Hrs" },
   { key:"over8_24", label:"Over 8-24 Hrs" },
   { key:"over24", label:"Over>24 Hrs" },
-  { key:"watch", label:"เหลือเวลาน้อยกว่า<br>4 ชั่วโมง" },
+  { key:"watch", label:"Less than 4 hr" },
   { key:"total_wo", label:"Total WO" },
 ];
 const SA_SUSPEND_REQUIRED_COLUMNS = [
@@ -7780,6 +8016,181 @@ function saCloseDetail() {
   const target = document.getElementById("sa-detail-inline");
   if (target) target.innerHTML = "";
 }
+// ── SA Suspend Summary: Overview / Report sub-tabs ──────────────────────────
+function saSetSuspendView(view) {
+  _saSuspendView = view === "report" ? "report" : "overview";
+  renderSaSuspendSummary();
+}
+function saSuspendSubTabsHTML() {
+  return `<div class="sa-subtabs">
+    <button type="button" class="sa-subtab-btn${_saSuspendView==="overview"?" active":""}" onclick="saSetSuspendView('overview')">📊 Overview</button>
+    <button type="button" class="sa-subtab-btn${_saSuspendView==="report"?" active":""}" onclick="saSetSuspendView('report')">📋 Report</button>
+  </div>`;
+}
+// Region: BMA, C&W, EAS only (SOU excluded) — colors match zone colors used elsewhere in the app
+const SA_OV_REGIONS = [
+  { key:"BMA", label:"BMA",  color:"#5b8def" },
+  { key:"CW",  label:"C&W",  color:"#9b7bf7" },
+  { key:"EAS", label:"EAS",  color:"#f5a623" },
+];
+// Left-most grouping: reuses saOverBucket() buckets, plus "watch" (SLA about to breach, not yet overdue)
+const SA_OV_OVER_BUCKETS = [
+  { key:"watch",     label:"Less than 4 hr", color:"#4ade80" },
+  { key:"over8_24",  label:"Over 8-24 Hrs",  color:"#5b8def" },
+  { key:"over24",    label:"Over&gt;24 Hrs", color:"#f5a623" },
+];
+// Severity SA1-SA4 bar colors
+const SA_OV_SEVS = [
+  { key:"SA1", color:"#f76060" },
+  { key:"SA2", color:"#f5a623" },
+  { key:"SA3", color:"#38c8e8" },
+  { key:"SA4", color:"#4ade80" },
+];
+function saOvRegionKey(r) {
+  const norm = saRegionNorm(r); // BMA / CW / EAS / SOU / (raw value) / UNKNOWN
+  if (norm === "BMA") return "BMA";
+  if (norm === "CW" || norm === "C&W") return "CW";
+  if (norm === "EAS") return "EAS";
+  if (norm === "SOU") return "SOU";
+  return null;
+}
+function saOvSevKey(r) {
+  const m = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])\b/);
+  return m ? "SA" + m[1] : null;
+}
+function saSuspendOverviewHTML(allRows) {
+  if (!allRows.length) {
+    return `<div class="sa-suspend-empty">Upload SA Suspend Summary หรือ Load SA DB ก่อนเพื่อสร้าง Overview</div>`;
+  }
+  // count[overKey][reasonKey][regionKey][sevKey] = n
+  const counts = {};
+  SA_OV_OVER_BUCKETS.forEach(ob => {
+    counts[ob.key] = {};
+    SA_SUSPEND_REASON_ROWS.forEach(rr => {
+      counts[ob.key][rr.key] = {};
+      SA_OV_REGIONS.forEach(rg => { counts[ob.key][rr.key][rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0 }; });
+    });
+  });
+  let maxVal = 1;
+  const snapTotals = {};
+  SA_OV_OVER_BUCKETS.forEach(ob => { snapTotals[ob.key] = 0; });
+  const snapByRegion = {};
+  SA_OV_REGIONS.forEach(rg => {
+    snapByRegion[rg.key] = {};
+    SA_OV_OVER_BUCKETS.forEach(ob => { snapByRegion[rg.key][ob.key] = 0; });
+  });
+  allRows.forEach(r => {
+    let ob;
+    if (saWithinFourHours(r)) {
+      ob = "watch";
+    } else {
+      const ob2 = saOverBucket(r); // "", over1_4, over4_8, over8_24, over24
+      if (ob2 !== "over8_24" && ob2 !== "over24") return; // เฉพาะ Over 8-24 Hrs และ Over>24 Hrs
+      ob = ob2;
+    }
+    const rk = saOvRegionKey(r);
+    const sk = saOvSevKey(r);
+    if (!rk || !sk) return;
+    if (!saNormText(r["Source Ticket ID"])) return;
+    const reasonKey = saReasonKey(r); // นับรวมสาเหตุที่ INOC เลือก/กรอกไว้ (override) ด้วย
+    if (!reasonKey || !counts[ob][reasonKey] || !counts[ob][reasonKey][rk]) return; // ข้าม Region ที่ไม่ได้แสดงใน Overview นี้ (เช่น SOU)
+    counts[ob][reasonKey][rk][sk]++;
+    if (counts[ob][reasonKey][rk][sk] > maxVal) maxVal = counts[ob][reasonKey][rk][sk];
+    snapTotals[ob]++;
+    snapByRegion[rk][ob]++;
+  });
+  const snapTotal = SA_OV_OVER_BUCKETS.reduce((s, ob) => s + snapTotals[ob.key], 0);
+  let snapMax = 1;
+  SA_OV_REGIONS.forEach(rg => {
+    SA_OV_OVER_BUCKETS.forEach(ob => { snapMax = Math.max(snapMax, snapByRegion[rg.key][ob.key]); });
+  });
+
+  // Total column: combined bar chart across all reasons, per region/over-bucket, split by SA1-SA4.
+  const totalCounts = {};
+  let totalMaxVal = 1;
+  SA_OV_OVER_BUCKETS.forEach(ob => {
+    totalCounts[ob.key] = {};
+    SA_OV_REGIONS.forEach(rg => {
+      const agg = { SA1:0, SA2:0, SA3:0, SA4:0 };
+      SA_SUSPEND_REASON_ROWS.forEach(rr => {
+        const c = counts[ob.key][rr.key][rg.key];
+        SA_OV_SEVS.forEach(sv => { agg[sv.key] += (c[sv.key] || 0); });
+      });
+      totalCounts[ob.key][rg.key] = agg;
+      SA_OV_SEVS.forEach(sv => { if (agg[sv.key] > totalMaxVal) totalMaxVal = agg[sv.key]; });
+    });
+  });
+
+  const totalHeadCell = `<div class="sa-ov-reasonhead sa-ov-total-head">Total</div>`;
+  const headCells = SA_SUSPEND_REASON_ROWS.map(rr =>
+    `<div class="sa-ov-reasonhead">${saEscape(rr.label)}</div>`).join("");
+
+  const bodyRows = SA_OV_REGIONS.map(rg => {
+    const banner = `<div class="sa-ov-corner" style="grid-column:1/-1;padding:9px 6px;font-size:13px;background:linear-gradient(135deg,${rg.color},${rg.color}cc)"><span class="sa-ov-regiondot" style="background:#fff"></span>${rg.label}</div>`;
+    const headRow = `<div class="sa-ov-headspacer"></div>${totalHeadCell}${headCells}`;
+    const overRows = SA_OV_OVER_BUCKETS.map(ob => {
+      const label = `<div class="sa-ov-overlabel">${ob.label}</div>`;
+      const tc = totalCounts[ob.key][rg.key];
+      const totalBars = SA_OV_SEVS.map(sv => {
+        const n = tc[sv.key] || 0;
+        const h = Math.max(3, Math.round((n / totalMaxVal) * 100));
+        return `<div class="sa-ov-bar-col">
+          <div class="sa-ov-bar-val">${n > 0 ? n : ""}</div>
+          <div class="sa-ov-bar" style="height:${h}px;background:${sv.color}"></div>
+          <div class="sa-ov-bar-label">${sv.key}</div>
+        </div>`;
+      }).join("");
+      const totalCell = `<div class="sa-ov-cell sa-ov-total-cell">${totalBars}</div>`;
+      const cells = SA_SUSPEND_REASON_ROWS.map(rr => {
+        const c = counts[ob.key][rr.key][rg.key];
+        const bars = SA_OV_SEVS.map(sv => {
+          const n = c[sv.key] || 0;
+          const h = Math.max(3, Math.round((n / maxVal) * 100));
+          return `<div class="sa-ov-bar-col">
+            <div class="sa-ov-bar-val">${n > 0 ? n : ""}</div>
+            <div class="sa-ov-bar" style="height:${h}px;background:${sv.color}"></div>
+            <div class="sa-ov-bar-label">${sv.key}</div>
+          </div>`;
+        }).join("");
+        return `<div class="sa-ov-cell">${bars}</div>`;
+      }).join("");
+      return label + totalCell + cells;
+    }).join("");
+    return `<div class="sa-ov-region-block" data-region="${rg.key}">${banner + headRow + overRows}</div>`;
+  }).join("");
+
+  const legend = SA_OV_SEVS.map(sv =>
+    `<span class="sa-ov-legend-item"><span class="sa-ov-legend-dot" style="background:${sv.color}"></span>${sv.key}</span>`).join("");
+
+  // Overall trend: total per bucket (Less than 4 hr / Over 8-24 Hrs / Over>24 Hrs), all regions combined.
+  const trendMax = Math.max(1, ...SA_OV_OVER_BUCKETS.map(ob => snapTotals[ob.key]));
+  const trendBarsHTML = SA_OV_OVER_BUCKETS.map(ob => {
+    const n = snapTotals[ob.key];
+    const h = Math.max(3, Math.round((n / trendMax) * 80));
+    return `<div class="sa-ov-snap-barcol" style="width:34px">
+      <div class="sa-ov-snap-barval">${n}</div>
+      <div class="sa-ov-snap-bar" style="width:26px;height:${h}px;background:${ob.color}"></div>
+      <div class="sa-ov-bar-label">${saEscape(ob.label).replace("&gt;",">")}</div>
+    </div>`;
+  }).join("");
+
+  const regionOptions = `<option value="ALL">ทุก Region</option>` +
+    SA_OV_REGIONS.map(rg => `<option value="${rg.key}">${saEscape(rg.label)}</option>`).join("");
+
+  return `<div class="sa-ov-toolbar">
+    <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
+    <button type="button" class="nsa-capture-btn blue sa-ov-capture-btn" data-target="sa-ov-capture-frame" data-fname="SA_Suspend_Overview">📷 แคปภาพ</button>
+  </div>
+  <div class="sa-ov-layout" id="sa-ov-capture-frame">
+    <div class="sa-ov-main">
+      <div class="sa-ov-grid" style="grid-template-columns:104px 1fr repeat(${SA_SUSPEND_REASON_ROWS.length},1fr)">
+        ${bodyRows}
+      </div>
+      <div class="sa-ov-legend">${legend}</div>
+    </div>
+  </div>`;
+}
+
 function renderSaSuspendSummary() {
   const container = document.getElementById("content-sa-suspend");
   if (!container) return;
@@ -7793,8 +8204,13 @@ function renderSaSuspendSummary() {
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(saMatchesEasProvince)
     .filter(saMatchesSearch);
+  const subtabsHTML = saSuspendSubTabsHTML();
+  if (_saSuspendView === "overview") {
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
+    return;
+  }
   if (!allRows.length) {
-    container.innerHTML = `<div class="sa-suspend-wrap">
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}
       <div class="sa-suspend-toolbar">
         <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
         <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
@@ -7807,7 +8223,7 @@ function renderSaSuspendSummary() {
     return;
   }
   if (!rows.length) {
-    container.innerHTML = `<div class="sa-suspend-wrap">
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}
       <div class="sa-suspend-toolbar">
         ${saRegionOptionsHTML(allRows)}
         ${saEasProvinceFilterHTML()}
@@ -7831,7 +8247,7 @@ function renderSaSuspendSummary() {
     saSetDetailStoreKey("__search__", "Search Result", _saSuspendSearch, "All", rows);
     _saSuspendSelectedDetailKey = "__search__";
   }
-  container.innerHTML = `<div class="sa-suspend-wrap">
+  container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}
     <div class="sa-suspend-toolbar">
       ${saRegionOptionsHTML(allRows)}
       ${saEasProvinceFilterHTML()}
@@ -8239,6 +8655,8 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.getElementById("content-arrive-dashboard").style.display = key==="arrive-dashboard" ? "block" : "none";
     document.getElementById("content-long-aging").style.display      = key==="long-aging"      ? "block" : "none";
     document.getElementById("content-sa-suspend").style.display      = key==="sa-suspend"      ? "block" : "none";
+    document.getElementById("content-late-trend").style.display      = key==="late-trend"      ? "block" : "none";
+    if (key==="late-trend" && typeof ltInit==="function") ltInit();
     if (key==="arrive" && (typeof _arriveRows==="undefined"||!_arriveRows)) {
       if (typeof showArriveHint==="function") showArriveHint();
     }
@@ -8517,6 +8935,7 @@ function processArriveExcel(data, filename) {
   document.getElementById("content-arrive-dashboard").style.display   = "none";
   document.getElementById("content-long-aging").style.display         = "none";
   document.getElementById("content-sa-suspend").style.display         = "none";
+  document.getElementById("content-late-trend").style.display         = "none";
   document.getElementById("content-arrive").style.display             = "block";
 
   // ── Toast: แจ้งว่าทั้ง 2 tab พร้อมใช้งาน ────────────────────────
@@ -8863,6 +9282,7 @@ document.getElementById("pdt-file-input").addEventListener("change", function() 
       document.getElementById("content-arrive-dashboard").style.display = "none";
       document.getElementById("content-long-aging").style.display = "none";
       document.getElementById("content-sa-suspend").style.display = "none";
+      document.getElementById("content-late-trend").style.display = "none";
       document.getElementById("content-pdt").style.display        = "";
     } catch(e) {
       alert("ไม่สามารถอ่านไฟล์ได้: " + e.message);
@@ -9984,6 +10404,30 @@ document.getElementById("content-nsa34").addEventListener("click", async functio
   await captureFrameToClipboard(btn, btn.dataset.target, btn.dataset.fname);
 });
 
+// ── SA Suspend Overview Capture Button (event delegation, with Region picker) ─
+document.getElementById("content-sa-suspend").addEventListener("click", async function(e) {
+  const btn = e.target.closest(".nsa-capture-btn");
+  if (!btn) return;
+  if (btn.classList.contains("sa-ov-capture-btn")) {
+    const sel = document.getElementById("sa-ov-capture-region");
+    const regionKey = sel ? sel.value : "ALL";
+    const frame = document.getElementById(btn.dataset.target);
+    const blocks = frame ? frame.querySelectorAll(".sa-ov-region-block") : [];
+    let fname = btn.dataset.fname;
+    if (regionKey !== "ALL") {
+      blocks.forEach(b => { if (b.dataset.region !== regionKey) b.style.display = "none"; });
+      fname = fname + "_" + regionKey;
+    }
+    try {
+      await captureFrameToClipboard(btn, btn.dataset.target, fname);
+    } finally {
+      blocks.forEach(b => { b.style.display = ""; });
+    }
+    return;
+  }
+  await captureFrameToClipboard(btn, btn.dataset.target, btn.dataset.fname);
+});
+
 // Generic capture helper (shared) — clipboard only, no download fallback
 async function captureFrameToClipboard(btn, targetId, fname) {
   const frame = document.getElementById(targetId);
@@ -9998,9 +10442,12 @@ async function captureFrameToClipboard(btn, targetId, fname) {
   frame.style.position="fixed"; frame.style.left="-99999px"; frame.style.top="0px"; frame.style.zIndex="-1";
   await new Promise(r => setTimeout(r, 150));
 
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const resolvedBg = isDark ? "#05111e" : "#ffffff";
+
   try {
     const canvas = await html2canvas(frame, {
-      backgroundColor: "#05111e", scale: 2, useCORS: true, allowTaint: true,
+      backgroundColor: resolvedBg, scale: 2, useCORS: true, allowTaint: true,
       scrollX: 0, scrollY: 0, x: 0, y: 0,
       width: frame.scrollWidth, height: frame.scrollHeight,
       windowWidth: frame.scrollWidth, windowHeight: frame.scrollHeight, logging: false,
@@ -13335,6 +13782,565 @@ document.getElementById("gas-modal").addEventListener("click", function(e) {
 
 console.log("✅ Phase 1 GAS integration loaded");
 // ══════════════════════════════════════════════════════════════════════
+
+</script>
+<script>
+
+// ══════════════════════════════════════════════════════════════════════════
+//  📉 % Late Trend — วางรูป (Ctrl+V) → OCR อ่าน Working Plan / 1st Arrived >10:00
+//  → คำนวณ % Late รายวัน → เก็บเป็นรายเดือน (Supabase: late_trend_daily + สำรองใน localStorage)
+// ══════════════════════════════════════════════════════════════════════════
+(function () {
+  "use strict";
+  const TABLE = "late_trend_daily", LKEY = "lt_daily_v1";
+  const KNOWN  = ["BMAE", "BMAW", "CW", "EAS", "SOU"];
+  const COLORS = { BMAE: "#f472b6", BMAW: "#60a5fa", CW: "#a78bfa", EAS: "#fbbf24", SOU: "#4ade80" };
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const TESS_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+  const TESS_LANG = "https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int";
+  const SQL = `create table if not exists public.late_trend_daily (
+  report_date date primary key,
+  data        jsonb not null,
+  image       text,
+  updated_at  timestamptz not null default now()
+);
+alter table public.late_trend_daily enable row level security;
+create policy "anon all late_trend_daily" on public.late_trend_daily
+  for all to anon using (true) with check (true);`;
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, "0");
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const todayBkk = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
+  const dim = (y, m) => new Date(y, m, 0).getDate();
+
+  let ym = todayBkk().slice(0, 7), days = {}, chart = null, selDate = null;
+  let pending = null, remoteOk = null, remoteErr = "", imgCache = {}, inited = false, worker = null, tessP = null;
+
+  // ── localStorage (สำรอง / ใช้ตอน Supabase ยังไม่พร้อม) ─────────────────────
+  const lsRead  = () => { try { return JSON.parse(localStorage.getItem(LKEY) || "{}") || {}; } catch (e) { return {}; } };
+  const lsWrite = o  => { try { localStorage.setItem(LKEY, JSON.stringify(o)); return true; } catch (e) { return false; } };
+
+  const calc = (wp, late) => (wp > 0 && late != null) ? late / wp * 100 : null;
+  function regionsList() {
+    const set = new Set(KNOWN);
+    Object.values(days).forEach(d => Object.keys(d.data || {}).forEach(r => set.add(r)));
+    return Array.from(set);
+  }
+  const monthDates = () => Object.keys(days).filter(d => d.startsWith(ym)).sort();
+
+  // ══════════════════════ โหลด / บันทึก ══════════════════════
+  async function loadMonth() {
+    const local = lsRead();
+    days = {};
+    Object.keys(local).filter(d => d.startsWith(ym)).forEach(d => { days[d] = { data: local[d].data, synced: !!local[d].synced }; });
+    render();
+    try {
+      const [y, m] = ym.split("-").map(Number);
+      const next = m === 12 ? `${y + 1}-01-01` : `${y}-${pad(m + 1)}-01`;
+      const rows = await supaFetch(`${TABLE}?select=report_date,data&report_date=gte.${ym}-01&report_date=lt.${next}&order=report_date.asc`);
+      remoteOk = true; remoteErr = "";
+      const loc = lsRead();
+      (rows || []).forEach(r => {
+        if (loc[r.report_date] && loc[r.report_date].synced === false) return;   // ฉบับในเครื่องที่ยังไม่ได้ซิงก์ใหม่กว่า
+        days[r.report_date] = { data: r.data, synced: true };
+        loc[r.report_date] = { data: r.data, ts: Date.now(), synced: true };
+      });
+      lsWrite(loc);
+      await syncPending();
+    } catch (e) {
+      remoteOk = false; remoteErr = e.message || String(e);
+    }
+    if (!selDate || !days[selDate] || !selDate.startsWith(ym)) { const md = monthDates(); selDate = md.length ? md[md.length - 1] : null; }
+    render();
+  }
+
+  async function syncPending() {
+    const loc = lsRead(); let changed = false;
+    for (const d of Object.keys(loc)) {
+      if (loc[d].synced !== false) continue;
+      try {
+        await supaUpsert(`${TABLE}?on_conflict=report_date`, [{ report_date: d, data: loc[d].data, image: loc[d].image || null, updated_at: new Date().toISOString() }]);
+        loc[d].synced = true; delete loc[d].image; changed = true;
+        if (days[d]) days[d].synced = true;
+      } catch (e) { break; }
+    }
+    if (changed) lsWrite(loc);
+  }
+
+  async function saveDay(date, data, dataUrl) {
+    if (days[date] && !confirm(`มีข้อมูลของวันที่ ${date} อยู่แล้ว ต้องการเขียนทับหรือไม่?`)) return false;
+    const loc = lsRead();
+    loc[date] = { data, ts: Date.now(), synced: false, image: dataUrl };
+    if (!lsWrite(loc)) { delete loc[date].image; lsWrite(loc); }        // พื้นที่ localStorage เต็ม → เก็บเฉพาะตัวเลข
+    imgCache[date] = dataUrl;
+    try {
+      await supaUpsert(`${TABLE}?on_conflict=report_date`, [{ report_date: date, data, image: dataUrl, updated_at: new Date().toISOString() }]);
+      remoteOk = true; remoteErr = "";
+      const l2 = lsRead(); if (l2[date]) { l2[date].synced = true; delete l2[date].image; lsWrite(l2); }
+    } catch (e) { remoteOk = false; remoteErr = e.message || String(e); }
+    ym = date.slice(0, 7); selDate = date; $("lt-month").value = ym;
+    await loadMonth();
+    return true;
+  }
+
+  async function deleteDay(date) {
+    if (!date || !confirm(`ลบข้อมูล % Late ของวันที่ ${date} ?`)) return;
+    const loc = lsRead(); delete loc[date]; lsWrite(loc);
+    try { await supaFetch(`${TABLE}?report_date=eq.${date}`, "DELETE"); } catch (e) { /* ไม่มีตาราง = ไม่ต้องลบ */ }
+    delete days[date]; delete imgCache[date]; selDate = null;
+    await loadMonth();
+  }
+
+  async function getImage(date) {
+    if (imgCache[date] !== undefined) return imgCache[date];
+    const loc = lsRead();
+    if (loc[date] && loc[date].image) return (imgCache[date] = loc[date].image);
+    if (remoteOk) {
+      try { const r = await supaFetch(`${TABLE}?select=image&report_date=eq.${date}`); return (imgCache[date] = (r && r[0] && r[0].image) || null); } catch (e) {}
+    }
+    return null;
+  }
+
+  // ══════════════════════ แสดงผล ══════════════════════
+  function heat(p) {
+    if (p == null || p <= 0) return "";
+    return `background:rgba(244,90,80,${Math.min(0.6, 0.06 + p / 40 * 0.5).toFixed(3)})`;
+  }
+
+  function renderTable() {
+    const [y, m] = ym.split("-").map(Number), n = dim(y, m), regs = regionsList();
+    const dayHeaders = () => {
+      let s = "";
+      for (let d = 1; d <= n; d++) {
+        const key = `${ym}-${pad(d)}`, has = !!days[key];
+        s += `<th ${has ? `data-d="${key}"` : ""} class="${key === selDate ? "lt-sel" : ""}">${d}-${MON[m - 1]}</th>`;
+      }
+      return s;
+    };
+    // ── ตาราง Late / Team (จำนวนคน) ──
+    let hc = `<table class="lt-tbl lt-tbl-cnt"><thead><tr><th class="lt-reg">Late / Team</th>${dayHeaders()}<th>Month</th></tr></thead><tbody>`;
+    regs.forEach(r => {
+      hc += `<tr><td class="lt-reg">${esc(r)}</td>`;
+      let sl = 0;
+      for (let d = 1; d <= n; d++) {
+        const e = (days[`${ym}-${pad(d)}`] || {}).data; const v = e && e[r];
+        if (!v || v.late == null) { hc += `<td></td>`; continue; }
+        sl += v.late; hc += `<td>${v.late}</td>`;
+      }
+      hc += `<td class="lt-mon">${sl || ""}</td></tr>`;
+    });
+    $("lt-table-cnt").innerHTML = hc + `</tbody></table>`;
+    $("lt-table-cnt").querySelectorAll("th[data-d]").forEach(th => th.addEventListener("click", () => { selDate = th.dataset.d; renderTable(); renderImage(); }));
+
+    // ── ตาราง % Late ──
+    let h = `<table class="lt-tbl"><thead><tr><th class="lt-reg">% Late</th>${dayHeaders()}<th>Month</th></tr></thead><tbody>`;
+    regs.forEach(r => {
+      h += `<tr><td class="lt-reg">${esc(r)}</td>`;
+      let sl = 0, sw = 0;
+      for (let d = 1; d <= n; d++) {
+        const e = (days[`${ym}-${pad(d)}`] || {}).data; const v = e && e[r];
+        if (!v || v.wp == null || v.late == null) { h += `<td></td>`; continue; }
+        sl += v.late; sw += v.wp;
+        const p = calc(v.wp, v.late);
+        h += `<td style="${heat(p)}">${p == null ? "" : p.toFixed(2) + "%"}</td>`;
+      }
+      const mp = calc(sw, sl);
+      h += sw ? `<td class="lt-mon" style="${heat(mp)}">${mp.toFixed(2)}%</td>` : `<td class="lt-mon"></td>`;
+      h += `</tr>`;
+    });
+    $("lt-table").innerHTML = h + `</tbody></table>`;
+    $("lt-table").querySelectorAll("th[data-d]").forEach(th => th.addEventListener("click", () => { selDate = th.dataset.d; renderTable(); renderImage(); }));
+  }
+
+  function renderChart() {
+    const [y, m] = ym.split("-").map(Number), n = dim(y, m), regs = regionsList();
+    const labels = Array.from({ length: n }, (_, i) => `${i + 1}-${MON[m - 1]}`);
+    const cs = getComputedStyle(document.documentElement);
+    const ink = cs.getPropertyValue("--ink-soft").trim() || "#5a6a9a", grid = cs.getPropertyValue("--line-soft").trim() || "#e4e8f5";
+    const showNums = $("lt-nums").checked;
+    const datasets = regs.map((r, i) => {
+      const color = COLORS[r] || "#38c8e8";
+      return {
+        label: r, borderColor: color, backgroundColor: color, tension: 0.35, borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 5, spanGaps: true,
+        data: Array.from({ length: n }, (_, k) => { const v = ((days[`${ym}-${pad(k + 1)}`] || {}).data || {})[r]; const p = v ? calc(v.wp, v.late) : null; return p == null ? null : +p.toFixed(2); }),
+        datalabels: { display: showNums, align: i % 2 ? "bottom" : "top", offset: 3, color, clip: false, font: { size: 9, weight: "700" }, formatter: v => v == null ? "" : v.toFixed(2) + "%" }
+      };
+    });
+    $("lt-chart-empty").style.display = monthDates().length ? "none" : "block";
+    if (chart) { chart.destroy(); chart = null; }
+    if (typeof Chart === "undefined") return;
+    chart = new Chart($("lt-chart"), {
+      type: "line", data: { labels, datasets }, plugins: typeof ChartDataLabels !== "undefined" ? [ChartDataLabels] : [],
+      options: {
+        responsive: true, maintainAspectRatio: false, layout: { padding: { top: 18, right: 14 } },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "top", labels: { usePointStyle: true, color: ink, font: { size: 12, weight: "700" } } },
+          tooltip: { callbacks: { label: c => c.parsed.y == null ? "" : `${c.dataset.label}: ${c.parsed.y.toFixed(2)}%` } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: ink, autoSkip: false, maxRotation: 60, font: { size: 10, weight: "700" } } },
+          y: { min: 0, grid: { color: grid }, ticks: { color: ink, font: { size: 11, weight: "700" }, callback: v => v.toFixed(2) + "%" } }
+        }
+      }
+    });
+  }
+
+  // ── สร้างรูปสรุปใหม่ โทนสีเดิม (navy/cyan/gold แบบตารางต้นฉบับ) จากข้อมูลที่บันทึกไว้ ──
+  function buildGeneratedImage(date) {
+    const entry = days[date], data = entry && entry.data;
+    if (!data) return null;
+    const regs = Object.keys(data).sort((a, b) => (KNOWN.indexOf(a) - KNOWN.indexOf(b)) || a.localeCompare(b));
+    if (!regs.length) return null;
+    const cols = [
+      { key: "region", label: "Region", w: 130, align: "left" },
+      { key: "wp", label: "Working Plan", w: 150 },
+      { key: "late", label: "1st Arrived or\nResume after 10:00 AM", w: 210 },
+      { key: "pct", label: "% Late", w: 150 }
+    ];
+    const padX = 26, headH = 68, rowH = 56, titleH = 46, gap = 10;
+    const width = padX * 2 + cols.reduce((s, c) => s + c.w, 0);
+    const height = titleH + headH + regs.length * rowH + 26;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+    const ctx = canvas.getContext("2d"); ctx.scale(dpr, dpr);
+
+    const bg = ctx.createLinearGradient(0, 0, width, height);
+    bg.addColorStop(0, "#1a1f3c"); bg.addColorStop(0.6, "#0f1428"); bg.addColorStop(1, "#111830");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = "rgba(100,120,255,.35)"; ctx.lineWidth = 1.5; ctx.strokeRect(0.75, 0.75, width - 1.5, height - 1.5);
+    // มุมตกแต่งสไตล์นีออน (บนซ้าย / ล่างขวา)
+    ctx.strokeStyle = "rgba(80,220,255,.85)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(2, 22); ctx.lineTo(2, 2); ctx.lineTo(22, 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(width - 2, height - 22); ctx.lineTo(width - 2, height - 2); ctx.lineTo(width - 22, height - 2); ctx.stroke();
+
+    ctx.fillStyle = "#8ec9ff"; ctx.font = "700 13px 'Inter',sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    ctx.fillText(`1st Arrived or Resume after 10:00 AM · % Late — ${date}`, padX, titleH / 2 + 6);
+
+    let x = padX, y = titleH;
+    ctx.fillStyle = "rgba(255,255,255,.04)"; ctx.fillRect(padX, y, width - padX * 2, headH);
+    cols.forEach(c => {
+      ctx.fillStyle = "#f5c453"; ctx.font = "800 13px 'Inter',sans-serif"; ctx.textAlign = c.align === "left" ? "left" : "center";
+      const lines = c.label.split("\n"), lh = 16, ty = y + headH / 2 - (lines.length - 1) * lh / 2;
+      lines.forEach((ln, i) => ctx.fillText(ln, c.align === "left" ? x + 16 : x + c.w / 2, ty + i * lh));
+      x += c.w;
+    });
+    y += headH;
+    regs.forEach((r, i) => {
+      const v = data[r] || {}, pct = (v.wp > 0 && v.late != null) ? v.late / v.wp * 100 : null;
+      if (i % 2 === 1) { ctx.fillStyle = "rgba(255,255,255,.025)"; ctx.fillRect(padX, y, width - padX * 2, rowH); }
+      let cx = padX;
+      cols.forEach(c => {
+        ctx.textAlign = c.align === "left" ? "left" : "center";
+        const tx = c.align === "left" ? cx + 16 : cx + c.w / 2, tyc = y + rowH / 2;
+        if (c.key === "region") { ctx.fillStyle = "#f5c453"; ctx.font = "800 16px 'Space Grotesk',sans-serif"; ctx.fillText(r, tx, tyc); }
+        else if (c.key === "wp") { ctx.fillStyle = "#7fe0ff"; ctx.font = "700 15px 'Space Grotesk',sans-serif"; ctx.fillText(v.wp ?? "—", tx, tyc); }
+        else if (c.key === "late") { ctx.fillStyle = "#ffffff"; ctx.font = "800 16px 'Space Grotesk',sans-serif"; ctx.fillText(v.late ?? "—", tx, tyc); }
+        else if (c.key === "pct") {
+          if (pct != null) {
+            const boxW = 92, boxH = 30, bx = cx + c.w / 2 - boxW / 2, by = tyc - boxH / 2;
+            ctx.fillStyle = `rgba(247,96,96,${Math.min(0.65, 0.15 + pct / 40 * 0.5).toFixed(3)})`;
+            ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, boxW, boxH, 8) : ctx.rect(bx, by, boxW, boxH); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.font = "800 14px 'Space Grotesk',sans-serif"; ctx.fillText(pct.toFixed(2) + "%", cx + c.w / 2, tyc);
+          } else { ctx.fillStyle = "#8a95c0"; ctx.font = "600 13px 'Inter',sans-serif"; ctx.fillText("—", tx, tyc); }
+        }
+        cx += c.w;
+      });
+      y += rowH;
+    });
+    return canvas.toDataURL("image/png");
+  }
+
+  async function renderImage() {
+    const md = monthDates();
+    $("lt-chips").innerHTML = md.map(d => `<button class="lt-chip ${d === selDate ? "active" : ""}" data-d="${d}">${+d.slice(8)}-${MON[+d.slice(5, 7) - 1]}</button>`).join("");
+    $("lt-chips").querySelectorAll(".lt-chip").forEach(b => b.addEventListener("click", () => { selDate = b.dataset.d; renderTable(); renderImage(); }));
+    $("lt-del").style.display = selDate ? "" : "none";
+    $("lt-img-title").textContent = selDate ? `รูปที่วาง — ${selDate}` : "รูปที่วาง";
+    const box = $("lt-img-box"), genBox = $("lt-img-gen-box");
+    if (!selDate) { box.innerHTML = `<div class="lt-note">ยังไม่มีรูปในเดือนนี้</div>`; genBox.innerHTML = ""; return; }
+    const want = selDate;
+    box.innerHTML = `<div class="lt-note">กำลังโหลดรูป…</div>`;
+    const genUrl = buildGeneratedImage(want);
+    genBox.innerHTML = genUrl ? `<img src="${genUrl}" alt="สรุป ${want}">` : `<div class="lt-note">—</div>`;
+    const src = await getImage(want);
+    if (want !== selDate) return;
+    box.innerHTML = src ? `<img src="${src}" alt="1st Arrived ${want}">` : `<div class="lt-note">วันที่ ${want} ไม่มีรูปเก็บไว้ (มีเฉพาะตัวเลข)</div>`;
+  }
+
+  function renderStatus() {
+    const s = $("lt-status"), box = $("lt-sqlbox");
+    if (remoteOk === true) { s.className = "lt-status ok"; s.textContent = "☁️ เก็บใน Supabase"; box.style.display = "none"; return; }
+    if (remoteOk === false) {
+      s.className = "lt-status bad"; s.textContent = "💾 เก็บในเครื่องนี้เท่านั้น";
+      box.style.display = "block";
+      box.innerHTML = `<div class="lt-card-h"><div class="lt-card-t">⚠️ ยังบันทึกขึ้น Supabase ไม่ได้ — ข้อมูลถูกเก็บในเบราว์เซอร์นี้ไว้ก่อน</div>
+        <button class="btn btn-blue" id="lt-copy-sql" style="padding:5px 12px;font-size:12px">คัดลอก SQL</button></div>
+        <div class="lt-card-b"><div class="lt-note" style="margin-top:0">รัน SQL นี้ใน Supabase → SQL Editor ครั้งเดียว แล้วรีโหลดหน้า ระบบจะซิงก์ข้อมูลที่เก็บไว้ในเครื่องขึ้นให้อัตโนมัติ<br>รายละเอียดข้อผิดพลาด: ${esc(remoteErr).slice(0, 160)}</div>
+        <div class="lt-sql">${esc(SQL)}</div></div>`;
+      const cb = $("lt-copy-sql"); if (cb) cb.onclick = () => { navigator.clipboard.writeText(SQL).then(() => { cb.textContent = "✅ คัดลอกแล้ว"; }); };
+    } else { s.className = "lt-status"; s.textContent = "กำลังโหลด…"; }
+  }
+
+  function render() { renderStatus(); renderTable(); renderChart(); renderImage(); }
+
+  // ══════════════════════ วางรูป + OCR ══════════════════════
+  function loadTess() {
+    if (window.Tesseract) return Promise.resolve();
+    if (tessP) return tessP;
+    return (tessP = new Promise((res, rej) => {
+      const s = document.createElement("script"); s.src = TESS_URL; s.onload = res;
+      s.onerror = () => { tessP = null; rej(new Error("โหลดตัวอ่านภาพ (Tesseract) ไม่ได้ — ต้องต่ออินเทอร์เน็ต หรือกรอกตัวเลขเองในตารางด้านล่าง")); };
+      document.head.appendChild(s);
+    }));
+  }
+  async function getWorker(onStatus) {
+    await loadTess();
+    if (!worker) worker = await Tesseract.createWorker("eng", 1, { langPath: TESS_LANG, logger: m => { if (m.status === "recognizing text" && onStatus) onStatus(`กำลังอ่านตัวเลข… ${Math.round((m.progress || 0) * 100)}%`); } });
+    return worker;
+  }
+
+  const lum = (d, i) => 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+
+  // หาช่วง x ของคอลัมน์ "1st Arrived" (พื้นแดง/ส้มอ่อน ขวาสุด) + จุดเริ่มพื้นสว่าง (หลัง Clock In)
+  function findLayout(d, w, h) {
+    const salmon = new Float32Array(w), light = new Float32Array(w);
+    for (let x = 0; x < w; x++) {
+      let s = 0, l = 0;
+      for (let y = 0; y < h; y++) {
+        const i = (y * w + x) * 4, r = d[i], g = d[i + 1], b = d[i + 2];
+        if (r > 215 && g > 120 && g < 200 && b > 100 && b < 190 && r - g > 45) s++;
+        if (lum(d, i) > 170) l++;
+      }
+      salmon[x] = s / h; light[x] = l / h;
+    }
+    let xe = -1; for (let x = w - 1; x >= 0; x--) if (salmon[x] > 0.35) { xe = x; break; }
+    let xs = -1; if (xe >= 0) { xs = xe; while (xs > 0 && salmon[xs - 1] > 0.35) xs--; }
+    let lightStart = -1;
+    for (let x = 0; x < w - 25; x++) { let ok = true; for (let k = 0; k < 25; k += 5) if (light[x + k] < 0.45) { ok = false; break; } if (ok) { lightStart = x; break; } }
+    return { xs, xe, lightStart };
+  }
+  function crop(d, w, h, x0, y0, x1, y1) {
+    x0 = Math.max(0, x0 | 0); y0 = Math.max(0, y0 | 0); x1 = Math.min(w, x1 | 0); y1 = Math.min(h, y1 | 0);
+    const cw = Math.max(1, x1 - x0), ch = Math.max(1, y1 - y0), out = new Uint8ClampedArray(cw * ch * 4);
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const s = ((y + y0) * w + x + x0) * 4, t = (y * cw + x) * 4; out[t] = d[s]; out[t + 1] = d[s + 1]; out[t + 2] = d[s + 2]; out[t + 3] = 255; }
+    return { data: out, width: cw, height: ch };
+  }
+  // 'bright' = ตัวสว่างบนพื้นมืด · 'dark' = ตัวเข้มบนพื้นสว่าง → ทำเป็นตัวดำบนพื้นขาว + ลบเส้นตาราง
+  function binarize(img, mode, thr) {
+    const { data: d, width: w, height: h } = img, out = new Uint8ClampedArray(d.length);
+    for (let i = 0; i < d.length; i += 4) { const l = lum(d, i), ink = mode === "bright" ? l > thr : l < thr; out[i] = out[i + 1] = out[i + 2] = ink ? 0 : 255; out[i + 3] = 255; }
+    for (let y = 0; y < h; y++) { let c = 0; for (let x = 0; x < w; x++) if (out[(y * w + x) * 4] === 0) c++; if (c / w > 0.85) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4; out[i] = out[i + 1] = out[i + 2] = 255; } }
+    for (let x = 0; x < w; x++) { let c = 0; for (let y = 0; y < h; y++) if (out[(y * w + x) * 4] === 0) c++; if (c / h > 0.85) for (let y = 0; y < h; y++) { const i = (y * w + x) * 4; out[i] = out[i + 1] = out[i + 2] = 255; } }
+    return { data: out, width: w, height: h };
+  }
+  function toCanvas(img, f) {
+    const c0 = document.createElement("canvas"); c0.width = img.width; c0.height = img.height;
+    c0.getContext("2d").putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+    const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.width * f)); c.height = Math.max(1, Math.round(img.height * f));
+    const x = c.getContext("2d"); x.imageSmoothingEnabled = false; x.drawImage(c0, 0, 0, c.width, c.height);
+    return c;
+  }
+  async function recognize(wk, img, psm, wl) {
+    const f = Math.min(6, Math.max(2, 320 / Math.max(1, img.width)));
+    await wk.setParameters({ tessedit_pageseg_mode: psm, tessedit_char_whitelist: wl });
+    const { data } = await wk.recognize(toCanvas(img, f));
+    return (data.text || "").trim();
+  }
+  // ระยะห่างเชิงแก้ไข (Levenshtein) — ใช้จับคู่ชื่อ Region ที่ OCR อ่านเพี้ยนเล็กน้อย
+  function lev(a, b) {
+    const m = a.length, n = b.length, d = [];
+    for (let i = 0; i <= m; i++) d.push([i, ...Array(n).fill(0)]);
+    for (let j = 0; j <= n; j++) d[0][j] = j;
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) d[i][j] = a[i - 1] === b[j - 1] ? d[i - 1][j - 1] : 1 + Math.min(d[i - 1][j], d[i][j - 1], d[i - 1][j - 1]);
+    return d[m][n];
+  }
+  function fuzzyRegion(raw) {
+    const t = (raw || "").toUpperCase().replace(/[^A-Z]/g, "");
+    if (!t) return null;
+    if (KNOWN.includes(t)) return t;
+    let best = null, bd = 99;
+    KNOWN.forEach(k => { const dist = lev(t, k); if (dist < bd) { bd = dist; best = k; } });
+    return (best && bd <= 2) ? best : t;   // เดาไม่ออกจริงๆ → ใช้ข้อความดิบเป็นชื่อ (จะไม่ผ่าน known list แต่ยังแก้ในตารางตรวจสอบได้)
+  }
+
+  // ══ ขั้นที่ 1: อ่านตัวเลขทั้งบล็อกซ้าย (sparse) เพื่อหา "แถวข้อมูล" จากตำแหน่ง y ══
+  async function findDataRows(wk, left) {
+    const bin = binarize(left, "bright", 85), f = Math.min(4, Math.max(1, 1900 / bin.width));
+    await wk.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "0123456789.%" });
+    const { data } = await wk.recognize(toCanvas(bin, f));
+    const thrX = left.width * 0.15;
+    const nums = (data.words || [])
+      .map(w => ({ t: (w.text || "").trim(), x0: w.bbox.x0 / f, x1: w.bbox.x1 / f, y0: w.bbox.y0 / f, y1: w.bbox.y1 / f }))
+      .filter(n => n.x0 >= thrX && /^\d+(\.\d+)?%?$/.test(n.t));
+    nums.sort((a, b) => a.y0 - b.y0);
+    const rows = [], tol = 12;
+    nums.forEach(n => {
+      const cy = (n.y0 + n.y1) / 2;
+      let r = rows.find(r => Math.abs(r.y - cy) < tol);
+      if (!r) { r = { y: cy, y0: n.y0, y1: n.y1, items: [] }; rows.push(r); }
+      r.items.push(n); r.y0 = Math.min(r.y0, n.y0); r.y1 = Math.max(r.y1, n.y1); r.y = (r.y0 + r.y1) / 2;
+    });
+    return rows.filter(r => r.items.length >= 2).sort((a, b) => a.y - b.y);
+  }
+
+  // ══ ขั้นที่ 2: ต่อแถว — อ่านชื่อ Region (ครอปแยก) + Working Plan + ตัวเลข 1st Arrived (ครอปแยกจากคอลัมน์ขวา) ══
+  async function ocrCanvas(canvas, onStatus) {
+    const w = canvas.width, h = canvas.height, id = canvas.getContext("2d").getImageData(0, 0, w, h);
+    const L = findLayout(id.data, w, h);
+    let xs = L.xs, xe = L.xe, guessed = false;
+    if (xe < 0) { xs = Math.round(w * 0.885); xe = w - 2; guessed = true; }
+    const leftEnd = (L.lightStart > w * 0.2 && L.lightStart < xs) ? L.lightStart : Math.round(w * 0.45);
+    const left = crop(id.data, w, h, 0, 0, leftEnd, h), last = crop(id.data, w, h, xs + 4, 0, xe - 3, h);
+    const wk = await getWorker(onStatus);
+    onStatus && onStatus("กำลังหาตำแหน่งแถวข้อมูล…");
+    const rows = await findDataRows(wk, left);
+    const out = {};
+    let i = 0;
+    for (const r of rows) {
+      i++; onStatus && onStatus(`กำลังอ่านแถวที่ ${i}/${rows.length}…`);
+      const sorted = r.items.slice().sort((a, b) => a.x0 - b.x0);
+      const minX = sorted[0].x0;
+
+      // ชื่อ Region — ครอปเฉพาะแถบซ้ายของแถวนี้ (เว้นมุมลายเส้นตกแต่งซ้ายสุด)
+      const labCrop = crop(left.data, left.width, left.height, leftEnd * 0.02, r.y0 - 6, minX - 4, r.y1 + 6);
+      let rawLabel = await recognize(wk, binarize(labCrop, "bright", 85), "7", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      if (!rawLabel) rawLabel = await recognize(wk, binarize(labCrop, "bright", 85), "6", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      if (!rawLabel) rawLabel = await recognize(wk, binarize(labCrop, "bright", 85), "8", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      const name = fuzzyRegion(rawLabel) || `แถว ${i}`;
+
+      // Working Plan — จากตัวเลข/เปอร์เซ็นต์ที่อ่านได้ในขั้นที่ 1 แล้ว (ตำแหน่งคอลัมน์ตรงกันทุกแถว)
+      const ints = sorted.filter(n => /^\d+$/.test(n.t));
+      const pcts = sorted.filter(n => /^\d+\.\d+%?$/.test(n.t));
+      let wp = null, flag = "";
+      if (pcts.length) { const lf = ints.filter(n => n.x1 <= pcts[0].x0 + 2); if (lf.length) wp = +lf[lf.length - 1].t; }
+      if (wp == null) { if (ints.length >= 2) wp = +ints[1].t; else if (ints.length === 1) wp = +ints[0].t; if (wp != null) flag = "ตรวจสอบ Working Plan"; }
+
+      // 1st Arrived (คอลัมน์ขวาสุด) — ครอปเฉพาะแถบของแถวนี้ อ่านเป็นบรรทัดเดียว
+      const lateCrop = crop(last.data, last.width, last.height, 0, r.y0 - 8, last.width, r.y1 + 8);
+      const lateTxt = await recognize(wk, binarize(lateCrop, "dark", 110), "6", "0123456789");
+      const late = /^\d+$/.test(lateTxt) ? +lateTxt : null;
+
+      if (wp == null) flag = "อ่าน Working Plan ไม่ได้";
+      else if (late == null) flag = "อ่านคอลัมน์ 1st Arrived ไม่ได้";
+      else if (late > wp) flag = "Late มากกว่า Working Plan";
+      if (!KNOWN.includes(name)) flag = flag || "อ่านชื่อ Region ไม่ชัด — ตรวจสอบ";
+      if (guessed) flag = flag || "เดาตำแหน่งคอลัมน์ — ตรวจสอบ";
+      out[name] = { wp, late, flag };
+    }
+    return out;
+  }
+
+  function thumbUrl(canvas) {
+    const s = Math.min(1, 1400 / canvas.width), c = document.createElement("canvas");
+    c.width = Math.round(canvas.width * s); c.height = Math.round(canvas.height * s);
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(canvas, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.82);
+  }
+
+  async function handleBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error("เปิดรูปไม่ได้")); im.src = url; });
+    const canvas = document.createElement("canvas"); canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext("2d").drawImage(img, 0, 0); URL.revokeObjectURL(url);
+    pending = { dataUrl: thumbUrl(canvas), date: todayBkk(), rows: {}, msg: "กำลังเตรียมอ่านรูป… (ครั้งแรกใช้เวลาโหลดตัวอ่านภาพประมาณ 10-20 วินาที)", busy: true };
+    renderReview();
+    $("lt-review").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    try {
+      pending.rows = await ocrCanvas(canvas, m => { if (pending) { pending.msg = m; const el = $("lt-rv-msg"); if (el) el.textContent = m; } });
+      const ok = Object.values(pending.rows).filter(v => v.wp != null && v.late != null).length;
+      pending.msg = ok ? `อ่านได้ ${ok}/${KNOWN.length} Region — กรุณาเทียบกับรูปแล้วแก้ไขให้ตรงก่อนบันทึก` : "อ่านตัวเลขจากรูปไม่สำเร็จ — กรอกเองในตารางได้เลย";
+    } catch (e) { pending.msg = "⚠️ " + (e.message || e); }
+    pending.busy = false; renderReview();
+  }
+
+  function renderReview() {
+    const box = $("lt-review");
+    if (!pending) { box.style.display = "none"; box.innerHTML = ""; return; }
+    const regs = regionsList();
+    let rows = "";
+    regs.forEach(r => {
+      const v = pending.rows[r] || {};
+      rows += `<tr data-r="${esc(r)}"><td class="lt-reg">${esc(r)}</td>
+        <td><input class="lt-inp" type="number" min="0" data-k="wp" value="${v.wp ?? ""}"></td>
+        <td><input class="lt-inp" type="number" min="0" data-k="late" value="${v.late ?? ""}"></td>
+        <td data-pct style="font-weight:800"></td>
+        <td class="lt-flag ${v.flag ? "" : (v.wp != null ? "ok" : "")}">${v.flag ? "⚠️ " + esc(v.flag) : (v.wp != null && v.late != null ? "✓" : "")}</td></tr>`;
+    });
+    box.style.display = "block";
+    box.innerHTML = `<div class="lt-card-h"><div class="lt-card-t">📥 ตรวจสอบก่อนบันทึก</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="dash-ctrl-label">ข้อมูลของวันที่</span><input type="date" id="lt-rv-date" class="dash-select" style="padding-right:10px" value="${pending.date}">
+        </div></div>
+      <div class="lt-card-b"><div class="lt-rv-grid">
+        <div class="lt-rv-thumb"><img src="${pending.dataUrl}" alt="pasted"></div>
+        <div>
+          <div class="lt-note" id="lt-rv-msg" style="margin-top:0">${esc(pending.msg)}</div>
+          <div class="lt-scroll"><table class="lt-tbl"><thead><tr><th class="lt-reg">Region</th><th>Working Plan</th><th>1st Arrived<br>&gt; 10:00 AM</th><th>% Late</th><th>ตรวจสอบ</th></tr></thead><tbody>${rows}</tbody></table></div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-green" id="lt-rv-save" ${pending.busy ? "disabled" : ""}>💾 บันทึก</button>
+            <button class="btn" id="lt-rv-cancel" style="background:var(--bg-subtle);color:var(--ink-soft);border:1px solid var(--border-med)">ยกเลิก</button>
+          </div>
+        </div></div></div>`;
+    const upd = tr => {
+      const wp = tr.querySelector('[data-k="wp"]').value, lt = tr.querySelector('[data-k="late"]').value;
+      const p = wp !== "" && lt !== "" ? calc(+wp, +lt) : null;
+      const c = tr.querySelector("[data-pct]"); c.textContent = p == null ? "" : p.toFixed(2) + "%"; c.style.cssText = "font-weight:800;" + heat(p);
+      const bad = wp !== "" && lt !== "" && +lt > +wp; tr.querySelector('[data-k="late"]').classList.toggle("lt-warn", bad);
+    };
+    box.querySelectorAll("tbody tr").forEach(tr => { upd(tr); tr.querySelectorAll("input").forEach(i => i.addEventListener("input", () => upd(tr))); });
+    $("lt-rv-date").addEventListener("change", e => { pending.date = e.target.value; });
+    $("lt-rv-cancel").addEventListener("click", () => { pending = null; renderReview(); });
+    $("lt-rv-save").addEventListener("click", async () => {
+      const data = {};
+      box.querySelectorAll("tbody tr").forEach(tr => {
+        const wp = tr.querySelector('[data-k="wp"]').value, lt = tr.querySelector('[data-k="late"]').value;
+        if (wp !== "" && lt !== "") data[tr.dataset.r] = { wp: +wp, late: +lt };
+      });
+      if (!Object.keys(data).length) { alert("กรุณากรอก Working Plan และ 1st Arrived อย่างน้อย 1 Region"); return; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(pending.date || "")) { alert("กรุณาเลือกวันที่"); return; }
+      const bad = Object.entries(data).filter(([, v]) => v.late > v.wp).map(([r]) => r);
+      if (bad.length && !confirm(`Region ${bad.join(", ")} มี Late มากกว่า Working Plan — ยืนยันบันทึก?`)) return;
+      const ok = await saveDay(pending.date, data, pending.dataUrl);
+      if (ok) { pending = null; renderReview(); }
+    });
+  }
+
+  // ══════════════════════ เริ่มต้น ══════════════════════
+  const isActive = () => { const c = $("content-late-trend"), a = $("app"); return c && c.style.display !== "none" && a && a.style.display !== "none"; };
+  function imageFrom(dt) { if (!dt) return null; const it = Array.from(dt.items || []).find(i => i.type && i.type.startsWith("image/")); if (it) return it.getAsFile(); return Array.from(dt.files || []).find(f => f.type.startsWith("image/")) || null; }
+
+  function init() {
+    if (inited) { loadMonth(); return; }
+    inited = true;
+    $("lt-month").value = ym;
+    $("lt-month").addEventListener("change", e => { if (e.target.value) { ym = e.target.value; selDate = null; loadMonth(); } });
+    const shift = k => { const [y, m] = ym.split("-").map(Number), d = new Date(y, m - 1 + k, 1); ym = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; $("lt-month").value = ym; selDate = null; loadMonth(); };
+    $("lt-prev").addEventListener("click", () => shift(-1)); $("lt-next").addEventListener("click", () => shift(1));
+    $("lt-nums").addEventListener("change", renderChart);
+    $("lt-del").addEventListener("click", () => deleteDay(selDate));
+
+    const zone = $("lt-paste");
+    zone.addEventListener("click", () => zone.focus());
+    $("lt-pick").addEventListener("click", e => { e.stopPropagation(); $("lt-file").click(); });
+    $("lt-file").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) handleBlob(f).catch(err => alert(err.message)); });
+    ["dragover", "dragenter"].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add("lt-drag"); }));
+    ["dragleave", "drop"].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove("lt-drag"); }));
+    zone.addEventListener("drop", e => { const f = imageFrom(e.dataTransfer); if (f) handleBlob(f).catch(err => alert(err.message)); });
+    document.addEventListener("paste", e => {                 // Ctrl+V ที่ไหนก็ได้ในแท็บนี้
+      if (!isActive()) return;
+      const f = imageFrom(e.clipboardData); if (!f) return;
+      e.preventDefault(); handleBlob(f).catch(err => alert(err.message));
+    });
+    new MutationObserver(() => { if (isActive()) renderChart(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    loadMonth();
+    setTimeout(() => zone.focus(), 50);
+  }
+  window.ltInit = init;
+  window._lt = { findLayout, binarize, crop, fuzzyRegion };   // สำหรับทดสอบ
+})();
 
 </script>
 </body>
