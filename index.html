@@ -8128,6 +8128,8 @@ function saSuspendOverviewHTML(allRows) {
     });
   });
   let maxVal = 1;
+  const saSuspendRegionSevTotals = {};
+  SA_OV_REGIONS.forEach(rg => { saSuspendRegionSevTotals[rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0 }; });
   const snapTotals = {};
   SA_OV_OVER_BUCKETS.forEach(ob => { snapTotals[ob.key] = 0; });
   const snapByRegion = {};
@@ -8151,6 +8153,7 @@ function saSuspendOverviewHTML(allRows) {
     const reasonKey = saReasonKey(r); // นับรวมสาเหตุที่ INOC เลือก/กรอกไว้ (override) ด้วย
     if (!reasonKey || !counts[ob][reasonKey] || !counts[ob][reasonKey][rk]) return; // ข้าม Region ที่ไม่ได้แสดงใน Overview นี้ (เช่น SOU)
     counts[ob][reasonKey][rk][sk]++;
+    saSuspendRegionSevTotals[rk][sk]++;
     if (counts[ob][reasonKey][rk][sk] > maxVal) maxVal = counts[ob][reasonKey][rk][sk];
     snapTotals[ob]++;
     snapByRegion[rk][ob]++;
@@ -8233,11 +8236,17 @@ function saSuspendOverviewHTML(allRows) {
   const regionOptions = `<option value="ALL">ทุก Region</option>` +
     SA_OV_REGIONS.map(rg => `<option value="${rg.key}">${saEscape(rg.label)}</option>`).join("");
 
+  const saSuspendRegionSummary = SA_OV_REGIONS.map(rg => {
+    const totals = saSuspendRegionSevTotals[rg.key];
+    const cards = SA_OV_SEVS.map(sv => `<div style="flex:1;min-width:74px;padding:9px 8px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${totals[sv.key] || 0}</div></div>`).join("");
+    return `<div style="flex:1;min-width:260px;padding:10px;border:1px solid ${rg.color}66;border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:${rg.color};margin-bottom:8px">${saEscape(rg.label)}</div><div style="display:flex;gap:6px">${cards}</div></div>`;
+  }).join("");
   return `<div class="sa-ov-toolbar">
     <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
     <button type="button" class="nsa-capture-btn blue sa-ov-capture-btn" data-target="sa-ov-capture-frame" data-fname="SA_Suspend_Overview">📷 แคปภาพ</button>
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}</div>
   <div class="sa-ov-layout" id="sa-ov-capture-frame">
     <div class="sa-ov-main">
       <div class="sa-ov-main-title">Suspend Summary</div>
