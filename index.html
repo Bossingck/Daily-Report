@@ -8180,13 +8180,13 @@ function saSuspendOverviewHTML(allRows) {
     });
   });
 
-  const totalHeadCell = `<div class="sa-ov-reasonhead sa-ov-total-head">Total</div>`;
+
   const headCells = SA_SUSPEND_REASON_ROWS.map(rr =>
     `<div class="sa-ov-reasonhead">${saEscape(rr.label)}</div>`).join("");
 
   const bodyRows = SA_OV_REGIONS.map(rg => {
     const banner = `<div class="sa-ov-corner" style="grid-column:1/-1;padding:9px 6px;font-size:13px;background:linear-gradient(135deg,${rg.color},${rg.color}cc)"><span class="sa-ov-regiondot" style="background:#fff"></span>${rg.label}</div>`;
-    const headRow = `<div class="sa-ov-headspacer"></div>${totalHeadCell}${headCells}`;
+    const headRow = `<div class="sa-ov-headspacer"></div>${headCells}`;
     const overRows = SA_OV_OVER_BUCKETS.map(ob => {
       const label = `<div class="sa-ov-overlabel">${ob.label}</div>`;
       const tc = totalCounts[ob.key][rg.key];
@@ -8213,7 +8213,7 @@ function saSuspendOverviewHTML(allRows) {
         }).join("");
         return `<div class="sa-ov-cell">${bars}</div>`;
       }).join("");
-      return label + totalCell + cells;
+      return label + cells;
     }).join("");
     return `<div class="sa-ov-region-block" data-region="${rg.key}">${banner + headRow + overRows}</div>`;
   }).join("");
@@ -8250,7 +8250,7 @@ function saSuspendOverviewHTML(allRows) {
   <div class="sa-ov-layout" id="sa-ov-capture-frame">
     <div class="sa-ov-main">
       <div class="sa-ov-main-title">Suspend Summary</div>
-      <div class="sa-ov-grid" style="grid-template-columns:104px 1fr repeat(${SA_SUSPEND_REASON_ROWS.length},1fr)">
+      <div class="sa-ov-grid" style="grid-template-columns:104px repeat(${SA_SUSPEND_REASON_ROWS.length},1fr)">
         ${bodyRows}
       </div>
       <div class="sa-ov-legend">${legend}</div>
