@@ -8046,12 +8046,17 @@ const SA_OV_OVER_BUCKETS = [
   { key:"over8_24",  label:"Over 8-24 Hrs",  color:"#5b8def" },
   { key:"over24",    label:"Over&gt;24 Hrs", color:"#f5a623" },
 ];
-// Severity SA1-SA4 bar colors
+// Severity SA1-SA6 summary colors
 const SA_OV_SEVS = [
   { key:"SA1", color:"#f76060" },
   { key:"SA2", color:"#f5a623" },
   { key:"SA3", color:"#38c8e8" },
   { key:"SA4", color:"#4ade80" },
+];
+const SA_OV_SUMMARY_SEVS = [
+  ...SA_OV_SEVS,
+  { key:"SA5", color:"#9b7bf7" },
+  { key:"SA6", color:"#f472b6" },
 ];
 function saOvRegionKey(r) {
   const norm = saRegionNorm(r); // BMA / CW / EAS / SOU / (raw value) / UNKNOWN
@@ -8062,7 +8067,7 @@ function saOvRegionKey(r) {
   return null;
 }
 function saOvSevKey(r) {
-  const m = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])\b/);
+  const m = saNormText(r.Severity).toUpperCase().match(/^SA([1-6])\b/);
   return m ? "SA" + m[1] : null;
 }
 let _saOvExportRows = [];
@@ -8129,7 +8134,7 @@ function saSuspendOverviewHTML(allRows) {
   });
   let maxVal = 1;
   const saSuspendRegionSevTotals = {};
-  SA_OV_REGIONS.forEach(rg => { saSuspendRegionSevTotals[rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0 }; });
+  SA_OV_REGIONS.forEach(rg => { saSuspendRegionSevTotals[rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0, SA5:0, SA6:0 }; });
   const snapTotals = {};
   SA_OV_OVER_BUCKETS.forEach(ob => { snapTotals[ob.key] = 0; });
   const snapByRegion = {};
@@ -8238,15 +8243,19 @@ function saSuspendOverviewHTML(allRows) {
 
   const saSuspendRegionSummary = SA_OV_REGIONS.map(rg => {
     const totals = saSuspendRegionSevTotals[rg.key];
-    const cards = SA_OV_SEVS.map(sv => `<div style="flex:1;min-width:74px;padding:9px 8px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${totals[sv.key] || 0}</div></div>`).join("");
-    return `<div style="flex:1;min-width:260px;padding:10px;border:1px solid ${rg.color}66;border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:${rg.color};margin-bottom:8px">${saEscape(rg.label)}</div><div style="display:flex;gap:6px">${cards}</div></div>`;
+    const cards = SA_OV_SUMMARY_SEVS.map(sv => `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${totals[sv.key] || 0}</div></div>`).join("");
+    const total = SA_OV_SUMMARY_SEVS.reduce((sum, sv) => sum + (totals[sv.key] || 0), 0);
+    const totalCard = `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid var(--border-med);border-radius:9px;background:var(--surface-1);text-align:center"><div style="font-size:11px;font-weight:800;color:var(--ink-soft)">ทั้งหมด</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${total}</div></div>`;
+    return `<div style="flex:1;min-width:260px;padding:10px;border:1px solid ${rg.color}66;border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:${rg.color};margin-bottom:8px">${saEscape(rg.label)}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${cards}${totalCard}</div></div>`;
   }).join("");
+  const saSuspendGrandTotal = SA_OV_SUMMARY_SEVS.reduce((sum, sv) => sum + SA_OV_REGIONS.reduce((n, rg) => n + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0), 0);
+  const saSuspendTotalSummary = `<div style="flex:1;min-width:260px;padding:10px;border:1px solid rgba(91,141,239,.35);border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:var(--ink-strong);margin-bottom:8px">ทั้งหมด</div><div style="display:flex;gap:6px;flex-wrap:wrap">${SA_OV_SUMMARY_SEVS.map(sv => { const n = SA_OV_REGIONS.reduce((sum, rg) => sum + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0); return `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${n}</div></div>`; }).join("")}<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid var(--border-med);border-radius:9px;background:var(--surface-1);text-align:center"><div style="font-size:11px;font-weight:800;color:var(--ink-soft)">SA รวม</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${saSuspendGrandTotal}</div></div></div></div>`;
   return `<div class="sa-ov-toolbar">
     <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
     <button type="button" class="nsa-capture-btn blue sa-ov-capture-btn" data-target="sa-ov-capture-frame" data-fname="SA_Suspend_Overview">📷 แคปภาพ</button>
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}${saSuspendTotalSummary}</div>
   <div class="sa-ov-layout" id="sa-ov-capture-frame">
     <div class="sa-ov-main">
       <div class="sa-ov-main-title">Suspend Summary</div>
@@ -8310,6 +8319,12 @@ function renderSaSuspendSummary() {
   const onlineRows = rows.filter(r => !saIsMobile(r));
   const nanoRows = onlineRows.filter(saIsNano);
   const nonNanoRows = onlineRows.filter(r => !saIsNano(r));
+  const reportCounts = [
+    { label:"Mobile", count:mobileRows.length, color:"#38c8e8" },
+    { label:"Online", count:onlineRows.length, color:"#9b7bf7" },
+    { label:"ทั้งหมด", count:rows.length, color:"#5b8def" },
+  ];
+  const reportSummaryHTML = `<div class="cards" style="margin:0 0 16px">${reportCounts.map(x => `<div class="card"><div class="val" style="background:none;-webkit-text-fill-color:${x.color};color:${x.color}">${x.count}</div><div class="lbl">${x.label}</div></div>`).join("")}</div>`;
   if (_saSuspendSearch) {
     saSetDetailStoreKey("__search__", "Search Result", _saSuspendSearch, "All", rows);
     _saSuspendSelectedDetailKey = "__search__";
@@ -8327,6 +8342,7 @@ function renderSaSuspendSummary() {
       ${saUploadLogHTML()}
       ${saDbCountLogHTML(allRows.length, rows.length)}
     </div>
+    ${reportSummaryHTML}
     <div class="sa-suspend-grid">
       ${saSuspendTableHTML("SA Mobile", mobileRows)}
       ${saSuspendTableHTML("SA Online NANO", nanoRows)}
