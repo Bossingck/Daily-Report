@@ -7120,6 +7120,9 @@ function saIsDeletedWorkOrder(r) {
   return !!(wo && saReadDeletedWorkOrders().has(wo));
 }
 function saSourceRows() {
+  if ((!Array.isArray(_saSuspendRows) || !_saSuspendRows.length) && typeof saLoadSuspendRowsLocal === "function") {
+    saLoadSuspendRowsLocal();
+  }
   return Array.isArray(_saSuspendRows) ? _saSuspendRows : [];
 }
 function saSaveSuspendRowsLocal(rows, filename) {
@@ -7654,11 +7657,15 @@ async function loadSaSuspendRowsFromDb(force = false) {
       if (page.length < limit) break;
     }
     _saSuspendDbRawCount = rows.length;
-    _saSuspendRows = (rows || []).map(r => r.raw_data).filter(Boolean);
+    const dbRows = (rows || []).map(r => r.raw_data).filter(Boolean);
+    // An empty database response must not erase an existing local upload.
+    if (dbRows.length || !Array.isArray(_saSuspendRows) || !_saSuspendRows.length) {
+      _saSuspendRows = dbRows;
+    }
     _saSuspendLastUploadAt = saNormText((rows || [])[0] && rows[0].uploaded_at);
     _saSuspendRowsDbLoaded = true;
     _saSuspendRowsDbUnavailable = false;
-    saSetDbStatus("ok", "โหลด SA Suspend Summary สำเร็จ");
+    saSetDbStatus("ok", dbRows.length ? "โหลด SA Suspend Summary สำเร็จ" : (_saSuspendRows.length ? "ฐานข้อมูลว่าง — ใช้ข้อมูลในเครื่อง" : "โหลด SA Suspend Summary สำเร็จ แต่ไม่มีข้อมูล"));
     renderSaSuspendSummary();
   } catch (e) {
     const msg = e.message || "";
@@ -8129,12 +8136,20 @@ function saSuspendOverviewHTML(allRows) {
     counts[ob.key] = {};
     SA_SUSPEND_REASON_ROWS.forEach(rr => {
       counts[ob.key][rr.key] = {};
-      SA_OV_REGIONS.forEach(rg => { counts[ob.key][rr.key][rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0 }; });
+      SA_OV_REGIONS.forEach(rg => { counts[ob.key][rr.key][rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0, SA5:0, SA6:0 }; });
     });
   });
   let maxVal = 1;
   const saSuspendRegionSevTotals = {};
   SA_OV_REGIONS.forEach(rg => { saSuspendRegionSevTotals[rg.key] = { SA1:0, SA2:0, SA3:0, SA4:0, SA5:0, SA6:0 }; });
+  // Summary cards show all eligible Overview rows by Region/Severity;
+  // chart buckets below retain their existing Over/SLA and reason criteria.
+  allRows.forEach(r => {
+    const rk = saOvRegionKey(r), sk = saOvSevKey(r);
+    if (rk && sk && saSuspendRegionSevTotals[rk] && Object.hasOwn(saSuspendRegionSevTotals[rk], sk)) {
+      saSuspendRegionSevTotals[rk][sk]++;
+    }
+  });
   const snapTotals = {};
   SA_OV_OVER_BUCKETS.forEach(ob => { snapTotals[ob.key] = 0; });
   const snapByRegion = {};
@@ -8157,8 +8172,8 @@ function saSuspendOverviewHTML(allRows) {
     if (!saNormText(r["Source Ticket ID"])) return;
     const reasonKey = saReasonKey(r); // นับรวมสาเหตุที่ INOC เลือก/กรอกไว้ (override) ด้วย
     if (!reasonKey || !counts[ob][reasonKey] || !counts[ob][reasonKey][rk]) return; // ข้าม Region ที่ไม่ได้แสดงใน Overview นี้ (เช่น SOU)
+    if (!Object.hasOwn(counts[ob][reasonKey][rk], sk)) return;
     counts[ob][reasonKey][rk][sk]++;
-    saSuspendRegionSevTotals[rk][sk]++;
     if (counts[ob][reasonKey][rk][sk] > maxVal) maxVal = counts[ob][reasonKey][rk][sk];
     snapTotals[ob]++;
     snapByRegion[rk][ob]++;
@@ -8175,7 +8190,7 @@ function saSuspendOverviewHTML(allRows) {
   SA_OV_OVER_BUCKETS.forEach(ob => {
     totalCounts[ob.key] = {};
     SA_OV_REGIONS.forEach(rg => {
-      const agg = { SA1:0, SA2:0, SA3:0, SA4:0 };
+      const agg = { SA1:0, SA2:0, SA3:0, SA4:0, SA5:0, SA6:0 };
       SA_SUSPEND_REASON_ROWS.forEach(rr => {
         const c = counts[ob.key][rr.key][rg.key];
         SA_OV_SEVS.forEach(sv => { agg[sv.key] += (c[sv.key] || 0); });
