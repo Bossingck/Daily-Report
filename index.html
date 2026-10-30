@@ -8485,16 +8485,14 @@ function saSetLongAgingLogFilter(value) {
 function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
   const rows = (allRows || []).map(r => {
+    const sevMatch = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])(?:\b|[-\s])/);
+    if (!sevMatch) return null;
     const urgency = saLongAgingUrgencyHours(r);
     const over = saOverHours(r);
     const aging = urgency === "" ? 0 : Math.max(0, over - urgency);
     const hasLog = Boolean(saNormText(saGetInocLog(r)));
     return urgency !== "" && aging >= 24 && (_saLongAgingLogFilter !== "NO_LOG" || !hasLog) ? { r, urgency, over, aging } : null;
-  }).filter(Boolean).sort((a, b) => {
-    const as = Number(saNormText(a.r.Severity).toUpperCase().match(/^SA(\d+)/)?.[1] || 99);
-    const bs = Number(saNormText(b.r.Severity).toUpperCase().match(/^SA(\d+)/)?.[1] || 99);
-    return as - bs || b.aging - a.aging;
-  });
+  }).filter(Boolean).sort((a, b) => b.aging - a.aging);
   _saLongAgingVisibleRows = rows.map(x => x.r);
   _saLongAgingExportRows = rows.filter(x => saLongAgingSiteCode(x.r) === "find not found").map(x => x.r);
   if (!rows.length) return `<div class="sa-long-aging-wrap"><div class="sa-long-aging-title">SA Over + Long Aging</div><div class="sa-suspend-empty">ไม่มี Ticket ที่เข้าสู่สถานะ Long Aging</div></div>`;
