@@ -1966,6 +1966,16 @@
   .sa-long-aging-table th:nth-child(n+5):nth-child(-n+13), .sa-long-aging-table td:nth-child(n+5):nth-child(-n+13) { width: 58px; max-width: 58px; padding-left: 2px; padding-right: 2px; }
   .sa-long-aging-table th:nth-child(14), .sa-long-aging-table td:nth-child(14) { width: 50px; }
   .sa-long-aging-log-text { display: block; max-width: 360px; white-space: normal; overflow-wrap: anywhere; line-height: 1.45; }
+  .sa-summary-log-cell { vertical-align: top; }
+  .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
+  .sa-summary-log-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .sa-summary-log-modal { position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(8,18,45,.58); backdrop-filter: blur(4px); }
+  .sa-summary-log-dialog { width: min(760px, 94vw); max-height: 80vh; overflow: hidden; border: 1px solid rgba(91,141,239,.35); border-radius: 16px; background: var(--surface-0); box-shadow: 0 18px 60px rgba(20,40,100,.35); }
+  .sa-summary-log-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; }
+  .sa-summary-log-dialog-title { font-size: 17px; font-weight: 900; }
+  .sa-summary-log-dialog-sub { margin-top: 4px; font-size: 11px; opacity: .9; }
+  .sa-summary-log-close { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(255,255,255,.2); color: #fff; font-size: 22px; cursor: pointer; }
+  .sa-summary-log-dialog-body { max-height: 60vh; overflow: auto; padding: 22px; color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; font-size: 13px; }
   .sa-long-aging-table tfoot td { background: linear-gradient(135deg, #2ea87a, #3ddba8); color: #fff; font-weight: 800; }
   .sa-long-aging-table th:last-child, .sa-long-aging-table td:last-child { border-right: 0; }
   .sa-long-aging-title { color: var(--text-primary); font-size: 17px; font-weight: 800; margin: 2px 0 10px; }
@@ -6841,6 +6851,8 @@ let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
 let _saSuspendView = "overview";
 let _saReportStatusFilter = "ALL";
+let _saReportExportRows = [];
+let _saShowSummaryLog = false;
 let _saLongAgingExportRows = [];
 let _saLongAgingVisibleRows = [];
 let _saLongAgingLogFilter = "ALL";
@@ -8008,6 +8020,7 @@ function saRefreshSuspendGridOnly() {
   const onlineRows = rows.filter(r => !saIsMobile(r));
   const nanoRows = onlineRows.filter(saIsNano);
   const nonNanoRows = onlineRows.filter(r => !saIsNano(r));
+  _saReportExportRows = rows.slice();
   grid.innerHTML = `${saSuspendTableHTML("SA Mobile", mobileRows)}${saSuspendTableHTML("SA Online NANO", nanoRows)}${saSuspendTableHTML("SA Online NON NANO", nonNanoRows)}`;
   if (_saSuspendSelectedDetailKey && _saSuspendDetailStore[_saSuspendSelectedDetailKey]) {
     saShowDetail(_saSuspendSelectedDetailKey, { keepScroll: true });
@@ -8077,6 +8090,7 @@ function saDetailTableHTML(rows, cols) {
       if (c.key === "_delete") return `<td><button class="sa-delete-row-btn" onclick="saDeleteSuspendRow('${saRowId(r)}')">ลบ</button></td>`;
       if (c.key === "_reason_select") return `<td>${saReasonSelectHTML(r)}</td>`;
       if (c.key === "_inoc_log") return `<td class="log-cell">${saInocLogInputHTML(r)}</td>`;
+      if (c.key === "_summary_log") return `<td class="summary-log-cell"><button class="btn sa-summary-log-btn" onclick="saToggleTicketSummaryLog('${saEscape(saRowId(r))}', this)">Summary Log</button></td>`;
       if (c.key === "_step_status") return `<td>${saEscape(saStepStatusDisplay(r)) || "-"}</td>`;
       if (c.key === "_sla_calc") return `<td>${saEscape(saSlaDisplay(r)) || "-"}</td>`;
       return `<td${cls}>${saEscape(r[c.key]) || "-"}</td>`;
@@ -8091,6 +8105,7 @@ function saShowDetail(key, opts = {}) {
     { key:"_delete", label:"ลบ", w:"70px" },
     { key:"_reason_select", label:"เลือกสาเหตุ", w:"150px" },
     { key:"_inoc_log", label:"INOC Log", w:"320px" },
+    { key:"_summary_log", label:"Summary Log", w:"150px" },
     { key:"Work Order ID", label:"WO ID", w:"150px" },
     { key:"Source Ticket ID", label:"Source Ticket", w:"150px" },
     { key:"Status", label:"Status", w:"110px" },
@@ -8154,11 +8169,48 @@ function saSetReportStatusFilter(value) {
 function saReportStatusFilterHTML() {
   return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="AGING"${_saReportStatusFilter==="AGING"?" selected":""}>Aging</option></select></label>`;
 }
+function saToggleSummaryLog() {
+  _saShowSummaryLog = !_saShowSummaryLog;
+  renderSaSuspendSummary();
+  if (_saSuspendSelectedDetailKey) setTimeout(() => saShowDetail(_saSuspendSelectedDetailKey, { keepScroll:true }), 0);
+}
+function saToggleTicketSummaryLog(rowId, button) {
+  const row = _saRawRowsById[rowId];
+  if (!row) return;
+  const log = saNormText(row["Summary Log"] || "-");
+  const wo = saWorkOrderId(row) || "-";
+  const ticket = saNormText(row["Source Ticket ID"] || row["External Ticket ID"] || "-");
+  document.getElementById("sa-summary-log-modal")?.remove();
+  const modal = document.createElement("div");
+  modal.id = "sa-summary-log-modal";
+  modal.className = "sa-summary-log-modal";
+  modal.innerHTML = `<div class="sa-summary-log-dialog"><div class="sa-summary-log-dialog-head"><div><div class="sa-summary-log-dialog-title">Summary Log</div><div class="sa-summary-log-dialog-sub">WO: ${saEscape(wo)} · Ticket: ${saEscape(ticket)}</div></div><button class="sa-summary-log-close" onclick="document.getElementById('sa-summary-log-modal')?.remove()">×</button></div><div class="sa-summary-log-dialog-body">${saEscape(log)}</div></div>`;
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
 function saReportStatus(r) {
   const over = saOverHours(r);
   if (over <= 0) return "";
   const urgency = saLongAgingUrgencyHours(r);
   return urgency !== "" && over >= urgency ? "AGING" : "OVER";
+}
+function exportSaReportByCategory() {
+  const groups = [
+    ["SA Mobile", _saReportExportRows.filter(saIsMobile)],
+    ["SA Online NANO", _saReportExportRows.filter(r => !saIsMobile(r) && saIsNano(r))],
+    ["SA Online NON NANO", _saReportExportRows.filter(r => !saIsMobile(r) && !saIsNano(r))],
+  ];
+  if (!groups.some(([, rows]) => rows.length)) { alert("ไม่มีข้อมูลสำหรับ Export"); return; }
+  const wb = XLSX.utils.book_new();
+  groups.forEach(([name, rows]) => {
+    const exportRows = rows.map(r => ({ "Report Status": saReportStatus(r) || "-", ...r }));
+    const ws = XLSX.utils.json_to_sheet(exportRows.length ? exportRows : [{ "Report Status": "ไม่มีข้อมูล" }]);
+    XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+  });
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}_${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}`;
+  XLSX.writeFile(wb, `SA_Suspend_Report_${stamp}.xlsx`);
+  if (typeof dashShowToast === "function") dashShowToast(`Export Report สำเร็จ — ${_saReportExportRows.length} รายการ`);
 }
 // Region: BMA, C&W, EAS only (SOU excluded) — colors match zone colors used elsewhere in the app
 const SA_OV_REGIONS = [
@@ -8531,7 +8583,8 @@ function renderSaSuspendSummary() {
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(saMatchesEasProvince)
     .filter(saMatchesSearch)
-    .filter(r => _saReportStatusFilter === "ALL" || saReportStatus(r) === _saReportStatusFilter);
+    .filter(r => _saReportStatusFilter === "ALL" || saReportStatus(r) === _saReportStatusFilter)
+    .filter(r => _saReportStatusFilter !== "AGING" || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
   const subtabsHTML = saSuspendSubTabsHTML();
   if (_saSuspendView === "overview") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
@@ -8588,6 +8641,7 @@ function renderSaSuspendSummary() {
   container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}
     <div class="sa-suspend-toolbar">
       ${_saSuspendView === "report" ? saReportStatusFilterHTML() : ""}
+      ${_saSuspendView === "report" ? `<button class="btn" onclick="exportSaReportByCategory()">📥 Export Report</button>` : ""}
       ${saRegionOptionsHTML(allRows)}
       ${saEasProvinceFilterHTML()}
       ${saSearchHTML()}
