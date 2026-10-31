@@ -8163,11 +8163,11 @@ function saSuspendSubTabsHTML() {
   </div>`;
 }
 function saSetReportStatusFilter(value) {
-  _saReportStatusFilter = ["OVER", "AGING"].includes(value) ? value : "ALL";
+  _saReportStatusFilter = ["OVER", "AGING", "AGING24"].includes(value) ? value : "ALL";
   renderSaSuspendSummary();
 }
 function saReportStatusFilterHTML() {
-  return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="AGING"${_saReportStatusFilter==="AGING"?" selected":""}>Aging</option></select></label>`;
+  return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="AGING"${_saReportStatusFilter==="AGING"?" selected":""}>Aging</option><option value="AGING24"${_saReportStatusFilter==="AGING24"?" selected":""}>Aging >= 24H</option></select></label>`;
 }
 function saToggleSummaryLog() {
   _saShowSummaryLog = !_saShowSummaryLog;
@@ -8583,8 +8583,8 @@ function renderSaSuspendSummary() {
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(saMatchesEasProvince)
     .filter(saMatchesSearch)
-    .filter(r => _saReportStatusFilter === "ALL" || saReportStatus(r) === _saReportStatusFilter)
-    .filter(r => _saReportStatusFilter !== "AGING" || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+    .filter(r => _saReportStatusFilter === "ALL" || (_saReportStatusFilter === "AGING24" ? (saLongAgingUrgencyHours(r) !== "" && saOverHours(r) - saLongAgingUrgencyHours(r) >= 24) : saReportStatus(r) === _saReportStatusFilter))
+    .filter(r => !["AGING", "AGING24"].includes(_saReportStatusFilter) || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
   const subtabsHTML = saSuspendSubTabsHTML();
   if (_saSuspendView === "overview") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
