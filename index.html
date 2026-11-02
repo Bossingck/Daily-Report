@@ -1651,6 +1651,12 @@
   .sa-keyword-region th { color:#243b82!important; font-weight:900; background:#eef3ff; }
   .sa-keyword-region td { color:#243b82; font-weight:900; background:#eef3ff; }
   .sa-keyword-sev th { text-align:left!important; padding-left:28px; color:var(--ink-soft); background:#f8faff; }
+  #sa-keyword-panel { background:linear-gradient(145deg,var(--surface-0),var(--surface-1)) !important; border-color:rgba(91,141,239,.34) !important; box-shadow:0 8px 22px rgba(71,91,150,.10); }
+  #sa-keyword-panel table { border:1px solid rgba(91,141,239,.22); border-radius:10px; overflow:hidden; }
+  #sa-keyword-panel thead th { letter-spacing:.1px; border-right:1px solid rgba(255,255,255,.28); }
+  #sa-keyword-panel tbody tr { transition:background .15s ease; }
+  #sa-keyword-panel tbody tr:hover { background:rgba(91,141,239,.08); }
+  #sa-keyword-panel tbody td, #sa-keyword-panel tbody th { border-bottom:1px solid var(--glass-border); }
   /* ซ่อนแท็บที่ไม่ต้องการแสดงในเมนูหลัก แต่คงโค้ดและข้อมูลไว้ */
   .tabs .tab[data-tab="nsa34"],
   .tabs .tab[data-tab="sa-overview"],
@@ -8557,12 +8563,10 @@ function saSuspendOverviewHTML(allRows) {
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}${saSuspendTotalSummary}</div>
-  <button type="button" class="nsa-capture-btn blue" id="sa-keyword-summary-btn" style="margin:0 0 12px">📋 สรุป</button>
-  <button type="button" class="nsa-capture-btn blue" id="sa-keyword-image-btn" style="margin:0 0 12px">📷 แคปภาพสรุป</button>
-  <div id="sa-keyword-image-wrap" style="display:none">${saKeywordSummaryHTML(allRows)}</div>
   <div id="sa-ov-capture-frame" style="padding:0;background:transparent">
     ${provinceSection}
-  </div>`;
+  </div>
+  `;
 }
 
 const SA_PROVINCE_CODE_MAP = {
@@ -8615,11 +8619,12 @@ function saOverviewOverProvinceHTML(overRows) {
     { key:"CW", label:"C&W", color:"#9b7bf7" },
     { key:"EAS", label:"EAS", color:"#f5a623" },
   ];
+  const bmaProvinceScope = new Set(["นนทบุรี", "ปทุมธานี", "กรุงเทพมหานคร", "สมุทรปราการ"]);
   const blocks = regions.map(rg => {
     const counts = {};
     const codeCounts = {};
     const reasonCounts = {};
-    overRows.filter(r => saOvRegionKey(r) === rg.key).forEach(r => {
+    overRows.filter(r => saOvRegionKey(r) === rg.key).filter(r => rg.key !== "BMA" || bmaProvinceScope.has(saOverviewProvinceLabel(r))).forEach(r => {
       const p = saOverviewProvinceLabel(r);
       counts[p] = (counts[p] || 0) + 1;
       const code = saOverviewProvinceCode(r);
@@ -8661,7 +8666,7 @@ function saKeywordSummaryHTML(rows) {
   window._saKeywordSummaryText = text;
   const regionColors = { BMA:"#5b8def", CW:"#9b7bf7", EAS:"#f5a623", SOU:"#22b8a7" };
   const body = summary.map(x => `<tr class="sa-keyword-region" style="--sa-region-color:${regionColors[x.region] || "#5b8def"}"><th>${x.region}</th><td>${x.pending}</td><td>${x.long}</td><td>${x.over24}</td><td>${x.totalOver}</td></tr>${x.sev.map(s => `<tr class="sa-keyword-sev"><th>${s.key}</th><td>${s.pending}</td><td>${s.long}</td><td>${s.over24}</td><td>${s.totalOver}</td></tr>`).join("")}`).join("");
-  return `<section class="sa-keyword-panel" id="sa-keyword-panel"><div class="sa-keyword-head"><div><span class="sa-ov-section-kicker">KEYWORD SUMMARY</span><h3>สรุป Ticket สำหรับส่ง Telegram</h3></div><button type="button" class="nsa-capture-btn blue" id="sa-keyword-copy-btn" data-copy-text="${saEscape(text)}">📋 Copy Keyword</button></div><div class="sa-keyword-frame"><table><thead><tr><th>Region</th><th>Pending</th><th>Long Aging</th><th>Over 24H (Exc. Long)</th><th>Total Over</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+  return `<div style="margin-top:14px"><section id="sa-keyword-panel" class="sa-keyword-panel"><div class="sa-keyword-head"><div><span class="sa-ov-section-kicker">KEYWORD SUMMARY</span><h3>สรุป Ticket สำหรับส่ง Telegram</h3></div></div><table style="width:100%;border-collapse:collapse;table-layout:fixed;font:700 13px Arial,sans-serif"><thead><tr style="background:linear-gradient(90deg,#5b8def,#7f6bea);color:#fff"><th style="width:16%;padding:8px;text-align:left">Region</th><th style="width:17%;padding:8px">Pending</th><th style="width:20%;padding:8px">Long Aging</th><th style="width:29%;padding:8px">Over 24H (Exc. Long)</th><th style="width:18%;padding:8px">Total Over</th></tr></thead><tbody>${body}</tbody></table></section></div>`;
 }
 
 function saRenderOverviewCountryMaps(allRows, overRows) {
@@ -11109,50 +11114,6 @@ document.getElementById("content-nsa34").addEventListener("click", async functio
 
 // ── SA Suspend Overview Capture Button (event delegation, with Region picker) ─
 document.getElementById("content-sa-suspend").addEventListener("click", async function(e) {
-  const imageButton = e.target.closest("#sa-keyword-image-btn");
-  if (imageButton) {
-    const wrap = document.getElementById("sa-keyword-image-wrap");
-    if (wrap) wrap.style.display = "block";
-    try {
-      await captureFrameToClipboard(imageButton, "sa-keyword-panel", "SA_Keyword_Summary");
-    } finally {
-      if (wrap) wrap.style.display = "none";
-    }
-    return;
-  }
-  const summaryButton = e.target.closest("#sa-keyword-summary-btn");
-  if (summaryButton) {
-    try {
-      const summaryText = window._saKeywordSummaryText || "";
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(summaryText);
-      } else {
-        const area = document.createElement("textarea");
-        area.value = summaryText;
-        area.style.position = "fixed";
-        area.style.left = "-9999px";
-        document.body.appendChild(area);
-        area.focus();
-        area.select();
-        if (!document.execCommand("copy")) throw new Error("copy blocked");
-        area.remove();
-      }
-      summaryButton.textContent = "✅ คัดลอกแล้ว";
-      setTimeout(() => { summaryButton.textContent = "📋 สรุป"; }, 1800);
-    } catch (err) {
-      const box = document.createElement("div");
-      box.style.cssText = "position:fixed;z-index:99999;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,90vw);padding:16px;border-radius:12px;background:#fff;border:2px solid #5b8def;box-shadow:0 12px 40px #0004";
-      box.innerHTML = '<div style="font-weight:800;margin-bottom:8px;color:#173a78">Clipboard ถูกบล็อก — กด Ctrl+C เพื่อคัดลอก</div><textarea style="width:100%;height:260px;box-sizing:border-box;font:13px/1.45 monospace"></textarea><button type="button" style="margin-top:8px;padding:7px 14px">ปิด</button>';
-      const area = box.querySelector("textarea");
-      area.value = window._saKeywordSummaryText || "";
-      document.body.appendChild(box);
-      area.focus();
-      area.select();
-      box.querySelector("button").onclick = () => box.remove();
-      summaryButton.textContent = "📋 สรุป";
-    }
-    return;
-  }
   const btn = e.target.closest(".nsa-capture-btn");
   if (!btn) return;
   if (btn.classList.contains("sa-ov-capture-btn")) {
@@ -11177,7 +11138,32 @@ document.getElementById("content-sa-suspend").addEventListener("click", async fu
   await captureFrameToClipboard(btn, btn.dataset.target, btn.dataset.fname);
 });
 
-// Generic capture helper (shared) — clipboard only, no download fallback
+async function copyImageBlobToClipboard(blob) {
+  if (!blob) throw new Error("สร้างภาพไม่สำเร็จ");
+  if (!navigator.clipboard || typeof ClipboardItem === "undefined") throw new Error("เบราว์เซอร์ไม่รองรับการคัดลอกภาพ");
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+}
+
+function showImageCopyFallback(blob) {
+  const url = URL.createObjectURL(blob);
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;z-index:99999;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px";
+  box.innerHTML = '<div style="max-width:min(900px,95vw);max-height:95vh;background:#fff;padding:14px;border-radius:12px;text-align:center"><div style="font-weight:800;color:#173a78;margin-bottom:8px">คัดลอกภาพไม่ได้อัตโนมัติ — กดปุ่มด้านล่าง</div><img style="display:block;max-width:100%;max-height:78vh;margin:auto;border:1px solid #ccd6ee"><div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><button type="button" data-copy-image style="padding:7px 16px;background:#4aa8e8;color:#fff;border:0;border-radius:7px">📋 คัดลอกภาพ</button><button type="button" data-close style="padding:7px 16px">ปิด</button></div></div>';
+  document.body.appendChild(box);
+  box.querySelector("img").src = url;
+  box.querySelector("[data-copy-image]").onclick = async () => {
+    const copyButton = box.querySelector("[data-copy-image]");
+    try {
+      await copyImageBlobToClipboard(blob);
+      copyButton.textContent = "✅ คัดลอกแล้ว — Ctrl+V ได้เลย";
+    } catch (_) {
+      copyButton.textContent = "❌ ยังถูกบล็อก — คลิกขวารูป > Copy image";
+    }
+  };
+  box.querySelector("[data-close]").onclick = () => { URL.revokeObjectURL(url); box.remove(); };
+}
+
+// Generic capture helper (shared) — clipboard image with visible fallback
 async function captureFrameToClipboard(btn, targetId, fname) {
   const frame = document.getElementById(targetId);
   if (!frame) return;
@@ -11216,15 +11202,16 @@ async function captureFrameToClipboard(btn, targetId, fname) {
       canvas.toBlob(async (blob) => {
         try {
           if (!blob) throw new Error("ไม่สามารถสร้างภาพจากตารางได้");
-          await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
-          btn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
+        await copyImageBlobToClipboard(blob);
+          btn.textContent = targetId === "sa-keyword-panel" ? "✅ แคปสำเร็จและคัดลอกแล้ว" : "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
           btn.className = origClass.replace(/gold|blue/g,"") + " success";
         } catch(clipErr) {
-          btn.textContent = "❌ กรุณาอนุญาต Clipboard ในเบราว์เซอร์";
+          if (blob) showImageCopyFallback(blob);
+          btn.textContent = targetId === "sa-keyword-panel" ? "⚠️ แคปสำเร็จ — กดคัดลอกภาพ" : "📋 เปิดภาพเพื่อคัดลอก";
           btn.className = origClass.replace(/gold|blue/g,"") + " error";
         }
         btn.disabled = false;
-        setTimeout(() => { btn.textContent = "📷 แคปภาพ"; btn.className = origClass; }, 4000);
+        setTimeout(() => { btn.textContent = btn.dataset.label || "📷 แคปภาพ"; btn.className = origClass; }, 4000);
         resolve();
       }, "image/png");
     });
@@ -11233,7 +11220,7 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
     btn.textContent="❌ "+err.message; btn.className=origClass.replace(/gold|blue/g,"")+" error"; btn.disabled=false;
-    setTimeout(()=>{ btn.textContent="📷 แคปภาพ"; btn.className=origClass; }, 4000);
+    setTimeout(()=>{ btn.textContent=btn.dataset.label || "📷 แคปภาพ"; btn.className=origClass; }, 4000);
   }
 }
 
@@ -11307,7 +11294,8 @@ document.getElementById("fullpage-capture-btn")?.addEventListener("click", async
         btn.textContent = "✅ คัดลอกแล้ว! Ctrl+V วางได้เลย";
         btn.className = "btn fullpage-capture-btn success";
       } catch (_) {
-        btn.textContent = "❌ กรุณาอนุญาต Clipboard ในเบราว์เซอร์";
+        if (targetId === "sa-keyword-panel") showImageCopyFallback(blob);
+        btn.textContent = "❌ Clipboard ถูกบล็อก";
         btn.className = "btn fullpage-capture-btn error";
       }
       btn.disabled = false;
