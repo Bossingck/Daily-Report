@@ -1951,21 +1951,23 @@
       var(--card-glass);
   }
   .sa-long-aging-wrap { margin-top: 4px; overflow-x: auto; }
-  #sa-long-aging-capture-frame { min-width: 1274px; background: var(--surface-0); border: 2px solid #f5a623; border-radius: 8px; padding: 10px; }
-  .sa-long-aging-table { width: 100%; min-width: 1180px; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden; font-size: 12px; background: var(--surface-0); color: var(--text-primary); }
+  #sa-long-aging-capture-frame { min-width: 1550px; background: var(--surface-0); border: 2px solid #f5a623; border-radius: 8px; padding: 10px; }
+  .sa-long-aging-table { width: 100%; min-width: 1550px; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden; font-size: 12px; background: var(--surface-0); color: var(--text-primary); }
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
   .sa-long-aging-table caption { caption-side: top; padding: 10px 12px; text-align: left; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; font-size: 17px; font-weight: 800; border-radius: 9px 9px 0 0; }
   .sa-long-aging-table td { border-right: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 6px; text-align: center; vertical-align: middle; }
   .sa-long-aging-table tbody tr:nth-child(even) td { background: rgba(91,141,239,.045); }
   .sa-long-aging-table tbody tr:hover td { background: rgba(155,123,247,.12); }
-  .sa-long-aging-table td:first-child, .sa-long-aging-table td:nth-child(4) { text-align: left; }
-  .sa-long-aging-table th:nth-child(4) { width: 380px; }
-  .sa-long-aging-table td:nth-child(4) { width: 380px; max-width: 380px; }
+  .sa-long-aging-table td:first-child, .sa-long-aging-table td:nth-child(2), .sa-long-aging-table td:nth-child(3), .sa-long-aging-table td:nth-child(6) { text-align: left; }
   .sa-long-aging-table th:nth-child(1), .sa-long-aging-table td:nth-child(1) { width: 150px; }
-  .sa-long-aging-table th:nth-child(2), .sa-long-aging-table td:nth-child(2), .sa-long-aging-table th:nth-child(3), .sa-long-aging-table td:nth-child(3) { width: 86px; }
-  .sa-long-aging-table th:nth-child(n+5):nth-child(-n+13), .sa-long-aging-table td:nth-child(n+5):nth-child(-n+13) { width: 58px; max-width: 58px; padding-left: 2px; padding-right: 2px; }
-  .sa-long-aging-table th:nth-child(14), .sa-long-aging-table td:nth-child(14) { width: 50px; }
-  .sa-long-aging-log-text { display: block; max-width: 360px; white-space: normal; overflow-wrap: anywhere; line-height: 1.45; }
+  .sa-long-aging-table th:nth-child(2), .sa-long-aging-table td:nth-child(2) { width: 150px; }
+  .sa-long-aging-table th:nth-child(3), .sa-long-aging-table td:nth-child(3) { width: 135px; }
+  .sa-long-aging-table th:nth-child(4), .sa-long-aging-table td:nth-child(4) { width: 80px; }
+  .sa-long-aging-table th:nth-child(5), .sa-long-aging-table td:nth-child(5) { width: 90px; }
+  .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width: 360px; max-width: 360px; }
+  .sa-long-aging-table th:nth-child(n+7):nth-child(-n+15), .sa-long-aging-table td:nth-child(n+7):nth-child(-n+15) { width: 58px; max-width: 58px; padding-left: 2px; padding-right: 2px; }
+  .sa-long-aging-table th:nth-child(16), .sa-long-aging-table td:nth-child(16) { width: 55px; }
+  .sa-long-aging-log-text { display: block; max-width: 340px; white-space: normal; overflow-wrap: anywhere; line-height: 1.45; }
   .sa-summary-log-cell { vertical-align: top; }
   .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
   .sa-summary-log-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
@@ -6856,6 +6858,7 @@ let _saShowSummaryLog = false;
 let _saLongAgingExportRows = [];
 let _saLongAgingVisibleRows = [];
 let _saLongAgingLogFilter = "ALL";
+let _saLongAgingStatusFilter = "LONG_AGING";
 let _saLongAgingKnownSiteIds = [];
 let _saSuspendSearch = "";
 let _saSuspendSearchDraft = "";
@@ -7614,6 +7617,12 @@ function saGetInocLog(r) {
   if (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo)) return _saInocLogOverridesByWo[wo];
   return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || "";
 }
+function saGetSummaryLog(r) {
+  if (!r) return "";
+  const keys = Object.keys(r);
+  const key = keys.find(k => /^summary\s*log$/i.test(saNormText(k)) || /^summary[_\s-]*log$/i.test(saNormText(k)));
+  return key ? saNormText(r[key]) : "";
+}
 function saSetRowEditUpdatedAt(rowId, iso) {
   if (!rowId || !iso) return;
   _saRowEditUpdatedAt[rowId] = iso;
@@ -7680,6 +7689,9 @@ async function saDeleteSuspendRow(rowId) {
 function saDbRawRowPayload(r, filename) {
   const workOrderId = saWorkOrderId(r);
   if (!workOrderId || saSkipDbRow(r)) return null;
+  const rawData = { ...r };
+  const summaryLog = saGetSummaryLog(r);
+  if (summaryLog) rawData["Summary Log"] = summaryLog;
   return {
     work_order_id: workOrderId,
     source_ticket_id: saNormText(r["Source Ticket ID"]) || null,
@@ -7691,7 +7703,7 @@ function saDbRawRowPayload(r, filename) {
     suspend_reason: saNormText(r["Suspend Reason"]) || null,
     suspend_description: saNormText(r["Suspend Description"]) || null,
     acknowledge: saNormText(r.Acknowledge) || null,
-    raw_data: r,
+    raw_data: rawData,
     uploaded_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -8163,11 +8175,11 @@ function saSuspendSubTabsHTML() {
   </div>`;
 }
 function saSetReportStatusFilter(value) {
-  _saReportStatusFilter = ["OVER", "AGING", "AGING24"].includes(value) ? value : "ALL";
+  _saReportStatusFilter = ["OVER", "LONG_AGING", "DOWNTIME24_NO_LONG"].includes(value) ? value : "ALL";
   renderSaSuspendSummary();
 }
 function saReportStatusFilterHTML() {
-  return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="AGING"${_saReportStatusFilter==="AGING"?" selected":""}>Aging</option><option value="AGING24"${_saReportStatusFilter==="AGING24"?" selected":""}>Aging >= 24H</option></select></label>`;
+  return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="LONG_AGING"${_saReportStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saReportStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H Without Long Aging</option></select></label>`;
 }
 function saToggleSummaryLog() {
   _saShowSummaryLog = !_saShowSummaryLog;
@@ -8177,7 +8189,7 @@ function saToggleSummaryLog() {
 function saToggleTicketSummaryLog(rowId, button) {
   const row = _saRawRowsById[rowId];
   if (!row) return;
-  const log = saNormText(row["Summary Log"] || "-");
+  const log = saGetSummaryLog(row) || "-";
   const wo = saWorkOrderId(row) || "-";
   const ticket = saNormText(row["Source Ticket ID"] || row["External Ticket ID"] || "-");
   document.getElementById("sa-summary-log-modal")?.remove();
@@ -8191,8 +8203,17 @@ function saToggleTicketSummaryLog(rowId, button) {
 function saReportStatus(r) {
   const over = saOverHours(r);
   if (over <= 0) return "";
-  const urgency = saLongAgingUrgencyHours(r);
-  return urgency !== "" && over >= urgency ? "AGING" : "OVER";
+  return saIsLongAging(r) ? "LONG_AGING" : "OVER";
+}
+function saDowntimeHours(r) {
+  const created = saCreatedDate(r);
+  if (!created) return 0;
+  const h = (Date.now() - created.getTime()) / 36e5;
+  return h > 0 ? h : 0;
+}
+function saIsLongAging(r) {
+  const sla = saSlaHours(r);
+  return sla !== "" && sla > 0 && saDowntimeHours(r) >= sla * 2;
 }
 function exportSaReportByCategory() {
   const groups = [
@@ -8510,7 +8531,7 @@ function exportSaLongAgingRawData() {
   const exportRows = rows.map(r => ({
     "Site ID (แสดงผล)": saLongAgingSiteCode(r),
     "Severity": saNormText(r.Severity),
-    "Aging Time (Hours)": Math.max(0, saOverHours(r) - saLongAgingUrgencyHours(r)),
+    "Aging Time (Hours)": saDowntimeHours(r),
     ...r
   }));
   const ws = XLSX.utils.json_to_sheet(exportRows);
@@ -8534,6 +8555,10 @@ function saSetLongAgingLogFilter(value) {
   _saLongAgingLogFilter = value === "NO_LOG" ? "NO_LOG" : "ALL";
   renderSaSuspendSummary();
 }
+function saSetLongAgingStatusFilter(value) {
+  _saLongAgingStatusFilter = value === "DOWNTIME24_NO_LONG" ? value : "LONG_AGING";
+  renderSaSuspendSummary();
+}
 function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
   const rows = (allRows || []).map(r => {
@@ -8543,16 +8568,18 @@ function saLongAgingHTML(allRows) {
     const over = saOverHours(r);
     const aging = urgency === "" ? 0 : Math.max(0, over - urgency);
     const hasLog = Boolean(saNormText(saGetInocLog(r)));
-    return urgency !== "" && aging >= 24 && (_saLongAgingLogFilter !== "NO_LOG" || !hasLog) ? { r, urgency, over, aging } : null;
-  }).filter(Boolean).sort((a, b) => b.aging - a.aging);
+    const isLongAging = saIsLongAging(r);
+    const statusOk = _saLongAgingStatusFilter === "LONG_AGING" ? isLongAging : (saDowntimeHours(r) > 24 && !isLongAging);
+    return statusOk && (_saLongAgingLogFilter !== "NO_LOG" || !hasLog) ? { r, urgency, over, aging: _saLongAgingStatusFilter === "LONG_AGING" ? aging : saDowntimeHours(r), downtime: saDowntimeHours(r) } : null;
+  }).filter(Boolean).sort((a, b) => b.downtime - a.downtime);
   _saLongAgingVisibleRows = rows.map(x => x.r);
   _saLongAgingExportRows = rows.filter(x => saLongAgingSiteCode(x.r) === "find not found").map(x => x.r);
   if (!rows.length) return `<div class="sa-long-aging-wrap"><div class="sa-long-aging-title">SA Over + Long Aging</div><div class="sa-suspend-empty">ไม่มี Ticket ที่เข้าสู่สถานะ Long Aging</div></div>`;
   const reasonKeys = SA_SUSPEND_REASON_ROWS.map(x => x.key);
-  const headers = ["Site ID", "Severity", "Aging Time", "INOC Log", ...SA_SUSPEND_REASON_ROWS.map(x => x.label), "Total"];
+  const headers = ["Site ID", "Work Order ID", "Source Ticket", "Severity", "Aging Time", "INOC Log", ...SA_SUSPEND_REASON_ROWS.map(x => x.label), "Total"];
   const totals = Object.fromEntries(reasonKeys.map(k => [k, 0]));
   let grandTotal = 0;
-  const body = rows.map(({r, urgency, over, aging}) => {
+  const body = rows.map(({r, urgency, over, aging, downtime}) => {
     const reason = saReasonKey(r);
     const cells = SA_SUSPEND_REASON_ROWS.map(x => {
       const hit = reason === x.key ? 1 : "";
@@ -8564,10 +8591,12 @@ function saLongAgingHTML(allRows) {
     const site = saLongAgingSiteCode(r);
     const severity = saNormText(r.Severity).toUpperCase().match(/^SA\d+(?:[-\s]?\d+(?:H|HR|HRS|D|DAY|DAYS)?)?/i)?.[0] || "-";
     const log = saNormText(saGetInocLog(r) || "-");
-    return `<tr><td title="${saEscape(site)}">${saEscape(site)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(aging)}</td><td><span class="sa-long-aging-log-text">${saEscape(log)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
+    const wo = saNormText(saWorkOrderId(r) || "-");
+    const source = saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-");
+    return `<tr><td title="${saEscape(site)}">${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td><span class="sa-long-aging-log-text">${saEscape(log)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
   }).join("");
-  const foot = `<tr><td colspan="4">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
-  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button><button class="btn" onclick="exportSaLongAgingNotFoundRawData()">📥 Export find not found Raw Data</button></div><table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>Long Aging <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  const foot = `<tr><td colspan="6">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
+  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H Without Long Aging</option></select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button><button class="btn" onclick="exportSaLongAgingNotFoundRawData()">📥 Export find not found Raw Data</button></div><table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${_saLongAgingStatusFilter==="LONG_AGING"?"Long Aging":"Downtime >24H Without Long Aging"} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
 function renderSaSuspendSummary() {
@@ -8583,8 +8612,8 @@ function renderSaSuspendSummary() {
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(saMatchesEasProvince)
     .filter(saMatchesSearch)
-    .filter(r => _saReportStatusFilter === "ALL" || (_saReportStatusFilter === "AGING24" ? (saLongAgingUrgencyHours(r) !== "" && saOverHours(r) - saLongAgingUrgencyHours(r) >= 24) : saReportStatus(r) === _saReportStatusFilter))
-    .filter(r => !["AGING", "AGING24"].includes(_saReportStatusFilter) || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+    .filter(r => _saReportStatusFilter === "ALL" || (_saReportStatusFilter === "DOWNTIME24_NO_LONG" ? (saDowntimeHours(r) > 24 && saReportStatus(r) !== "LONG_AGING") : saReportStatus(r) === _saReportStatusFilter))
+    .filter(r => !["LONG_AGING", "DOWNTIME24_NO_LONG"].includes(_saReportStatusFilter) || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
   const subtabsHTML = saSuspendSubTabsHTML();
   if (_saSuspendView === "overview") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
