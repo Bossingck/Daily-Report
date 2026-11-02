@@ -1635,6 +1635,63 @@
   /* ── SA Suspend: Overview Page ── */
   .sa-ov-layout { display: flex; gap: 16px; align-items: stretch; }
   .sa-ov-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 10px; }
+  /* ซ่อนแท็บที่ไม่ต้องการแสดงในเมนูหลัก แต่คงโค้ดและข้อมูลไว้ */
+  .tabs .tab[data-tab="nsa34"],
+  .tabs .tab[data-tab="sa-overview"],
+  .tabs .tab[data-tab="arrive"],
+  .tabs .tab[data-tab="pdt"],
+  .tabs .tab[data-tab="arrive-dashboard"],
+  .tabs .tab[data-tab="long-aging"],
+  .tabs .tab[data-tab="late-trend"] { display: none !important; }
+  /* ซ่อนตาราง Suspend Summary เดิมตามรูปแบบ Overview ใหม่ โดยยังคง Summary/Province Heat Map ไว้ */
+  .sa-ov-layout { display: none !important; }
+  .sa-ov-province-section { margin-top: 16px; padding: 14px; border: 1px solid rgba(91,141,239,.28); border-radius: 14px; background: linear-gradient(145deg,rgba(255,255,255,.96),rgba(241,245,255,.88)); box-shadow: 0 8px 22px rgba(71,91,150,.08); }
+  .sa-ov-section-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .sa-ov-section-heading h3 { margin:2px 0 0; color:var(--ink-strong); font-size:16px; }
+  .sa-ov-section-kicker { color:#5b8def; font-size:10px; font-weight:900; letter-spacing:1px; }
+  .sa-ov-section-note { color:var(--ink-faint); font-size:11px; }
+  .sa-ov-prov-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .sa-ov-prov-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:12px; background:var(--surface-0); }
+  .sa-ov-prov-title { display:flex; align-items:center; gap:7px; padding:9px 11px; border-left:4px solid; color:var(--ink-strong); font-weight:900; font-size:13px; background:linear-gradient(90deg,rgba(91,141,239,.1),transparent); }
+  .sa-ov-prov-total { margin-left:auto; color:var(--ink-faint); font-size:11px; font-weight:800; }
+  .sa-ov-prov-content { display:flex; flex-direction:column; gap:8px; padding:8px; }
+  .sa-ov-prov-map { min-height:190px; border-radius:10px; padding:6px; background:linear-gradient(155deg,#eef3ff,#dfe8ff); border:1px solid #d6e0fb; position:relative; overflow:hidden; }
+  .sa-ov-country-map { position:relative; z-index:1; display:block; width:100%; height:175px; margin-top:2px; }
+  .sa-ov-prov-map-label { position:relative; z-index:1; color:#536b9e; font-size:10px; font-weight:900; text-align:center; }
+  .sa-ov-prov-chips { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center; margin-top:42px; }
+  .sa-ov-prov-chip { padding:3px 6px; border-radius:999px; color:#fff; font-size:10px; font-weight:800; box-shadow:0 2px 5px rgba(20,40,90,.16); }
+  .sa-ov-prov-table-wrap { max-height:180px; overflow:auto; }
+  .sa-ov-prov-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .sa-ov-prov-table th { position:sticky; top:0; background:linear-gradient(90deg,#edf2ff,#f3efff); color:#42558f; text-align:left; padding:6px; font-size:10px; font-weight:900; border-bottom:1px solid #d7def5; }
+  .sa-ov-prov-table td { border-top:1px solid #e5eaf7; padding:5px 6px; color:var(--ink-strong); }
+  .sa-ov-prov-num { width:42px; text-align:center; font-weight:900; }
+  .sa-ov-mini-heading { margin-top:3px; padding:6px 8px; background:linear-gradient(135deg,#5b8def,#7c6bea); color:#fff; border-radius:6px 6px 0 0; font-size:11px; font-weight:900; box-shadow:0 2px 6px rgba(91,141,239,.18); }
+  .sa-ov-mini-list { padding:4px 7px; }
+  .sa-ov-mini-row { display:flex; justify-content:space-between; gap:8px; padding:3px 0; border-bottom:1px solid #edf0f7; color:var(--ink-strong); font-size:11px; }
+  .sa-ov-mini-total { display:flex; justify-content:space-between; padding:6px 7px; color:var(--ink-strong); font-size:12px; border-bottom:1px solid #edf0f7; }
+  .sa-ov-prov-bar { display:block; height:6px; min-width:45px; border-radius:999px; background:#e9edf7; overflow:hidden; }
+  .sa-ov-prov-bar i { display:block; height:100%; border-radius:inherit; }
+  .sa-ov-prov-empty { color:var(--ink-faint)!important; text-align:center; padding:16px!important; }
+  @media (max-width: 1100px) { .sa-ov-prov-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width: 620px) { .sa-ov-prov-grid { grid-template-columns:1fr; } }
+  @media (max-width: 900px) { .sa-ov-section-heading { align-items:flex-start; flex-direction:column; gap:3px; } }
+  .la-region-heat-section { margin:16px 0; padding:16px; background:var(--surface-0); border:1px solid var(--line-soft); border-radius:14px; }
+  .la-region-heat-title { font-size:16px; font-weight:900; color:var(--ink-strong); margin-bottom:12px; }
+  .la-region-heat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+  .la-region-heat-card { min-width:0; border:1px solid var(--line-soft); border-radius:10px; overflow:hidden; background:#fff; }
+  .la-region-heat-head { border-left:4px solid; padding:8px 10px; font-size:14px; font-weight:900; color:var(--ink-strong); background:linear-gradient(90deg,#eef3ff,#fff); }
+  .la-region-map-caption { padding:8px 10px 0; font-size:12px; font-weight:900; color:var(--ink-strong); }
+  .la-region-map-caption span { font-size:10px; font-weight:700; color:var(--ink-faint); }
+  .la-region-heat-svg { width:100%; height:190px; display:block; background:linear-gradient(160deg,#f7f9ff,#edf2ff); }
+  .la-region-top-list { padding:8px 10px 10px; display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--ink-soft); }
+  .la-region-top-list b { color:var(--ink-strong); margin-bottom:2px; }
+  .la-region-top-list span { display:flex; justify-content:space-between; border-top:1px solid #edf0f7; padding-top:3px; }
+  .la-region-top-list strong { color:var(--ink-strong); }
+  .la-region-total { display:flex; justify-content:space-between; padding:8px 10px; border-top:1px solid #edf0f7; font-size:12px; font-weight:900; color:var(--ink-strong); }
+  .la-region-reason-heading { margin:4px 10px 0; padding:6px 0; background:#fff200; color:#222; font-size:12px; font-weight:900; }
+  .la-region-detail-note { margin-top:12px; padding:10px; border:1px dashed #b8c5e4; border-radius:8px; text-align:center; color:var(--ink-faint); font-size:12px; }
+  @media (max-width: 1100px) { .la-region-heat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width: 620px) { .la-region-heat-grid { grid-template-columns:1fr; } }
   .sa-ov-capture-select {
     border: 1px solid var(--border); border-radius: 8px; background: var(--surface-0);
     color: var(--text-primary); padding: 7px 10px; font-size: 12px; font-weight: 700; outline: none;
@@ -2927,6 +2984,24 @@ function toggleTheme() {
   try { saved = localStorage.getItem("la_theme") || "light"; } catch(_) {}
   applyTheme(saved);
 })();
+
+function laRegionHeatMapRows() {
+  const rows = window._laRegionMapRows || [];
+  return rows.filter(r => r && (r._overdue || Number(r.over || 0) > 0));
+}
+function laRegionHeatMapSectionHTML() {
+  const regions = [{k:"BMA",c:"#5b8def"},{k:"EAS",c:"#f5a623"},{k:"CW",c:"#9b7bf7"},{k:"SOU",c:"#22b8a7"}];
+  return `<section class="la-region-heat-section"><div class="la-region-heat-grid">${regions.map(x=>`<div class="la-region-heat-card"><div class="la-region-heat-head" style="border-color:${x.c}">${x.k}</div><div class="la-region-map-caption">Heat map จังหวัด<br><span>โชว์ตัวเลข Pending Over</span></div><svg id="la-region-map-${x.k}" class="la-region-heat-svg" viewBox="0 0 280 260" aria-label="Thailand Heat Map ${x.k}"></svg><div id="la-region-top-${x.k}" class="la-region-top-list"></div><div id="la-region-total-${x.k}" class="la-region-total"></div><div class="la-region-reason-heading">Top5 Over reason</div><div id="la-region-reason-${x.k}" class="la-region-top-list"></div></div>`).join("")}</div><div class="la-region-detail-note">Detail รายละเอียดแต่ละ TT</div></section>`;
+}
+function laRenderRegionHeatMaps() {
+  const geo=window._thaiGeoJSON, rows=laRegionHeatMapRows(); if(!geo) return;
+  const cfg={BMA:"#5b8def",EAS:"#f5a623",CW:"#9b7bf7",SOU:"#22b8a7"};
+  const norm=s=>String(s||"").toLowerCase().replace(/[\s._-]+/g,"");
+  const counts={}, reasons={}; Object.keys(cfg).forEach(k=>{counts[k]={};reasons[k]={};});
+  rows.forEach(r=>{const rg=String(r.Region||r.region||r.ZONE||r.Zone||"").toUpperCase().replace(/&/g,""); const key=/^BMA/.test(rg)?"BMA":rg==="CW"||rg==="C&W"?"CW":rg==="EAS"?"EAS":rg==="SOU"?"SOU":null; if(!key)return; const p=String(r.Province||r.province||r.PROVINCE||r["Province Name"]||"").trim(); if(p)counts[key][norm(p)]=(counts[key][norm(p)]||0)+1; const reason=String(r["Suspend Reason"]||r["Suspend Description"]||r.Reason||"ไม่ระบุ").trim()||"ไม่ระบุ"; reasons[key][reason]=(reasons[key][reason]||0)+1;});
+  const max=Math.max(1,...Object.values(counts).flatMap(x=>Object.values(x))); const W=280,H=260,pad=8; const project=pt=>[pad+(pt[0]-97.3)/(105.7-97.3)*(W-pad*2),H-pad-(pt[1]-5.3)/(20.6-5.3)*(H-pad*2)];
+  Object.entries(cfg).forEach(([rg,base])=>{const svg=document.getElementById(`la-region-map-${rg}`);if(!svg)return;svg.innerHTML="";geo.features.forEach(f=>{const p=f.properties||{},n=counts[rg][norm(p.name||p.name_en||p.NAME_1)]||0,op=n?Math.round(60+195*n/max).toString(16).padStart(2,"0"):"22";const g=f.geometry||{},ps=g.type==="Polygon"?[g.coordinates]:(g.type==="MultiPolygon"?g.coordinates:[]);ps.forEach(poly=>poly.forEach(ring=>{const d=ring.map((pt,i)=>{const q=project(pt);return `${i?"L":"M"}${q[0].toFixed(1)} ${q[1].toFixed(1)}`;}).join(" ")+" Z";const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",d);path.setAttribute("fill",n?base+op:"#e8edf7");path.setAttribute("stroke","#fff");path.setAttribute("stroke-width",".7");path.setAttribute("title",`${p.name||p.name_en||"Province"}: ${n} Over`);svg.appendChild(path);}));});const top=Object.entries(counts[rg]).sort((a,b)=>b[1]-a[1]).slice(0,3);const rs=Object.entries(reasons[rg]).sort((a,b)=>b[1]-a[1]).slice(0,5);const total=Object.values(counts[rg]).reduce((a,b)=>a+b,0);const el=document.getElementById(`la-region-top-${rg}`);if(el)el.innerHTML=`<b>Top3 Over Pending</b>${top.length?top.map(([p,n])=>`<span>${p} <strong>${n}</strong></span>`).join(""):"<span>ไม่มีข้อมูล</span>"}`;const tel=document.getElementById(`la-region-total-${rg}`);if(tel)tel.innerHTML=`<span>Total</span><strong>${total}</strong>`;const rel=document.getElementById(`la-region-reason-${rg}`);if(rel)rel.innerHTML=`<b>Top5 Over reason</b>${rs.length?rs.map(([p,n])=>`<span>${p} <strong>${n}</strong></span>`).join(""):"<span>ไม่มีข้อมูล</span>"}`;});
+}
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const STATUSES = ["Accepted","Arrived","Departed","Dispatched"];
@@ -5263,6 +5338,7 @@ function initThaiChoropleth() {
 }
 
 window._initThaiHeatMap = initThaiChoropleth;
+window._thaiGeoJSON = _THAI_GEOJSON;
 })();
 
 
@@ -8457,21 +8533,172 @@ function saSuspendOverviewHTML(allRows) {
   }).join("");
   const saSuspendGrandTotal = SA_OV_SUMMARY_SEVS.reduce((sum, sv) => sum + SA_OV_REGIONS.reduce((n, rg) => n + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0), 0);
   const saSuspendTotalSummary = `<div style="flex:1;min-width:260px;padding:10px;border:1px solid rgba(91,141,239,.35);border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:var(--ink-strong);margin-bottom:8px">ทั้งหมด</div><div style="display:flex;gap:6px;flex-wrap:wrap">${SA_OV_SUMMARY_SEVS.map(sv => { const n = SA_OV_REGIONS.reduce((sum, rg) => sum + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0); return `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${n}</div></div>`; }).join("")}<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid var(--border-med);border-radius:9px;background:var(--surface-1);text-align:center"><div style="font-size:11px;font-weight:800;color:var(--ink-soft)">SA รวม</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${saSuspendGrandTotal}</div></div></div></div>`;
+  const overRows = allRows.filter(r => saOverHours(r) > 0 && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+  const provinceSection = saOverviewOverProvinceHTML(overRows);
   return `<div class="sa-ov-toolbar">
     <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
     <button type="button" class="nsa-capture-btn blue sa-ov-capture-btn" data-target="sa-ov-capture-frame" data-fname="SA_Suspend_Overview">📷 แคปภาพ</button>
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}${saSuspendTotalSummary}</div>
-  <div class="sa-ov-layout" id="sa-ov-capture-frame">
-    <div class="sa-ov-main">
-      <div class="sa-ov-main-title">Suspend Summary</div>
-      <div class="sa-ov-grid" style="grid-template-columns:104px repeat(${SA_SUSPEND_REASON_ROWS.length},1fr)">
-        ${bodyRows}
-      </div>
-      <div class="sa-ov-legend">${legend}</div>
-    </div>
+  <div id="sa-ov-capture-frame" style="padding:0;background:transparent">
+    ${provinceSection}
   </div>`;
+}
+
+const SA_PROVINCE_CODE_MAP = {
+  ATG:"อ่างทอง", AYT:"อยุธยา", CBR:"ชลบุรี", CCS:"ฉะเชิงเทรา", CNT:"ชัยนาท", CPN:"ชุมพร", CTB:"จันทบุรี", KBI:"กระบี่", KCN:"กาญจนบุรี", LBR:"ลพบุรี", NKN:"นครนายก", NKS:"นครศรีธรรมราช", NKT:"นครปฐม", NKW:"นครสวรรค์", NRT:"นราธิวาส", PBR:"เพชรบุรี", PCK:"ประจวบคีรีขันธ์", PCR:"ปราจีนบุรี", PKT:"ภูเก็ต", PNA:"พังงา", PTL:"พัทลุง", PTN:"ปัตตานี", RCB:"ราชบุรี", RNG:"ระนอง", RYG:"ระยอง", SBR:"สิงห์บุรี", SKA:"สงขลา", SKO:"สระแก้ว", SMK:"สมุทรสงคราม", SMP:"สมุทรปราการ", SMS:"สมุทรสาคร", SPB:"สุพรรณบุรี", SRB:"สระบุรี", SRT:"สุราษฎร์ธานี", STN:"สตูล", TRG:"ตรัง", TRT:"ตราด", UTT:"อุทัยธานี", YLA:"ยะลา"
+};
+const SA_BMA_NOP_PROVINCE = {
+  "BMAW1": { province:"นนทบุรี", areas:["เมืองนนทบุรี","บางกรวย","บางใหญ่","บางบัวทอง","ไทรน้อย","ปากเกร็ด"] },
+  "BMAW1_PTT": { province:"ปทุมธานี", areas:["เมืองปทุมธานี","คลองหลวง","ธัญบุรี","หนองเสือ","ลาดหลุมแก้ว","ลำลูกกา","สามโคก"] },
+  "BMAW2": { province:"กรุงเทพมหานคร", areas:["ธนบุรี","คลองสาน","บางขุนเทียน","ราษฎร์บูรณะ","ทุ่งครุ","จอมทอง","บางบอน","หนองแขม","บางแค","ตลิ่งชัน","ภาษีเจริญ","ทวีวัฒนา","บางกอกใหญ่","บางกอกน้อย","บางพลัด"] },
+  "BMAE1": { province:"กรุงเทพมหานคร", areas:["บางเขน","บางซื่อ","จตุจักร","หลักสี่","ดอนเมือง","สายไหม","บางกะปิ","ประเวศ","สวนหลวง","สะพานสูง","บางนา","หนองจอก","มีนบุรี","ลาดกระบัง","บึงกุ่ม","คันนายาว","คลองสามวา"] },
+  "BMAE2": { province:"กรุงเทพมหานคร", areas:["บางรัก","สาทร","บางคอแหลม","ยานนาวา","ป้อมปราบศัตรูพ่าย","สัมพันธวงศ์","ดุสิต","พระนคร","ปทุมวัน","ราชเทวี","พญาไท"] },
+  "BMAE3": { province:"สมุทรปราการ", areas:["เมืองสมุทรปราการ","บางบ่อ","บางพลี","พระประแดง","พระสมุทรเจดีย์","บางเสาธง"] },
+  "BMAEAS4": { province:"กรุงเทพมหานคร", areas:["วังทองหลาง","ห้วยขวาง","วัฒนา","คลองเตย","พระโขนง","ลาดพร้าว","ดินแดง"] }
+};
+function saBmaNopProvince(r) {
+  const text = saNormText(r && (r.Subject || r["Site ID"] || r["Site Code"] || ""));
+  const upper = text.toUpperCase();
+  const zone = Object.keys(SA_BMA_NOP_PROVINCE).find(k => upper.includes(k.replace("_PTT", "")));
+  if (!zone) return "";
+  if (zone === "BMAW1" && SA_BMA_NOP_PROVINCE.BMAW1_PTT.areas.some(a => text.includes(a))) return SA_BMA_NOP_PROVINCE.BMAW1_PTT.province;
+  const item = SA_BMA_NOP_PROVINCE[zone];
+  return item.areas.some(a => text.includes(a)) ? item.province : item.province;
+}
+function saOverviewProvinceLabel(r) {
+  const bmaProvince = saBmaNopProvince(r);
+  if (bmaProvince) return bmaProvince;
+  const raw = saNormText(r && (r.Province || r.PROVINCE || r.province || r["Province Name"] || r["จังหวัด"]));
+  if (raw) {
+    const code = raw.toUpperCase().match(/^(ATG|AYT|CBR|CCS|CNT|CPN|CTB|KBI|KCN|LBR|NKN|NKS|NKT|NKW|NRT|PBR|PCK|PCR|PKT|PNA|PTL|PTN|RCB|RNG|RYG|SBR|SKA|SKO|SMK|SMP|SMS|SPB|SRB|SRT|STN|TRG|TRT|UTT|YLA)/);
+    if (code && SA_PROVINCE_CODE_MAP[code[1]]) return SA_PROVINCE_CODE_MAP[code[1]];
+    return raw;
+  }
+  const subject = saNormText(r && r.Subject).toUpperCase();
+  const code = Object.keys(SA_PROVINCE_CODE_MAP).find(k => new RegExp(`(?:^|[^A-Z0-9])${k}[A-Z0-9]*`).test(subject));
+  return code ? SA_PROVINCE_CODE_MAP[code] : "ไม่ระบุ Province";
+}
+function saOverviewProvinceCode(r) {
+  const candidates = [r && r["Province Code"], r && r.Province, r && r.PROVINCE, r && r.province, r && r["Site ID"], r && r["Site Code"]];
+  for (const value of candidates) {
+    const m = saNormText(value).toUpperCase().match(/^(BMA[EW]?\d+|[A-Z]{3})/);
+    if (m) return m[1];
+  }
+  const subject = saNormText(r && r.Subject).toUpperCase();
+  const s = subject.match(/(?:^|[^A-Z0-9])(BMA[EW]?\d+|[A-Z]{3})[A-Z0-9]*/);
+  return s ? s[1] : "ไม่ระบุ Code";
+}
+function saOverviewOverProvinceHTML(overRows) {
+  const regions = [
+    { key:"BMA", label:"BMA", color:"#5b8def" },
+    { key:"CW", label:"C&W", color:"#9b7bf7" },
+    { key:"EAS", label:"EAS", color:"#f5a623" },
+  ];
+  const blocks = regions.map(rg => {
+    const counts = {};
+    const codeCounts = {};
+    const reasonCounts = {};
+    overRows.filter(r => saOvRegionKey(r) === rg.key).forEach(r => {
+      const p = saOverviewProvinceLabel(r);
+      counts[p] = (counts[p] || 0) + 1;
+      const code = saOverviewProvinceCode(r);
+      codeCounts[code] = (codeCounts[code] || 0) + 1;
+      const reasonKey = saReasonKey(r);
+      const reasonRow = SA_SUSPEND_REASON_ROWS.find(x => x.key === reasonKey);
+      const reason = reasonRow ? reasonRow.label : "ไม่ระบุ";
+      reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+    });
+    const entries = Object.entries(counts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], "th"));
+    const codeEntries = Object.entries(codeCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const codeMax = Math.max(1, ...codeEntries.map(x => x[1]));
+    const rows = codeEntries.length ? codeEntries.map(([p,n]) => `<tr><td>${saEscape(p)}</td><td class="sa-ov-prov-num">${n}</td><td><span class="sa-ov-prov-bar"><i style="width:${Math.round(n/codeMax*100)}%;background:#dc2626"></i></span></td></tr>`).join("") : `<tr><td colspan="3" class="sa-ov-prov-empty">ไม่มี Ticket Over</td></tr>`;
+    const top3 = Object.entries(codeCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3).map(([p,n]) => `<div class="sa-ov-mini-row"><span>${saEscape(p)}</span><b>${n}</b></div>`).join("") || `<div class="sa-ov-prov-empty">ไม่มีข้อมูล</div>`;
+    const top5Reasons = Object.entries(reasonCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([p,n]) => `<div class="sa-ov-mini-row"><span>${saEscape(p)}</span><b>${n}</b></div>`).join("") || `<div class="sa-ov-prov-empty">ไม่มีข้อมูล</div>`;
+    const total = entries.reduce((s,x)=>s+x[1],0);
+    return `<section class="sa-ov-prov-card" data-region="${rg.key}"><div class="sa-ov-prov-title" style="border-color:${rg.color}"><span class="sa-ov-regiondot" style="background:${rg.color}"></span>${rg.label}<span class="sa-ov-prov-total">${total} Ticket Over</span></div><div class="sa-ov-prov-content"><div class="sa-ov-prov-map" aria-label="Heat Map จังหวัด ${rg.label}"><div class="sa-ov-prov-map-label">Heat Map จังหวัด</div><svg class="sa-ov-country-map" id="sa-ov-map-${rg.key}" role="img" aria-label="แผนที่ประเทศไทย ${rg.label}"></svg></div><div class="sa-ov-mini-heading">Top 3 Over — Code Province</div><div class="sa-ov-mini-list">${top3}</div><div class="sa-ov-mini-total"><span>Total</span><b>${total}</b></div><div class="sa-ov-mini-heading">Top 5 Status ของ Suspend Reason</div><div class="sa-ov-mini-list">${top5Reasons}</div><div class="sa-ov-prov-table-wrap"><table class="sa-ov-prov-table"><thead><tr><th>Code Province</th><th>Over</th><th>สัดส่วน</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
+  }).join("");
+  return `<section class="sa-ov-province-section"><div class="sa-ov-section-heading"><div><span class="sa-ov-section-kicker">OVERVIEW</span><h3>Ticket Over แยกตาม Province</h3></div><span class="sa-ov-section-note">นับจาก Ticket ที่ Over และใช้ Region/Province จากข้อมูลดิบ</span></div><div class="sa-ov-prov-grid">${blocks}</div></section>`;
+}
+
+function saRenderOverviewCountryMaps(allRows, overRows) {
+  const geo = window._thaiGeoJSON;
+  if (!geo || !Array.isArray(geo.features)) return;
+  const regions = ["BMA","CW","EAS"];
+  const colors = { BMA:"#dc2626", CW:"#dc2626", EAS:"#dc2626" };
+  const bmaProvinceScope = new Set(["นนทบุรี","ปทุมธานี","กรุงเทพมหานคร","สมุทรปราการ"]);
+  const boxes = { BMA:[97.3,105.7,5.3,20.6], CW:[97.3,105.7,5.3,20.6], EAS:[97.3,105.7,5.3,20.6], SOU:[97.3,105.7,5.3,20.6] };
+  const norm = s => saNormText(s).toLowerCase().replace(/[\s._-]+/g, "");
+  const points = [];
+  geo.features.forEach(f => {
+    const p = f.properties || {};
+    const geom = f.geometry || {};
+    const polys = geom.type === "Polygon" ? [geom.coordinates] : (geom.type === "MultiPolygon" ? geom.coordinates : []);
+    polys.forEach(poly => poly.forEach(ring => ring.forEach(pt => points.push(pt))));
+  });
+  if (!points.length) return;
+  const [minLon,maxLon,minLat,maxLat] = boxes.BMA;
+  const W=260,H=260,pad=8;
+  const regionCounts = {};
+  regions.forEach(rg => { regionCounts[rg] = {}; overRows.filter(r => saOvRegionKey(r) === rg).forEach(r => { const p=norm(saOverviewProvinceLabel(r)); regionCounts[rg][p]=(regionCounts[rg][p]||0)+1; }); });
+  const regionScope = {};
+  regions.forEach(rg => { regionScope[rg] = new Set((allRows || []).filter(r => saOvRegionKey(r) === rg).map(saOverviewProvinceLabel).map(norm)); });
+  regionScope.BMA = new Set(["นนทบุรี","ปทุมธานี","กรุงเทพมหานคร","สมุทรปราการ"].map(norm));
+  const maxCount = Math.max(1, ...regions.flatMap(rg => Object.values(regionCounts[rg])));
+  const color = (base,n,zoneMax) => n ? `${base}${Math.round(55 + 200*n/Math.max(1,zoneMax)).toString(16).padStart(2,"0")}` : "#e9eef8";
+  regions.forEach(rg => {
+    const svg=document.getElementById(`sa-ov-map-${rg}`); if(!svg) return;
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML="";
+    const activeFeatures = geo.features.filter(f => {
+      const p=f.properties||{};
+      return regionScope[rg].has(norm(p.name||p.name_en||p.NAME_1||""));
+    });
+    // แสดงขอบเขตประเทศไทยครบทุกพื้นที่ในทุก Region ไม่ Crop เฉพาะจังหวัดที่มีข้อมูล
+    const zoomFeatures = activeFeatures.length ? activeFeatures : geo.features;
+    const coords=[];
+    zoomFeatures.forEach(f => {
+      const g=f.geometry||{}; const ps=g.type==="Polygon"?[g.coordinates]:(g.type==="MultiPolygon"?g.coordinates:[]);
+      ps.forEach(poly=>poly.forEach(ring=>ring.forEach(pt=>coords.push(pt))));
+    });
+    const xs=coords.map(p=>p[0]), ys=coords.map(p=>p[1]);
+    let bx0=Math.max(minLon,Math.min(...xs)-.25), bx1=Math.min(maxLon,Math.max(...xs)+.25);
+    let by0=Math.max(minLat,Math.min(...ys)-.25), by1=Math.min(maxLat,Math.max(...ys)+.25);
+    // Zoom เพิ่ม 50% จากขอบเขต Province ของ Zone นี้
+    const zoom=1.5, cx=(bx0+bx1)/2, cy=(by0+by1)/2, zx=(bx1-bx0)/zoom, zy=(by1-by0)/zoom;
+    bx0=Math.max(minLon,cx-zx/2); bx1=Math.min(maxLon,cx+zx/2);
+    by0=Math.max(minLat,cy-zy/2); by1=Math.min(maxLat,cy+zy/2);
+    const project = pt => [pad + (pt[0]-bx0)/Math.max(.01,bx1-bx0)*(W-pad*2), H-pad - (pt[1]-by0)/Math.max(.01,by1-by0)*(H-pad*2)];
+    const zoneMax = Math.max(1, ...Object.values(regionCounts[rg]));
+    const drawFeatures = zoomFeatures;
+    drawFeatures.forEach(f => {
+      const p=f.properties||{}, name=norm(p.name||p.name_en||p.NAME_1||"");
+      const provinceName = p.name || p.name_en || p.NAME_1 || "";
+      const n=regionCounts[rg][name]||0;
+      const isOutsideScope = !regionScope[rg].has(norm(provinceName));
+      const geom=f.geometry||{}; const polys=geom.type==="Polygon"?[geom.coordinates]:(geom.type==="MultiPolygon"?geom.coordinates:[]);
+      polys.forEach(poly => poly.forEach(ring => { const d=ring.map((pt,i)=>{const q=project(pt);return `${i?"L":"M"}${q[0].toFixed(1)} ${q[1].toFixed(1)}`;}).join(" ")+" Z"; const path=document.createElementNS("http://www.w3.org/2000/svg","path"); path.setAttribute("d",d); path.setAttribute("fill",isOutsideScope?"#111827":(n === 0 ? "#bbf7d0" : color(colors[rg],n,zoneMax))); path.setAttribute("stroke","#fff"); path.setAttribute("stroke-width",".7"); path.setAttribute("title",`${provinceName}: ${isOutsideScope?"นอกพื้นที่ดูแล":n+" Ticket"}`); svg.appendChild(path); }));
+      if (n > 0 && !isOutsideScope) {
+        const ring = polys[0] && polys[0][0];
+        if (ring && ring.length) {
+          const center = ring.reduce((a,pt)=>[a[0]+pt[0],a[1]+pt[1]],[0,0]).map(v=>v/ring.length);
+          const q=project(center), label=document.createElementNS("http://www.w3.org/2000/svg","text");
+          label.setAttribute("x",q[0].toFixed(1)); label.setAttribute("y",q[1].toFixed(1)); label.setAttribute("text-anchor","middle"); label.setAttribute("dominant-baseline","middle"); label.setAttribute("font-size",n>9?"11":"10"); label.setAttribute("font-weight","900"); label.setAttribute("fill","#172554"); label.setAttribute("stroke","#fff"); label.setAttribute("stroke-width","2.5"); label.setAttribute("paint-order","stroke"); label.textContent=`${saOverviewProvinceCodeFromName(provinceName)} ${n}`; svg.appendChild(label);
+        }
+      }
+    });
+  });
+}
+
+function saOverviewProvinceCodeFromName(name) {
+  const value = saNormText(name);
+  const known = Object.entries(SA_PROVINCE_CODE_MAP).find(([, label]) => saNormText(label) === value);
+  if (known) return known[0];
+  if (value === "กรุงเทพมหานคร") return "BKK";
+  if (value === "นนทบุรี") return "NTB";
+  if (value === "ปทุมธานี") return "PTT";
+  if (value === "สมุทรปราการ") return "SMP";
+  return value || "-";
 }
 
 function saLongAgingUrgencyHours(r) {
@@ -8617,6 +8844,7 @@ function renderSaSuspendSummary() {
   const subtabsHTML = saSuspendSubTabsHTML();
   if (_saSuspendView === "overview") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
+    saRenderOverviewCountryMaps(rows, rows.filter(r => saOverHours(r) > 0));
     return;
   }
   if (_saSuspendView === "long-aging") {
@@ -9633,6 +9861,16 @@ function goToApp(data, filename) {
   if (filename) document.getElementById("file-name").textContent = filename;
   document.getElementById("landing").style.display = "none";
   document.getElementById("app").style.display = "block";
+  // เปิดหน้า SA Suspend Summary เป็นหน้าแรกหลังเข้าสู่ระบบ
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  const saSuspendTab = document.querySelector('.tab[data-tab="sa-suspend"]');
+  if (saSuspendTab) saSuspendTab.classList.add("active");
+  document.querySelectorAll('[id^="content-"]').forEach(el => { el.style.display = "none"; });
+  const saSuspendContent = document.getElementById("content-sa-suspend");
+  if (saSuspendContent) {
+    saSuspendContent.style.display = "block";
+    if (typeof renderSaSuspendSummary === "function") renderSaSuspendSummary();
+  }
   // Pre-init dashboard selectors so it's ready when user clicks the tab
   if (typeof dashInitIfNeeded === "function") dashInitIfNeeded();
   window.scrollTo(0,0);
@@ -10835,16 +11073,18 @@ document.getElementById("content-sa-suspend").addEventListener("click", async fu
     const sel = document.getElementById("sa-ov-capture-region");
     const regionKey = sel ? sel.value : "ALL";
     const frame = document.getElementById(btn.dataset.target);
-    const blocks = frame ? frame.querySelectorAll(".sa-ov-region-block") : [];
+    const blocks = frame ? frame.querySelectorAll(".sa-ov-prov-card") : [];
     let fname = btn.dataset.fname;
     if (regionKey !== "ALL") {
       blocks.forEach(b => { if (b.dataset.region !== regionKey) b.style.display = "none"; });
       fname = fname + "_" + regionKey;
     }
+    if (frame) frame.dataset.captureSingle = regionKey !== "ALL" ? "1" : "0";
     try {
       await captureFrameToClipboard(btn, btn.dataset.target, fname);
     } finally {
       blocks.forEach(b => { b.style.display = ""; });
+      if (frame) delete frame.dataset.captureSingle;
     }
     return;
   }
@@ -10861,20 +11101,30 @@ async function captureFrameToClipboard(btn, targetId, fname) {
   const scrollEls = [frame, ...frame.querySelectorAll("*")];
   const saved = scrollEls.map(el => ({ el, mh: el.style.maxHeight, ov: el.style.overflow, ox: el.style.overflowX, oy: el.style.overflowY }));
   scrollEls.forEach(el => { el.style.maxHeight="none"; el.style.overflow="visible"; el.style.overflowX="visible"; el.style.overflowY="visible"; });
-  const origPos = frame.style.position, origLeft = frame.style.left, origTop = frame.style.top, origZ = frame.style.zIndex;
+  const captureGrid = frame.querySelector(".sa-ov-prov-grid");
+  const captureGridColumns = captureGrid ? captureGrid.style.gridTemplateColumns : "";
+  if (captureGrid) captureGrid.style.gridTemplateColumns = frame.dataset.captureSingle === "1" ? "minmax(0, 1fr)" : "repeat(3, minmax(0, 1fr))";
+  const origPos = frame.style.position, origLeft = frame.style.left, origTop = frame.style.top, origZ = frame.style.zIndex, origWidth = frame.style.width, origHeight = frame.style.height;
   frame.style.position="fixed"; frame.style.left="-99999px"; frame.style.top="0px"; frame.style.zIndex="-1";
+  frame.style.width = frame.scrollWidth + "px";
+  frame.style.height = "auto";
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   const resolvedBg = isDark ? "#05111e" : "#ffffff";
 
   try {
+    // รอให้ Grid/SVG/ตารางขยายขนาดจริงก่อนอ่าน scrollHeight เพื่อป้องกันภาพถูกตัด
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const captureWidth = Math.max(frame.scrollWidth, frame.getBoundingClientRect().width);
+    const captureHeight = Math.max(frame.scrollHeight, frame.getBoundingClientRect().height);
     const canvas = await html2canvas(frame, {
       backgroundColor: resolvedBg, scale: 1, useCORS: true, allowTaint: true,
       scrollX: 0, scrollY: 0, x: 0, y: 0,
-      width: frame.scrollWidth, height: frame.scrollHeight,
-      windowWidth: frame.scrollWidth, windowHeight: frame.scrollHeight, logging: false,
+      width: captureWidth, height: captureHeight,
+      windowWidth: captureWidth, windowHeight: captureHeight, logging: false,
     });
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
-    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ;
+    if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
+    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
 
     await new Promise((resolve) => {
       canvas.toBlob(async (blob) => {
@@ -10894,7 +11144,8 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     });
   } catch(err) {
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
-    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ;
+    if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
+    frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
     btn.textContent="❌ "+err.message; btn.className=origClass.replace(/gold|blue/g,"")+" error"; btn.disabled=false;
     setTimeout(()=>{ btn.textContent="📷 แคปภาพ"; btn.className=origClass; }, 4000);
   }
@@ -11674,6 +11925,7 @@ function renderLongAging() {
   window._laHeatWatchById = heatWatchByProvinceId;
   window._laHeatUnknownProvince = heatUnknownProvince;
 
+  window._laRegionMapRows = tagged;
   // ── Render ───────────────────────────────────────────────────────────────
   container.innerHTML = `
   <div id="la-capture-frame" style="padding:20px;font-family:'Inter','Space Grotesk',sans-serif;background:var(--surface-3)">
@@ -11713,6 +11965,7 @@ function renderLongAging() {
     </div>
 
     ${regionSummaryHtml}
+    ${laRegionHeatMapSectionHTML()}
     <section style="margin:14px 0;padding:16px;background:var(--surface-0);border:1px solid var(--line-soft);border-radius:12px">
       <div style="font-size:16px;font-weight:800;color:var(--ink-strong);margin-bottom:8px">Ticket Status ตาม Urgency</div>
       <div style="font-size:11px;color:var(--ink-faint);margin-bottom:6px">Urgency = CREATIONDATE ถึง TARGETFINISH ปัดเป็นชั่วโมงเต็ม · Long Aging เมื่อเวลา Over ถึง Urgency</div>
@@ -11871,7 +12124,7 @@ function renderLongAging() {
   // เรียก Chart.js สร้างกราฟ หลังจาก DOM render เสร็จ (canvas ต้องอยู่ใน DOM ก่อน)
   laRenderStatusPanel();
   setTimeout(initLaCharts, 0);
-  setTimeout(() => { if (window._initThaiHeatMap) window._initThaiHeatMap(); }, 50);
+  setTimeout(() => { if (window._initThaiHeatMap) window._initThaiHeatMap(); laRenderRegionHeatMaps(); }, 50);
   // auto-fetch zone trend ครั้งแรก (ถ้ายังไม่มีข้อมูล)
   if (LA_SAVE_GAS_URL && !(window._laZoneTrendData||[]).length && !window._laZoneTrendFetched) {
     window._laZoneTrendFetched = true;
