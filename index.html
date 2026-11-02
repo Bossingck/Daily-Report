@@ -1635,6 +1635,22 @@
   /* ── SA Suspend: Overview Page ── */
   .sa-ov-layout { display: flex; gap: 16px; align-items: stretch; }
   .sa-ov-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sa-keyword-panel { margin:0 0 14px; padding:14px; border:1px solid rgba(91,141,239,.3); border-radius:12px; background:var(--surface-0); }
+  .sa-keyword-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .sa-keyword-head h3 { margin:2px 0 0; color:var(--ink-strong); font-size:15px; }
+  .sa-keyword-frame { overflow:auto; }
+  .sa-keyword-frame table { width:100%; border-collapse:collapse; table-layout:fixed; min-width:650px; font-size:12px; }
+  .sa-keyword-frame th:nth-child(1),.sa-keyword-frame td:nth-child(1) { width:14%; }
+  .sa-keyword-frame th:nth-child(2),.sa-keyword-frame td:nth-child(2) { width:20%; }
+  .sa-keyword-frame th:nth-child(3),.sa-keyword-frame td:nth-child(3) { width:20%; }
+  .sa-keyword-frame th:nth-child(4),.sa-keyword-frame td:nth-child(4) { width:16%; }
+  .sa-keyword-frame th:nth-child(5),.sa-keyword-frame td:nth-child(5) { width:15%; }
+  .sa-keyword-frame th { padding:8px; color:#fff; background:linear-gradient(135deg,#5b8def,#7c6bea); text-align:center; }
+  .sa-keyword-frame td { padding:6px 8px; border-bottom:1px solid #e5eaf7; text-align:center; color:var(--ink-strong); }
+  .sa-keyword-frame th:first-child,.sa-keyword-frame td:first-child { text-align:left; font-weight:900; }
+  .sa-keyword-region th { color:#243b82!important; font-weight:900; background:#eef3ff; }
+  .sa-keyword-region td { color:#243b82; font-weight:900; background:#eef3ff; }
+  .sa-keyword-sev th { text-align:left!important; padding-left:28px; color:var(--ink-soft); background:#f8faff; }
   /* ซ่อนแท็บที่ไม่ต้องการแสดงในเมนูหลัก แต่คงโค้ดและข้อมูลไว้ */
   .tabs .tab[data-tab="nsa34"],
   .tabs .tab[data-tab="sa-overview"],
@@ -8541,6 +8557,9 @@ function saSuspendOverviewHTML(allRows) {
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}${saSuspendTotalSummary}</div>
+  <button type="button" class="nsa-capture-btn blue" id="sa-keyword-summary-btn" style="margin:0 0 12px">📋 สรุป</button>
+  <button type="button" class="nsa-capture-btn blue" id="sa-keyword-image-btn" style="margin:0 0 12px">📷 แคปภาพสรุป</button>
+  <div id="sa-keyword-image-wrap" style="display:none">${saKeywordSummaryHTML(allRows)}</div>
   <div id="sa-ov-capture-frame" style="padding:0;background:transparent">
     ${provinceSection}
   </div>`;
@@ -8620,6 +8639,29 @@ function saOverviewOverProvinceHTML(overRows) {
     return `<section class="sa-ov-prov-card" data-region="${rg.key}"><div class="sa-ov-prov-title" style="border-color:${rg.color}"><span class="sa-ov-regiondot" style="background:${rg.color}"></span>${rg.label}<span class="sa-ov-prov-total">${total} Ticket Over</span></div><div class="sa-ov-prov-content"><div class="sa-ov-prov-map" aria-label="Heat Map จังหวัด ${rg.label}"><div class="sa-ov-prov-map-label">Heat Map จังหวัด</div><svg class="sa-ov-country-map" id="sa-ov-map-${rg.key}" role="img" aria-label="แผนที่ประเทศไทย ${rg.label}"></svg></div><div class="sa-ov-mini-heading">Top 3 Over — Code Province</div><div class="sa-ov-mini-list">${top3}</div><div class="sa-ov-mini-total"><span>Total</span><b>${total}</b></div><div class="sa-ov-mini-heading">Top 5 Status ของ Suspend Reason</div><div class="sa-ov-mini-list">${top5Reasons}</div><div class="sa-ov-prov-table-wrap"><table class="sa-ov-prov-table"><thead><tr><th>Code Province</th><th>Over</th><th>สัดส่วน</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
   }).join("");
   return `<section class="sa-ov-province-section"><div class="sa-ov-section-heading"><div><span class="sa-ov-section-kicker">OVERVIEW</span><h3>Ticket Over แยกตาม Province</h3></div><span class="sa-ov-section-note">นับจาก Ticket ที่ Over และใช้ Region/Province จากข้อมูลดิบ</span></div><div class="sa-ov-prov-grid">${blocks}</div></section>`;
+}
+
+function saKeywordSummaryHTML(rows) {
+  const regions = Array.from(new Set(rows.map(saOvRegionKey).filter(Boolean))).sort((a,b) => ["BMA","CW","EAS","SOU"].indexOf(a) - ["BMA","CW","EAS","SOU"].indexOf(b));
+  const summary = regions.map(region => {
+    const rr = rows.filter(r => saOvRegionKey(r) === region && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+    const pending = rr.length;
+    const long = rr.filter(saIsLongAging).length;
+    const over24 = rr.filter(r => saOverHours(r) >= 24 && !saIsLongAging(r)).length;
+    const totalOver = rr.filter(r => saOverHours(r) > 0).length;
+    const sev = ["SA1","SA2","SA3","SA4"].map(s => {
+      const sr = rr.filter(r => saNormText(r.Severity).toUpperCase().startsWith(s));
+      return { key:s, pending:sr.length, long:sr.filter(saIsLongAging).length, over24:sr.filter(r => saOverHours(r) >= 24 && !saIsLongAging(r)).length, totalOver:sr.filter(r => saOverHours(r) > 0).length };
+    });
+    return { region, pending, long, over24, totalOver, sev };
+  });
+  const fmt = (region, pending, long, over24, total) => `${String(region).padEnd(8)}| ${String(pending).padStart(7)} | ${String(long).padStart(10)} | ${String(over24).padStart(18)} | ${String(total).padStart(10)} |`;
+  const textBody = ["Region   | Pending | Long Aging | Over 24H (Exc. Long) | Total Over |", "---------|---------|------------|---------------------|------------|", ...summary.flatMap((x, i) => [fmt(x.region, x.pending, x.long, x.over24, x.totalOver), ...x.sev.map(s => fmt("    " + s.key, s.pending, s.long, s.over24, s.totalOver)), ...(i < summary.length - 1 ? ["", "---------|---------|------------|---------------------|------------|"] : [])])].join("\n");
+  const text = textBody;
+  window._saKeywordSummaryText = text;
+  const regionColors = { BMA:"#5b8def", CW:"#9b7bf7", EAS:"#f5a623", SOU:"#22b8a7" };
+  const body = summary.map(x => `<tr class="sa-keyword-region" style="--sa-region-color:${regionColors[x.region] || "#5b8def"}"><th>${x.region}</th><td>${x.pending}</td><td>${x.long}</td><td>${x.over24}</td><td>${x.totalOver}</td></tr>${x.sev.map(s => `<tr class="sa-keyword-sev"><th>${s.key}</th><td>${s.pending}</td><td>${s.long}</td><td>${s.over24}</td><td>${s.totalOver}</td></tr>`).join("")}`).join("");
+  return `<section class="sa-keyword-panel" id="sa-keyword-panel"><div class="sa-keyword-head"><div><span class="sa-ov-section-kicker">KEYWORD SUMMARY</span><h3>สรุป Ticket สำหรับส่ง Telegram</h3></div><button type="button" class="nsa-capture-btn blue" id="sa-keyword-copy-btn" data-copy-text="${saEscape(text)}">📋 Copy Keyword</button></div><div class="sa-keyword-frame"><table><thead><tr><th>Region</th><th>Pending</th><th>Long Aging</th><th>Over 24H (Exc. Long)</th><th>Total Over</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
 }
 
 function saRenderOverviewCountryMaps(allRows, overRows) {
@@ -11067,6 +11109,50 @@ document.getElementById("content-nsa34").addEventListener("click", async functio
 
 // ── SA Suspend Overview Capture Button (event delegation, with Region picker) ─
 document.getElementById("content-sa-suspend").addEventListener("click", async function(e) {
+  const imageButton = e.target.closest("#sa-keyword-image-btn");
+  if (imageButton) {
+    const wrap = document.getElementById("sa-keyword-image-wrap");
+    if (wrap) wrap.style.display = "block";
+    try {
+      await captureFrameToClipboard(imageButton, "sa-keyword-panel", "SA_Keyword_Summary");
+    } finally {
+      if (wrap) wrap.style.display = "none";
+    }
+    return;
+  }
+  const summaryButton = e.target.closest("#sa-keyword-summary-btn");
+  if (summaryButton) {
+    try {
+      const summaryText = window._saKeywordSummaryText || "";
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(summaryText);
+      } else {
+        const area = document.createElement("textarea");
+        area.value = summaryText;
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.appendChild(area);
+        area.focus();
+        area.select();
+        if (!document.execCommand("copy")) throw new Error("copy blocked");
+        area.remove();
+      }
+      summaryButton.textContent = "✅ คัดลอกแล้ว";
+      setTimeout(() => { summaryButton.textContent = "📋 สรุป"; }, 1800);
+    } catch (err) {
+      const box = document.createElement("div");
+      box.style.cssText = "position:fixed;z-index:99999;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,90vw);padding:16px;border-radius:12px;background:#fff;border:2px solid #5b8def;box-shadow:0 12px 40px #0004";
+      box.innerHTML = '<div style="font-weight:800;margin-bottom:8px;color:#173a78">Clipboard ถูกบล็อก — กด Ctrl+C เพื่อคัดลอก</div><textarea style="width:100%;height:260px;box-sizing:border-box;font:13px/1.45 monospace"></textarea><button type="button" style="margin-top:8px;padding:7px 14px">ปิด</button>';
+      const area = box.querySelector("textarea");
+      area.value = window._saKeywordSummaryText || "";
+      document.body.appendChild(box);
+      area.focus();
+      area.select();
+      box.querySelector("button").onclick = () => box.remove();
+      summaryButton.textContent = "📋 สรุป";
+    }
+    return;
+  }
   const btn = e.target.closest(".nsa-capture-btn");
   if (!btn) return;
   if (btn.classList.contains("sa-ov-capture-btn")) {
