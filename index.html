@@ -8351,6 +8351,9 @@ function saIsLongAging(r) {
   const sla = saSlaHours(r);
   return sla !== "" && sla > 0 && saDowntimeHours(r) >= sla * 2;
 }
+function saIsDowntimeOver24WithoutLongAging(r) {
+  return saDowntimeHours(r) > 24 && !saIsLongAging(r);
+}
 function exportSaReportByCategory() {
   const groups = [
     ["SA Mobile", _saReportExportRows.filter(saIsMobile)],
@@ -8691,11 +8694,11 @@ function saKeywordSummaryHTML(rows) {
     const rr = rows.filter(r => saOvRegionKey(r) === region && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
     const pending = rr.length;
     const long = rr.filter(saIsLongAging).length;
-    const over24 = rr.filter(r => saOverHours(r) >= 24 && !saIsLongAging(r)).length;
+    const over24 = rr.filter(saIsDowntimeOver24WithoutLongAging).length;
     const totalOver = rr.filter(r => saOverHours(r) > 0).length;
     const sev = ["SA1","SA2","SA3","SA4"].map(s => {
       const sr = rr.filter(r => saNormText(r.Severity).toUpperCase().startsWith(s));
-      return { key:s, pending:sr.length, long:sr.filter(saIsLongAging).length, over24:sr.filter(r => saOverHours(r) >= 24 && !saIsLongAging(r)).length, totalOver:sr.filter(r => saOverHours(r) > 0).length };
+      return { key:s, pending:sr.length, long:sr.filter(saIsLongAging).length, over24:sr.filter(saIsDowntimeOver24WithoutLongAging).length, totalOver:sr.filter(r => saOverHours(r) > 0).length };
     });
     return { region, pending, long, over24, totalOver, sev };
   });
