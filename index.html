@@ -8421,11 +8421,12 @@ function exportSaReportByCategory() {
   XLSX.writeFile(wb, `SA_Suspend_Report_${stamp}.xlsx`);
   if (typeof dashShowToast === "function") dashShowToast(`Export Report สำเร็จ — ${_saReportExportRows.length} รายการ`);
 }
-// Region: BMA, C&W, EAS only (SOU excluded) — colors match zone colors used elsewhere in the app
+// Overview regions — colors match zone colors used elsewhere in the app
 const SA_OV_REGIONS = [
   { key:"BMA", label:"BMA",  color:"#5b8def" },
   { key:"CW",  label:"C&W",  color:"#9b7bf7" },
   { key:"EAS", label:"EAS",  color:"#f5a623" },
+  { key:"SOU", label:"SOU",  color:"#22b8a7" },
 ];
 // Left-most grouping: reuses saOverBucket() buckets, plus "watch" (SLA about to breach, not yet overdue)
 const SA_OV_OVER_BUCKETS = [
@@ -8446,8 +8447,6 @@ const SA_OV_SUMMARY_SEVS = [
   { key:"SA6", color:"#f472b6" },
 ];
 function saOvRegionKey(r) {
-  const provinceCode = saOverviewProvinceCode(r).toUpperCase();
-  if (/^(PCK|PBR)/.test(provinceCode)) return "CW";
   const norm = saRegionNorm(r); // BMA / CW / EAS / SOU / (raw value) / UNKNOWN
   if (norm === "BMA") return "BMA";
   if (norm === "CW" || norm === "C&W") return "CW";
