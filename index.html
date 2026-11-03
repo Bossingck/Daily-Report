@@ -2062,6 +2062,8 @@
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
   .sa-long-aging-table caption { caption-side: top; padding: 12px 16px; text-align: center; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; font-size: 22px; font-weight: 800; border-radius: 9px 9px 0 0; }
   .sa-long-aging-caption-date { display:block; margin-top:3px; font-size:13px; font-weight:700; opacity:.95; }
+  .sa-nano-badge { position:absolute; top:3px; right:3px; padding:2px 5px; border-radius:5px; background:#16a34a; color:#fff; font-size:9px; font-weight:900; line-height:1.1; box-shadow:0 1px 3px rgba(0,0,0,.18); }
+  .sa-long-aging-site-cell { position:relative; padding-top:12px !important; }
   .sa-long-aging-table td { border-right: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 6px; text-align: center; vertical-align: middle; }
   .sa-long-aging-table tbody tr:nth-child(even) td { background: rgba(91,141,239,.045); }
   .sa-long-aging-table tbody tr:hover td { background: rgba(155,123,247,.12); }
@@ -8426,7 +8428,6 @@ const SA_OV_REGIONS = [
   { key:"BMA", label:"BMA",  color:"#5b8def" },
   { key:"CW",  label:"C&W",  color:"#9b7bf7" },
   { key:"EAS", label:"EAS",  color:"#f5a623" },
-  { key:"SOU", label:"SOU",  color:"#22b8a7" },
 ];
 // Left-most grouping: reuses saOverBucket() buckets, plus "watch" (SLA about to breach, not yet overdue)
 const SA_OV_OVER_BUCKETS = [
@@ -8982,7 +8983,8 @@ function saLongAgingHTML(allRows) {
     const source = saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-");
     const rowId = saRowId(r);
     const logText = saNormText(saGetInocLog(r) || "-");
-    return `<tr><td title="${saEscape(site)}">${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td class="sa-long-aging-log-cell"><span class="sa-long-aging-log-text" title="คลิกเพื่อแก้ไข" onclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(logText)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
+    const nanoBadge = saIsNano(r) ? '<span class="sa-nano-badge">NANO</span>' : '';
+    return `<tr><td class="sa-long-aging-site-cell" title="${saEscape(site)}">${nanoBadge}${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td class="sa-long-aging-log-cell"><span class="sa-long-aging-log-text" title="คลิกเพื่อแก้ไข" onclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(logText)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
   }).join("");
   const foot = `<tr><td colspan="6">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
   const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date());
