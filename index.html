@@ -7148,7 +7148,7 @@ function saDbCountLogHTML(totalRows, visibleRows) {
   const shown = visibleRows == null ? "" : ` · โชว์ ${Number(visibleRows || 0).toLocaleString("en-US")}`;
   const countText = `โหลด DB ${loaded} รายการ${base}${shown}`;
   const statusText = saNormText(_saNanoDbStatus.text);
-  const label = /Column ไม่ครบ|ไม่สำเร็จ|ยังไม่|ไม่มีข้อมูล|ตัด Region|ต้องสร้างตาราง/i.test(statusText)
+  const label = /Column ไม่ครบ|ตรวจ Column|ไม่สำเร็จ|ยังไม่|ไม่มีข้อมูล|ตัด Region|ต้องสร้างตาราง/i.test(statusText)
     ? statusText
     : countText;
   return `<span id="sa-nano-db-status" class="sa-upload-log sa-db-pill ${saEscape(_saNanoDbStatus.state)}">${saEscape(label)}</span>`;
@@ -7292,6 +7292,17 @@ function saUploadPipelineColumnMessage(missing, fileName) {
     `Column ไม่ครบ: ${missing.join(", ")}`,
   ].filter(Boolean);
   return parts.join(" · ");
+}
+function saUploadPipelineColumnSummary(rows, fileName) {
+  const headers = new Set();
+  (rows || []).slice(0, 50).forEach(r => Object.keys(r || {}).forEach(k => headers.add(saColumnKey(k))));
+  const optional = [
+    ["Manager", ["Manager", "Manager Name", "ผู้จัดการ"]],
+    ["Summary Log", ["Summary Log", "Summary_Log", "SummaryLog"]]
+  ];
+  const found = optional.filter(([, aliases]) => aliases.some(a => headers.has(saColumnKey(a)))).map(([label]) => label);
+  const absent = optional.filter(([, aliases]) => !aliases.some(a => headers.has(saColumnKey(a)))).map(([label]) => label);
+  return `ตรวจ Column ครบแล้ว · ${fileName || "ไฟล์ Upload"} · พบ: ${found.length ? found.join(", ") : "ไม่มี Column เพิ่มเติม"} · ยังไม่มี: ${absent.length ? absent.join(", ") : "ไม่มี"}`;
 }
 function saEasProvinceFilterHTML() {
   if (_saSuspendRegionFilter !== "EAS") return "";
@@ -8002,6 +8013,7 @@ function processSaSuspendExcelFile(file) {
         renderSaSuspendSummary();
         return;
       }
+      saSetDbStatus("ok", saUploadPipelineColumnSummary(rows, file.name));
       _rawDataSource = "upload";
       _rawUploadFileName = file.name;
       try {
