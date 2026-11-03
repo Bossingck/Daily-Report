@@ -1615,6 +1615,10 @@
     flex-wrap: wrap;
     margin-bottom: 14px;
   }
+  #upload-btn, #upload2-btn, #report-btn, #export-dispatched-btn, #upload-arrive-btn, #upload-pdt-btn,
+  #content-sa-suspend .sa-table-toggle-bar { display: none !important; }
+  #content-sa-suspend .sa-suspend-toolbar { justify-content:flex-start; gap:8px; }
+  #content-sa-suspend .sa-suspend-toolbar .sa-search-input { order:20; flex:0 0 100%; max-width:520px; }
   /* ── SA Suspend: Sub-Tabs (Overview / Report) ── */
   .sa-subtabs {
     display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
@@ -1687,14 +1691,22 @@
   .sa-ov-section-heading h3 { margin:2px 0 0; color:var(--ink-strong); font-size:16px; }
   .sa-ov-section-kicker { color:#5b8def; font-size:10px; font-weight:900; letter-spacing:1px; }
   .sa-ov-section-note { color:var(--ink-faint); font-size:11px; }
+  .sa-ov-section-heading { justify-content:center; text-align:center; }
+  .sa-ov-section-heading { position:relative; }
+  .sa-ov-section-heading .sa-ov-date { position:absolute; right:0; top:0; }
+  .sa-ov-section-heading h3 { font-size:26px; }
+  .sa-ov-section-kicker { font-size:15px; }
+  #sa-keyword-panel .sa-keyword-head { position:relative; justify-content:center; text-align:center; }
+  #sa-keyword-panel .sa-keyword-head h3 { font-size:24px; }
+  #sa-keyword-panel .sa-keyword-head > div:last-child { position:absolute; right:0; top:0; }
   .sa-ov-prov-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
   .sa-ov-prov-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:12px; background:var(--surface-0); }
   .sa-ov-prov-title { display:flex; align-items:center; gap:7px; padding:9px 11px; border-left:4px solid; color:var(--ink-strong); font-weight:900; font-size:13px; background:linear-gradient(90deg,rgba(91,141,239,.1),transparent); }
   .sa-ov-prov-total { margin-left:auto; color:var(--ink-faint); font-size:11px; font-weight:800; }
   .sa-ov-prov-content { display:flex; flex-direction:column; gap:8px; padding:8px; }
-  .sa-ov-prov-map { min-height:190px; border-radius:10px; padding:6px; background:linear-gradient(155deg,#eef3ff,#dfe8ff); border:1px solid #d6e0fb; position:relative; overflow:hidden; }
+  .sa-ov-prov-map { min-height:190px; border-radius:10px; padding:6px; background-color:#0b2b52; background-image:linear-gradient(rgba(102,177,230,.12) 1px, transparent 1px),linear-gradient(90deg,rgba(102,177,230,.12) 1px, transparent 1px),linear-gradient(155deg,#0a2342,#14527a); background-size:18px 18px,18px 18px,100% 100%; border:1px solid #2f78a7; position:relative; overflow:hidden; box-shadow:inset 0 0 22px rgba(0,0,0,.22); }
   .sa-ov-country-map { position:relative; z-index:1; display:block; width:100%; height:175px; margin-top:2px; }
-  .sa-ov-prov-map-label { position:relative; z-index:1; color:#536b9e; font-size:10px; font-weight:900; text-align:center; }
+  .sa-ov-prov-map-label { position:relative; z-index:1; color:#d8f1ff; font-size:10px; font-weight:900; text-align:center; text-shadow:0 1px 2px rgba(0,0,0,.55); }
   .sa-ov-prov-chips { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center; margin-top:42px; }
   .sa-ov-prov-chip { padding:3px 6px; border-radius:999px; color:#fff; font-size:10px; font-weight:800; box-shadow:0 2px 5px rgba(20,40,90,.16); }
   .sa-ov-prov-table-wrap { max-height:180px; overflow:auto; }
@@ -2048,7 +2060,8 @@
   #sa-long-aging-capture-frame { min-width: 1550px; background: var(--surface-0); border: 2px solid #f5a623; border-radius: 8px; padding: 10px; }
   .sa-long-aging-table { width: 100%; min-width: 1550px; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden; font-size: 12px; background: var(--surface-0); color: var(--text-primary); }
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
-  .sa-long-aging-table caption { caption-side: top; padding: 10px 12px; text-align: left; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; font-size: 17px; font-weight: 800; border-radius: 9px 9px 0 0; }
+  .sa-long-aging-table caption { caption-side: top; padding: 12px 16px; text-align: center; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; font-size: 22px; font-weight: 800; border-radius: 9px 9px 0 0; }
+  .sa-long-aging-caption-date { display:block; margin-top:3px; font-size:13px; font-weight:700; opacity:.95; }
   .sa-long-aging-table td { border-right: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 6px; text-align: center; vertical-align: middle; }
   .sa-long-aging-table tbody tr:nth-child(even) td { background: rgba(91,141,239,.045); }
   .sa-long-aging-table tbody tr:hover td { background: rgba(155,123,247,.12); }
@@ -6966,12 +6979,14 @@ let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
 let _saSuspendView = "overview";
 let _saReportStatusFilter = "ALL";
+let _saReportManagerFilter = "ALL";
 let _saReportExportRows = [];
 let _saShowSummaryLog = false;
 let _saLongAgingExportRows = [];
 let _saLongAgingVisibleRows = [];
 let _saLongAgingLogFilter = "ALL";
 let _saLongAgingStatusFilter = "LONG_AGING";
+let _saLongAgingManagerFilter = "ALL";
 let _saLongAgingKnownSiteIds = [];
 let _saSuspendSearch = "";
 let _saSuspendSearchDraft = "";
@@ -8317,6 +8332,16 @@ function saSetReportStatusFilter(value) {
 function saReportStatusFilterHTML() {
   return `<label>Status <select onchange="saSetReportStatusFilter(this.value)"><option value="ALL"${_saReportStatusFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="OVER"${_saReportStatusFilter==="OVER"?" selected":""}>Over</option><option value="LONG_AGING"${_saReportStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saReportStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H Without Long Aging</option></select></label>`;
 }
+function saSetReportManagerFilter(value) {
+  _saReportManagerFilter = saNormText(value) || "ALL";
+  renderSaSuspendSummary();
+}
+function saReportManagerFilterHTML(rows) {
+  const managers = Array.from(new Set((rows || []).map(saManagerValue).filter(Boolean))).sort((a, b) => a.localeCompare(b, "th"));
+  if (_saReportManagerFilter !== "ALL" && !managers.includes(_saReportManagerFilter)) _saReportManagerFilter = "ALL";
+  const options = ["<option value=\"ALL\">ทั้งหมด</option>", ...managers.map(m => `<option value="${saEscape(m)}"${_saReportManagerFilter === m ? " selected" : ""}>${saEscape(m)}</option>`)].join("");
+  return `<label>Manager <select onchange="saSetReportManagerFilter(this.value)">${options}</select></label>`;
+}
 function saToggleSummaryLog() {
   _saShowSummaryLog = !_saShowSummaryLog;
   renderSaSuspendSummary();
@@ -8685,7 +8710,8 @@ function saOverviewOverProvinceHTML(overRows) {
     const total = entries.reduce((s,x)=>s+x[1],0);
     return `<section class="sa-ov-prov-card" data-region="${rg.key}"><div class="sa-ov-prov-title" style="border-color:${rg.color}"><span class="sa-ov-regiondot" style="background:${rg.color}"></span>${rg.label}<span class="sa-ov-prov-total">${total} Ticket Over</span></div><div class="sa-ov-prov-content"><div class="sa-ov-prov-map" aria-label="Heat Map จังหวัด ${rg.label}"><div class="sa-ov-prov-map-label">Heat Map จังหวัด</div><svg class="sa-ov-country-map" id="sa-ov-map-${rg.key}" role="img" aria-label="แผนที่ประเทศไทย ${rg.label}"></svg></div><div class="sa-ov-mini-heading">Top 3 Over — Code Province</div><div class="sa-ov-mini-list">${top3}</div><div class="sa-ov-mini-total"><span>Total</span><b>${total}</b></div><div class="sa-ov-mini-heading">Top 5 Status ของ Suspend Reason</div><div class="sa-ov-mini-list">${top5Reasons}</div><div class="sa-ov-prov-table-wrap"><table class="sa-ov-prov-table"><thead><tr><th>Code Province</th><th>Over</th><th>สัดส่วน</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
   }).join("");
-  return `<section class="sa-ov-province-section"><div class="sa-ov-section-heading"><div><span class="sa-ov-section-kicker">OVERVIEW</span><h3>Ticket Over แยกตาม Province</h3></div><span class="sa-ov-section-note">นับจาก Ticket ที่ Over และใช้ Region/Province จากข้อมูลดิบ</span></div><div class="sa-ov-prov-grid">${blocks}</div></section>`;
+  const overviewDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date());
+  return `<section class="sa-ov-province-section"><div class="sa-ov-section-heading"><div><span class="sa-ov-section-kicker">OVERVIEW</span><h3>Ticket Over แยกตาม Province</h3></div><div class="sa-ov-date" style="text-align:right;font-size:12px;font-weight:800;color:var(--ink-soft)"><div>${saEscape(overviewDate)}</div><div>เวลา 17:00</div></div></div><div class="sa-ov-prov-grid">${blocks}</div></section>`;
 }
 
 function saKeywordSummaryHTML(rows) {
@@ -8703,13 +8729,13 @@ function saKeywordSummaryHTML(rows) {
     return { region, pending, long, over24, totalOver, sev };
   });
   const fmt = (region, pending, long, over24, total) => `${String(region).padEnd(8)}| ${String(pending).padStart(7)} | ${String(long).padStart(10)} | ${String(over24).padStart(18)} | ${String(total).padStart(10)} |`;
-  const textBody = ["Region   | Pending | Long Aging | Over 24H (Exc. Long) | Total Over |", "---------|---------|------------|---------------------|------------|", ...summary.flatMap((x, i) => [fmt(x.region, x.pending, x.long, x.over24, x.totalOver), ...x.sev.map(s => fmt("    " + s.key, s.pending, s.long, s.over24, s.totalOver)), ...(i < summary.length - 1 ? ["", "---------|---------|------------|---------------------|------------|"] : [])])].join("\n");
+  const textBody = ["Region   | Pending | Long Aging | Downtime 24H (Exc. Long) | Total Over |", "---------|---------|------------|--------------------------|------------|", ...summary.flatMap((x, i) => [fmt(x.region, x.pending, x.long, x.over24, x.totalOver), ...x.sev.map(s => fmt("    " + s.key, s.pending, s.long, s.over24, s.totalOver)), ...(i < summary.length - 1 ? ["", "---------|---------|------------|--------------------------|------------|"] : [])])].join("\n");
   const text = textBody;
   window._saKeywordSummaryText = text;
   const regionColors = { BMA:"#5b8def", CW:"#9b7bf7", EAS:"#f5a623", SOU:"#22b8a7" };
   const summaryDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date());
   const body = summary.map(x => { const color = regionColors[x.region] || "#5b8def"; return `<tr class="sa-keyword-region" style="--sa-region-color:${color};background:${color}18;border-left:4px solid ${color}"><th style="background:${color}18">${x.region}</th><td style="background:${color}18">${x.pending}</td><td style="background:${color}18">${x.long}</td><td style="background:${color}18">${x.over24}</td><td style="background:${color}18">${x.totalOver}</td></tr>${x.sev.map(s => `<tr class="sa-keyword-sev"><th>${s.key}</th><td>${s.pending}</td><td>${s.long}</td><td>${s.over24}</td><td>${s.totalOver}</td></tr>`).join("")}`; }).join("");
-  return `<div style="margin-top:14px"><section id="sa-keyword-panel" class="sa-keyword-panel"><div class="sa-keyword-head"><div><span class="sa-ov-section-kicker">OVER SUMMARY</span><h3>สรุป Over</h3></div><div style="text-align:right;font-size:12px;font-weight:800;color:var(--ink-soft)"><div>${saEscape(summaryDate)}</div><div>เวลา 17:00</div></div></div><table id="sa-keyword-table" style="width:100%;border-collapse:collapse;table-layout:fixed;font:700 13px Arial,sans-serif"><thead><tr style="background:linear-gradient(90deg,#5b8def,#7f6bea);color:#fff"><th style="width:25%;padding:8px;text-align:left">Region</th><th style="width:15%;padding:8px">Pending</th><th style="width:20%;padding:8px">Long Aging</th><th style="width:20%;padding:8px">Over 24H (Exc. Long)</th><th style="width:20%;padding:8px">Total Over</th></tr></thead><tbody>${body}</tbody></table></section></div>`;
+  return `<div style="margin-top:14px"><section id="sa-keyword-panel" class="sa-keyword-panel"><div class="sa-keyword-head"><div><span class="sa-ov-section-kicker">OVER SUMMARY</span><h3>สรุป Over</h3></div><div style="text-align:right;font-size:12px;font-weight:800;color:var(--ink-soft)"><div>${saEscape(summaryDate)}</div><div>เวลา 17:00</div></div></div><table id="sa-keyword-table" style="width:100%;border-collapse:collapse;table-layout:fixed;font:700 13px Arial,sans-serif"><thead><tr style="background:linear-gradient(90deg,#5b8def,#7f6bea);color:#fff"><th style="width:25%;padding:8px;text-align:left">Region</th><th style="width:15%;padding:8px">Pending</th><th style="width:20%;padding:8px">Long Aging</th><th style="width:20%;padding:8px">Downtime 24H (Exc. Long)</th><th style="width:20%;padding:8px">Total Over</th></tr></thead><tbody>${body}</tbody></table></section></div>`;
 }
 
 function saRenderOverviewCountryMaps(allRows, overRows) {
@@ -8736,7 +8762,13 @@ function saRenderOverviewCountryMaps(allRows, overRows) {
   regions.forEach(rg => { regionScope[rg] = new Set((allRows || []).filter(r => saOvRegionKey(r) === rg).map(saOverviewProvinceLabel).map(norm)); });
   regionScope.BMA = new Set(["นนทบุรี","ปทุมธานี","กรุงเทพมหานคร","สมุทรปราการ"].map(norm));
   const maxCount = Math.max(1, ...regions.flatMap(rg => Object.values(regionCounts[rg])));
-  const color = (base,n,zoneMax) => n ? `${base}${Math.round(55 + 200*n/Math.max(1,zoneMax)).toString(16).padStart(2,"0")}` : "#e9eef8";
+  const color = (base,n,zoneMax) => {
+    if (!n) return "#bbf7d0";
+    const hex = base.replace("#", "");
+    const br = parseInt(hex.slice(0, 2), 16), bg = parseInt(hex.slice(2, 4), 16), bb = parseInt(hex.slice(4, 6), 16);
+    const level = .45 + .55 * (n / Math.max(1, zoneMax));
+    return `rgb(${Math.round(br * level)},${Math.round(bg * level)},${Math.round(bb * level)})`;
+  };
   regions.forEach(rg => {
     const svg=document.getElementById(`sa-ov-map-${rg}`); if(!svg) return;
     svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML="";
@@ -8755,7 +8787,7 @@ function saRenderOverviewCountryMaps(allRows, overRows) {
     let bx0=Math.max(minLon,Math.min(...xs)-.25), bx1=Math.min(maxLon,Math.max(...xs)+.25);
     let by0=Math.max(minLat,Math.min(...ys)-.25), by1=Math.min(maxLat,Math.max(...ys)+.25);
     // Zoom เพิ่ม 50% จากขอบเขต Province ของ Zone นี้
-    const zoom=1.5, cx=(bx0+bx1)/2, cy=(by0+by1)/2, zx=(bx1-bx0)/zoom, zy=(by1-by0)/zoom;
+    const zoom=(rg === "CW" || rg === "EAS") ? 1.25 : 1.5, cx=(bx0+bx1)/2, cy=(by0+by1)/2, zx=(bx1-bx0)/zoom, zy=(by1-by0)/zoom;
     bx0=Math.max(minLon,cx-zx/2); bx1=Math.min(maxLon,cx+zx/2);
     by0=Math.max(minLat,cy-zy/2); by1=Math.min(maxLat,cy+zy/2);
     const project = pt => [pad + (pt[0]-bx0)/Math.max(.01,bx1-bx0)*(W-pad*2), H-pad - (pt[1]-by0)/Math.max(.01,by1-by0)*(H-pad*2)];
@@ -8876,9 +8908,19 @@ function saSetLongAgingStatusFilter(value) {
   _saLongAgingStatusFilter = value === "DOWNTIME24_NO_LONG" ? value : "LONG_AGING";
   renderSaSuspendSummary();
 }
+function saManagerValue(r) {
+  const raw = r?.raw_data || {};
+  return saNormText(r?.Manager || r?.manager || r?.MANAGER || r?.["Manager Name"] || r?.["ผู้จัดการ"] || raw.Manager || raw.manager || raw.MANAGER || raw["Manager Name"] || raw["ผู้จัดการ"] || "");
+}
+function saSetLongAgingManagerFilter(value) {
+  _saLongAgingManagerFilter = saNormText(value) || "ALL";
+  renderSaSuspendSummary();
+}
 function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
-  const rows = (allRows || []).filter(r => !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject))).map(r => {
+  const managers = Array.from(new Set((allRows || []).map(saManagerValue).filter(Boolean))).sort((a, b) => a.localeCompare(b, "th"));
+  if (_saLongAgingManagerFilter !== "ALL" && !managers.includes(_saLongAgingManagerFilter)) _saLongAgingManagerFilter = "ALL";
+  const rows = (allRows || []).filter(r => (_saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)).filter(r => !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject))).map(r => {
     const sevMatch = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])(?:\b|[-\s])/);
     if (!sevMatch) return null;
     const urgency = saLongAgingUrgencyHours(r);
@@ -8891,7 +8933,11 @@ function saLongAgingHTML(allRows) {
   }).filter(Boolean).sort((a, b) => b.downtime - a.downtime);
   _saLongAgingVisibleRows = rows.map(x => x.r);
   _saLongAgingExportRows = rows.filter(x => saLongAgingSiteCode(x.r) === "find not found").map(x => x.r);
-  if (!rows.length) return `<div class="sa-long-aging-wrap"><div class="sa-long-aging-title">SA Over + Long Aging</div><div class="sa-suspend-empty">ไม่มี Ticket ที่เข้าสู่สถานะ Long Aging</div></div>`;
+  if (!rows.length) {
+    const emptyDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date());
+    const emptyTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
+    return `<div class="sa-long-aging-wrap"><div class="sa-long-aging-title" style="text-align:center;font-size:22px">${emptyTitle}<div class="sa-long-aging-caption-date">${saEscape(emptyDate)} · เวลา 17:00</div></div><div class="sa-suspend-empty">ไม่มี Ticket ตาม Status ที่เลือก</div></div>`;
+  }
   const reasonKeys = SA_SUSPEND_REASON_ROWS.map(x => x.key);
   const headers = ["Site ID", "Work Order ID", "Source Ticket", "Severity", "Aging Time", "INOC Log", ...SA_SUSPEND_REASON_ROWS.map(x => x.label), "Total"];
   const totals = Object.fromEntries(reasonKeys.map(k => [k, 0]));
@@ -8914,7 +8960,10 @@ function saLongAgingHTML(allRows) {
     return `<tr><td title="${saEscape(site)}">${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td class="sa-long-aging-log-cell"><span class="sa-long-aging-log-text" title="คลิกเพื่อแก้ไข" onclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(logText)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
   }).join("");
   const foot = `<tr><td colspan="6">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
-  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H Without Long Aging</option></select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button><button class="btn" onclick="exportSaLongAgingNotFoundRawData()">📥 Export find not found Raw Data</button></div><table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${_saLongAgingStatusFilter==="LONG_AGING"?"Long Aging":"Downtime >24H Without Long Aging"} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date());
+  const reportTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
+  const managerOptions = ["<option value=\"ALL\">ทั้งหมด</option>", ...managers.map(m => `<option value="${saEscape(m)}"${_saLongAgingManagerFilter === m ? " selected" : ""}>${saEscape(m)}</option>`)].join("");
+  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button><button class="btn" onclick="exportSaLongAgingNotFoundRawData()">📥 Export find not found Raw Data</button></div><table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
 function renderSaSuspendSummary() {
@@ -8931,6 +8980,7 @@ function renderSaSuspendSummary() {
     .filter(r => !(_saSuspendRegionFilter === "BMA" && /^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject))))
     .filter(saMatchesEasProvince)
     .filter(saMatchesSearch)
+    .filter(r => _saReportManagerFilter === "ALL" || saManagerValue(r) === _saReportManagerFilter)
     .filter(r => _saReportStatusFilter === "ALL" || (_saReportStatusFilter === "DOWNTIME24_NO_LONG" ? (saDowntimeHours(r) > 24 && saReportStatus(r) !== "LONG_AGING") : saReportStatus(r) === _saReportStatusFilter))
     .filter(r => !["LONG_AGING", "DOWNTIME24_NO_LONG"].includes(_saReportStatusFilter) || /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
   const subtabsHTML = saSuspendSubTabsHTML();
@@ -8989,14 +9039,15 @@ function renderSaSuspendSummary() {
   }
   container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}
     <div class="sa-suspend-toolbar">
-      ${_saSuspendView === "report" ? saReportStatusFilterHTML() : ""}
-      ${_saSuspendView === "report" ? `<button class="btn" onclick="exportSaReportByCategory()">📥 Export Report</button>` : ""}
       ${saRegionOptionsHTML(allRows)}
       ${saEasProvinceFilterHTML()}
+      ${_saSuspendView === "report" ? saReportManagerFilterHTML(allRows) : ""}
+      ${_saSuspendView === "report" ? saReportStatusFilterHTML() : ""}
+      ${_saSuspendView === "report" ? `<button class="btn" onclick="exportSaReportByCategory()">📥 Export Raw Data</button>` : ""}
+      <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
+      <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
       ${saSearchHTML()}
       ${saTableToggleControlsHTML()}
-      <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
-      <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
       <input type="file" id="sa-nano-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaNanoExcelFile(this.files[0])">
       ${saUploadLogHTML()}
