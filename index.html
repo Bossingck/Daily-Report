@@ -7103,12 +7103,15 @@ function saHasEzTicketSubject(r) {
   return /ezticket/i.test(saNormText(r && r.Subject));
 }
 function saIsNkrRow(r) {
-  const site = saNormText(r && (r["Site ID"] || r["Site Code"]));
-  const subject = saNormText(r && r.Subject);
-  return /^NKR/i.test(site) || /^NKR/i.test(subject);
+  const raw = r?.raw_data || {};
+  const values = [
+    r?.["Site ID"], r?.["Site Code"], r?.Subject,
+    raw["Site ID"], raw["Site Code"], raw.Subject
+  ].map(saNormText).filter(Boolean);
+  return values.some(value => /(?:^|[^A-Z0-9])NKR[A-Z0-9]*/i.test(value));
 }
 function saSkipDbRow(r) {
-  return saIsNkrRow(r) || saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT" || saHasEzTicketSubject(r);
+  return saIsDeletedWorkOrder(r) || saIsNkrRow(r) || saRegionNorm(r) === "UNKNOWN" || saTeamCodeNorm(r) === "BBT" || saHasEzTicketSubject(r);
 }
 function saRegionOptionsHTML(rows) {
   const regions = Array.from(new Set((rows || []).map(saRegionNorm).filter(Boolean))).sort();
@@ -7378,7 +7381,7 @@ function saSourceRows() {
   if ((!Array.isArray(_saSuspendRows) || !_saSuspendRows.length) && typeof saLoadSuspendRowsLocal === "function") {
     saLoadSuspendRowsLocal();
   }
-  return Array.isArray(_saSuspendRows) ? _saSuspendRows : [];
+  return Array.isArray(_saSuspendRows) ? _saSuspendRows.filter(r => !saIsDeletedWorkOrder(r)) : [];
 }
 function saSaveSuspendRowsLocal(rows, filename) {
   try {
@@ -7754,9 +7757,15 @@ function saGetInocLog(r) {
 }
 function saGetSummaryLog(r) {
   if (!r) return "";
-  const keys = Object.keys(r);
-  const key = keys.find(k => /^summary\s*log$/i.test(saNormText(k)) || /^summary[_\s-]*log$/i.test(saNormText(k)));
-  return key ? saNormText(r[key]) : "";
+  const sources = [r, r.raw_data || {}];
+  for (const source of sources) {
+    const key = Object.keys(source).find(k => saNormText(k).toLowerCase().replace(/[\s_-]+/g, "") === "summarylog");
+    if (key) {
+      const value = saNormText(source[key]);
+      if (value) return value;
+    }
+  }
+  return "";
 }
 function saSetRowEditUpdatedAt(rowId, iso) {
   if (!rowId || !iso) return;
@@ -7823,6 +7832,9 @@ async function saDeleteSuspendRow(rowId) {
     if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
       throw new Error("ไม่พบ Work Order นี้ใน Database หรือยังไม่มีสิทธิ์ลบ");
     }
+    const deletedWorkOrders = saReadDeletedWorkOrders();
+    deletedWorkOrders.add(wo);
+    saWriteDeletedWorkOrders(deletedWorkOrders);
     try { await supaFetch(`sa_inoc_logs?${filter}`, "DELETE"); } catch (_) {}
     _saSuspendRowsDbLoaded = false;
     await loadSaSuspendRowsFromDb(true);
@@ -8422,6 +8434,8 @@ const SA_OV_SUMMARY_SEVS = [
   { key:"SA6", color:"#f472b6" },
 ];
 function saOvRegionKey(r) {
+  const provinceCode = saOverviewProvinceCode(r).toUpperCase();
+  if (/^(PCK|PBR)/.test(provinceCode)) return "CW";
   const norm = saRegionNorm(r); // BMA / CW / EAS / SOU / (raw value) / UNKNOWN
   if (norm === "BMA") return "BMA";
   if (norm === "CW" || norm === "C&W") return "CW";
