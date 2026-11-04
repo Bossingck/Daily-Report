@@ -2059,6 +2059,15 @@
       var(--card-glass);
   }
   .sa-long-aging-wrap { margin-top: 4px; overflow-x: auto; }
+  .sa-long-aging-search-panel { margin: 0 0 12px; border: 1px solid rgba(91,141,239,.35); border-radius: 10px; background: var(--surface-0); overflow: hidden; }
+  .sa-long-aging-search-head { display:flex; align-items:center; gap:12px; padding:9px 12px; background:linear-gradient(90deg,#5b8def,#8d70ed); color:#fff; }
+  .sa-long-aging-search-head span { font-size:12px; opacity:.9; }
+  .sa-long-aging-search-head button { margin-left:auto; padding:5px 12px; }
+  .sa-long-aging-search-scroll { overflow:auto; max-height:260px; }
+  .sa-long-aging-search-panel table { width:100%; border-collapse:collapse; font-size:12px; }
+  .sa-long-aging-search-panel th, .sa-long-aging-search-panel td { padding:7px 10px; border-bottom:1px solid var(--glass-border); text-align:left; white-space:nowrap; }
+  .sa-long-aging-search-panel th { background:rgba(91,141,239,.12); color:var(--ink-strong); }
+  .sa-long-aging-search-empty { padding:14px; color:var(--text-soft); }
   #sa-long-aging-capture-frame { min-width: 1550px; background: var(--surface-0); border: 2px solid #f5a623; border-radius: 8px; padding: 10px; }
   .sa-long-aging-table { width: 100%; min-width: 1550px; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden; font-size: 12px; background: var(--surface-0); color: var(--text-primary); }
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
@@ -7004,6 +7013,7 @@ let _saLongAgingVisibleRows = [];
 let _saLongAgingLogFilter = "ALL";
 let _saLongAgingStatusFilter = "LONG_AGING";
 let _saLongAgingManagerFilter = "ALL";
+let _saLongAgingSearch = "";
 let _saSnapshotAt = null;
 let _saDeletedWorkOrdersDbLoaded = false;
 let _saDeletedWorkOrdersDbLoading = false;
@@ -7914,24 +7924,29 @@ async function saDeleteSuspendRow(rowId) {
   _saSuspendSelectedDetailKey = null;
   try {
     const filter = `work_order_id=eq.${encodeURIComponent(wo)}`;
-    const deletedRows = await supaFetch(`sa_suspend_raw_rows?${filter}`, "DELETE");
-    if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
-      throw new Error("ไม่พบ Work Order นี้ใน Database หรือยังไม่มีสิทธิ์ลบ");
-    }
+    // บันทึก tombstone ก่อน เพื่อไม่ให้ Upload รอบถัดไปนำ Work Order นี้กลับมา
     await saMarkWorkOrderDeletedInDb(wo);
-    const deletedWorkOrders = saReadDeletedWorkOrders();
-    deletedWorkOrders.add(wo);
-    saWriteDeletedWorkOrders(deletedWorkOrders);
+    // ลบข้อมูลหลักต่อจากนั้น หากไม่มีแถวหรือ DELETE ไม่คืนข้อมูลก็ไม่กระทบ tombstone
+    try { await supaFetch(`sa_suspend_raw_rows?${filter}`, "DELETE"); } catch (deleteErr) {
+      console.warn("ลบ Raw Data ไม่สำเร็จ แต่บันทึกรายการลบไว้แล้ว", deleteErr);
+    }
     try { await supaFetch(`sa_inoc_logs?${filter}`, "DELETE"); } catch (_) {}
+    _saSuspendRows = (Array.isArray(_saSuspendRows) ? _saSuspendRows : []).filter(r => saWorkOrderId(r) !== wo);
     _saSuspendRowsDbLoaded = false;
     await loadSaSuspendRowsFromDb(true);
-    saSetDbStatus("ok", `ลบ ${wo} ออกจากระบบแล้ว`);
+    const successText = `ลบ ${wo} สำเร็จ · บันทึกสถานะลง Database แล้ว`;
+    saSetDbStatus("ok", successText);
+    alert(`✅ ${successText}`);
   } catch (e) {
     const msg = e.message || "";
     if (/PGRST205|Could not find the table|404/i.test(msg)) {
-      saSetDbStatus("error", `ลบ ${wo} ไม่สำเร็จ: ยังไม่มีตาราง Supabase`);
+      const errorText = `ลบ ${wo} ไม่สำเร็จ: ยังไม่มีตาราง Supabase`;
+      saSetDbStatus("error", errorText);
+      alert(`❌ ${errorText}`);
     } else {
-      saSetDbStatus("error", `ลบ ${wo} จาก Supabase ไม่สำเร็จ: ${msg}`);
+      const errorText = `ลบ ${wo} จาก Supabase ไม่สำเร็จ: ${msg}`;
+      saSetDbStatus("error", errorText);
+      alert(`❌ ${errorText}`);
     }
   }
 }
@@ -8035,7 +8050,13 @@ async function loadSaSuspendRowsFromDb(force = false) {
       if (page.length < limit) break;
     }
     _saSuspendDbRawCount = rows.length;
-    const dbRows = (rows || []).map(r => r.raw_data).filter(Boolean);
+    const dbRows = (rows || []).map(r => {
+      const raw = { ...(r.raw_data || {}) };
+      // รองรับข้อมูลเก่าที่อาจเก็บ Summary Log ไว้คนละชื่อ/คอลัมน์
+      const summary = r.summary_log || r.summaryLog || raw["Summary Log"] || raw.SummaryLog || raw.summary_log || "";
+      if (summary && !saGetSummaryLog(raw)) raw["Summary Log"] = summary;
+      return raw;
+    }).filter(r => Object.keys(r).length);
     // An empty database response must not erase an existing local upload.
     if (dbRows.length || !Array.isArray(_saSuspendRows) || !_saSuspendRows.length) {
       _saSuspendRows = dbRows;
@@ -9069,6 +9090,21 @@ function saSetLongAgingReasonCount(rowId, reasonKey, value) {
     saSetRowReason(rowId, "non_action");
   }
 }
+function saSetLongAgingSearch(value) {
+  _saLongAgingSearch = saNormText(value);
+  renderSaSuspendSummary();
+}
+function saLongAgingSearchRows(rows) {
+  const q = saNormText(_saLongAgingSearch).toLowerCase();
+  if (!q) return [];
+  return (rows || []).filter(r => [saWorkOrderId(r), r["Source Ticket ID"], r["Site ID"], r["Site Code"], r.Subject, r["External Ticket ID"], r["SDM TT"]].some(v => saNormText(v).toLowerCase().includes(q)));
+}
+function saLongAgingSearchHTML(rows) {
+  if (!_saLongAgingSearch) return "";
+  const found = saLongAgingSearchRows(rows);
+  const body = found.map(r => { const rowId = saRowId(r); return `<tr><td>${saEscape(r["Site ID"] || r["Site Code"] || "-")}</td><td>${saEscape(saWorkOrderId(r) || "-")}</td><td>${saEscape(r["Source Ticket ID"] || "-")}</td><td>${saEscape(r.Severity || "-")}</td><td>${saEscape(saLongAgingTimeText(saDowntimeHours(r)))}</td><td><button class="sa-summary-log-btn btn" onclick="saToggleTicketSummaryLog('${saEscape(rowId)}', this)">Summary Log</button></td><td><button class="sa-delete-row-btn" onclick="saDeleteSuspendRow('${saEscape(rowId)}')">ลบ</button></td></tr>`; }).join("");
+  return `<section class="sa-long-aging-search-panel"><div class="sa-long-aging-search-head"><strong>ผลการค้นหา Ticket</strong><span>${found.length} รายการ</span><button type="button" class="btn" onclick="_saLongAgingSearch='';renderSaSuspendSummary()">ปิด</button></div>${found.length ? `<div class="sa-long-aging-search-scroll"><table><thead><tr><th>Site ID</th><th>Work Order ID</th><th>Source Ticket</th><th>Severity</th><th>Aging Time</th><th>Summary Log</th><th>จัดการ</th></tr></thead><tbody>${body}</tbody></table></div>` : `<div class="sa-long-aging-search-empty">ไม่พบ Ticket ที่ค้นหา</div>`}</section>`;
+}
 function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
   const managers = Array.from(new Set((allRows || []).map(saManagerValue).filter(Boolean))).sort((a, b) => a.localeCompare(b, "th"));
@@ -9117,7 +9153,7 @@ function saLongAgingHTML(allRows) {
   const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
   const reportTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
   const managerOptions = ["<option value=\"ALL\">ทั้งหมด</option>", ...managers.map(m => `<option value="${saEscape(m)}"${_saLongAgingManagerFilter === m ? " selected" : ""}>${saEscape(m)}</option>`)].join("");
-  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div><table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><input class="sa-search-input" style="min-width:280px" value="${saEscape(_saLongAgingSearch)}" placeholder="ค้นหา Site ID / Work Order ID / Source Ticket" oninput="saSetLongAgingSearch(this.value)"><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div>${saLongAgingSearchHTML(allRows)}<table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
 function renderSaSuspendSummary() {
