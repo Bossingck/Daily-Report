@@ -2079,18 +2079,19 @@
   .sa-long-aging-table tbody tr:nth-child(even) td { background: rgba(91,141,239,.045); }
   .sa-long-aging-table tbody tr:hover td { background: rgba(155,123,247,.12); }
   .sa-long-aging-table td:first-child, .sa-long-aging-table td:nth-child(2), .sa-long-aging-table td:nth-child(3), .sa-long-aging-table td:nth-child(7) { text-align: left; }
-  .sa-long-aging-table th:nth-child(1), .sa-long-aging-table td:nth-child(1) { width: 150px; }
+  .sa-long-aging-table th:nth-child(1), .sa-long-aging-table td:nth-child(1) { width: 135px; min-width:135px; max-width:135px; }
   .sa-long-aging-table th:nth-child(2), .sa-long-aging-table td:nth-child(2) { width: 150px; }
   .sa-long-aging-table th:nth-child(3), .sa-long-aging-table td:nth-child(3) { width: 135px; }
   .sa-long-aging-table th:nth-child(4), .sa-long-aging-table td:nth-child(4) { width: 80px; }
   .sa-long-aging-table th:nth-child(5), .sa-long-aging-table td:nth-child(5) { width: 90px; }
   .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width: 280px; max-width: 280px; }
-  .sa-long-aging-table th:nth-child(7), .sa-long-aging-table td:nth-child(7) { width: 280px; min-width:280px; max-width:280px; }
+  .sa-long-aging-table th:nth-child(7), .sa-long-aging-table td:nth-child(7) { width: 360px; min-width:360px; max-width:360px; }
   .sa-long-aging-table th:nth-child(n+8):nth-child(-n+17), .sa-long-aging-table td:nth-child(n+8):nth-child(-n+17) { width: 62px; min-width:62px; max-width:62px; padding-left: 2px; padding-right: 2px; text-align:center; }
   .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width: 62px; min-width:62px; max-width:62px; padding-left: 2px; padding-right: 2px; text-align:center; }
   .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width:92px; min-width:92px; max-width:92px; white-space:nowrap; }
   .sa-long-aging-table th:nth-child(17), .sa-long-aging-table td:nth-child(17) { width: 62px; min-width:62px; max-width:62px; text-align:center; }
-  .sa-long-aging-log-text { display: block; max-width: 260px; white-space: normal; overflow-wrap: anywhere; line-height: 1.45; }
+  .sa-long-aging-log-text { display:block; max-width:340px; max-height:none; overflow:visible; white-space:normal; overflow-wrap:anywhere; line-height:1.45; cursor:pointer; }
+  .sa-long-aging-log-text.expanded { max-height:none; }
   .sa-summary-log-cell { vertical-align: top; }
   .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
   .sa-summary-log-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
@@ -7004,6 +7005,8 @@ let _saLongAgingLogFilter = "ALL";
 let _saLongAgingStatusFilter = "LONG_AGING";
 let _saLongAgingManagerFilter = "ALL";
 let _saSnapshotAt = null;
+let _saDeletedWorkOrdersDbLoaded = false;
+let _saDeletedWorkOrdersDbLoading = false;
 let _saLongAgingKnownSiteIds = [];
 let _saSuspendSearch = "";
 let _saSuspendSearchDraft = "";
@@ -7405,7 +7408,28 @@ function saWriteDeletedWorkOrders(set) {
 }
 function saIsDeletedWorkOrder(r) {
   const wo = saWorkOrderId(r);
-  return !!(wo && saReadDeletedWorkOrders().has(wo));
+  return !!(wo && _saDeletedWorkOrdersDb.has(wo));
+}
+const _saDeletedWorkOrdersDb = new Set();
+async function saLoadDeletedWorkOrdersFromDb(force = false) {
+  if (_saDeletedWorkOrdersDbLoading || (_saDeletedWorkOrdersDbLoaded && !force)) return;
+  _saDeletedWorkOrdersDbLoading = true;
+  try {
+    const rows = await supaFetch("sa_deleted_work_orders?select=work_order_id&limit=10000");
+    _saDeletedWorkOrdersDb.clear();
+    (rows || []).forEach(x => { if (x.work_order_id) _saDeletedWorkOrdersDb.add(saNormText(x.work_order_id)); });
+    _saDeletedWorkOrdersDbLoaded = true;
+  } catch (e) {
+    console.warn("โหลดรายการ Work Order ที่ลบจาก Database ไม่สำเร็จ", e);
+  } finally {
+    _saDeletedWorkOrdersDbLoading = false;
+  }
+}
+async function saMarkWorkOrderDeletedInDb(workOrderId) {
+  const wo = saNormText(workOrderId);
+  if (!wo) return;
+  await supaUpsert("sa_deleted_work_orders?on_conflict=work_order_id", [{ work_order_id: wo, deleted_at: new Date().toISOString() }]);
+  _saDeletedWorkOrdersDb.add(wo);
 }
 function saSourceRows() {
   if ((!Array.isArray(_saSuspendRows) || !_saSuspendRows.length) && typeof saLoadSuspendRowsLocal === "function") {
@@ -7848,7 +7872,7 @@ function saRestoreLongAgingLog(rowId, cell) {
     const row = _saRawRowsById[rowId];
     if (!row || !cell) return;
     const text = saNormText(saGetInocLog(row) || "-");
-    cell.innerHTML = `<span class="sa-long-aging-log-text" title="คลิกเพื่อแก้ไข" onclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(text)}</span>`;
+    cell.innerHTML = `<span class="sa-long-aging-log-text" title="คลิกเพื่อขยาย · ดับเบิลคลิกเพื่อแก้ไข" onclick="saToggleLongAgingLog(this)" ondblclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(text)}</span>`;
   }, 250);
 }
 function saInocLogInputHTML(r) {
@@ -7861,6 +7885,10 @@ function saEditLongAgingLog(rowId, cell) {
   cell.innerHTML = saInocLogInputHTML(row);
   const input = cell.querySelector("textarea");
   if (input) input.focus();
+}
+function saToggleLongAgingLog(span) {
+  if (!span) return;
+  span.classList.toggle("expanded");
 }
 function saSetInocLog(rowId, value) {
   if (!rowId) return;
@@ -7890,6 +7918,7 @@ async function saDeleteSuspendRow(rowId) {
     if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
       throw new Error("ไม่พบ Work Order นี้ใน Database หรือยังไม่มีสิทธิ์ลบ");
     }
+    await saMarkWorkOrderDeletedInDb(wo);
     const deletedWorkOrders = saReadDeletedWorkOrders();
     deletedWorkOrders.add(wo);
     saWriteDeletedWorkOrders(deletedWorkOrders);
@@ -8069,6 +8098,7 @@ function processSaSuspendExcelFile(file) {
       _rawUploadFileName = file.name;
       _saSnapshotAt = Date.now();
       try {
+        await saLoadDeletedWorkOrdersFromDb(true);
         await saSaveRawRowsToDb(rows, file.name);
         _saSuspendRowsDbLoaded = false;
         await loadSaSuspendRowsFromDb(true);
@@ -9081,7 +9111,7 @@ function saLongAgingHTML(allRows) {
     const source = saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-");
     const logText = saNormText(saGetInocLog(r) || "-");
     const nanoBadge = saIsNano(r) ? '<span class="sa-nano-badge">NANO</span>' : '';
-    return `<tr><td class="sa-long-aging-site-cell" title="${saEscape(site)}">${nanoBadge}${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td><input class="sa-long-aging-follow-up" type="text" inputmode="numeric" value="${saEscape(saGetFollowUp(r))}" placeholder="ตัวเลข" onchange="saSetFollowUp('${saEscape(rowId)}', this.value)"></td><td class="sa-long-aging-log-cell"><span class="sa-long-aging-log-text" title="คลิกเพื่อแก้ไข" onclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(logText)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
+    return `<tr><td class="sa-long-aging-site-cell" title="${saEscape(site)}">${nanoBadge}${saEscape(site)}</td><td title="${saEscape(wo)}">${saEscape(wo)}</td><td title="${saEscape(source)}">${saEscape(source)}</td><td>${saEscape(severity || "-")}</td><td>${saLongAgingTimeText(downtime)}</td><td><input class="sa-long-aging-follow-up" type="text" inputmode="numeric" value="${saEscape(saGetFollowUp(r))}" placeholder="ตัวเลข" onchange="saSetFollowUp('${saEscape(rowId)}', this.value)"></td><td class="sa-long-aging-log-cell"><span class="sa-long-aging-log-text" title="คลิกเพื่อขยาย · ดับเบิลคลิกเพื่อแก้ไข" onclick="saToggleLongAgingLog(this)" ondblclick="saEditLongAgingLog('${saEscape(rowId)}', this.parentElement)">${saEscape(logText)}</span></td>${cells}<td>${rowTotal || ""}</td></tr>`;
   }).join("");
   const foot = `<tr><td colspan="7">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
   const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
@@ -9093,6 +9123,9 @@ function saLongAgingHTML(allRows) {
 function renderSaSuspendSummary() {
   const container = document.getElementById("content-sa-suspend");
   if (!container) return;
+  if (!_saDeletedWorkOrdersDbLoaded && !_saDeletedWorkOrdersDbLoading) {
+    saLoadDeletedWorkOrdersFromDb().then(() => renderSaSuspendSummary());
+  }
   _saSuspendDetailStore = {};
   _saSuspendDetailSeq = 0;
   if (!_saNanoDbLoaded) setTimeout(() => loadSaNanoMappingFromDb(false), 0);
