@@ -2068,6 +2068,14 @@
   .sa-long-aging-search-panel th, .sa-long-aging-search-panel td { padding:7px 10px; border-bottom:1px solid var(--glass-border); text-align:left; white-space:nowrap; }
   .sa-long-aging-search-panel th { background:rgba(91,141,239,.12); color:var(--ink-strong); }
   .sa-long-aging-search-empty { padding:14px; color:var(--text-soft); }
+  .sa-delete-confirm-modal { position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; background:rgba(12,25,60,.55); backdrop-filter:blur(4px); }
+  .sa-delete-confirm-dialog { width:min(430px,92vw); padding:22px; border:1px solid rgba(91,141,239,.35); border-radius:16px; background:var(--surface-0); box-shadow:0 18px 60px rgba(20,40,100,.35); text-align:center; }
+  .sa-delete-confirm-dialog h3 { margin:0 0 8px; color:var(--ink-strong); font-size:18px; }
+  .sa-delete-confirm-dialog p { margin:0 0 18px; color:var(--text-primary); font-size:13px; }
+  .sa-delete-confirm-actions { display:flex; justify-content:center; gap:10px; }
+  .sa-delete-confirm-actions button { min-width:92px; padding:9px 14px; border-radius:9px; border:0; font-weight:800; cursor:pointer; }
+  .sa-delete-confirm-cancel { background:var(--surface-2); color:var(--text-primary); }
+  .sa-delete-confirm-ok { background:linear-gradient(135deg,#ef4444,#f97316); color:#fff; }
   #sa-long-aging-capture-frame { min-width: 1550px; background: var(--surface-0); border: 2px solid #f5a623; border-radius: 8px; padding: 10px; }
   .sa-long-aging-table { width: 100%; min-width: 1550px; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden; font-size: 12px; background: var(--surface-0); color: var(--text-primary); }
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
@@ -7916,11 +7924,26 @@ function saSaveSaRowEditNow(rowId) {
   clearTimeout(_saInocLogSaveTimers[rowId]);
   saSaveSaRowEditToDb(rowId);
 }
+function saConfirmDeleteTheme(workOrderId) {
+  return new Promise(resolve => {
+    const old = document.getElementById("sa-delete-confirm-modal");
+    if (old) old.remove();
+    const modal = document.createElement("div");
+    modal.id = "sa-delete-confirm-modal";
+    modal.className = "sa-delete-confirm-modal";
+    const finish = value => { modal.remove(); resolve(value); };
+    modal.innerHTML = `<div class="sa-delete-confirm-dialog"><h3>ยืนยันการลบ Ticket</h3><p>ต้องการลบ Work Order<br><strong>${saEscape(workOrderId)}</strong><br>และไม่ให้นำกลับมาอีกในการ Upload ครั้งถัดไปใช่หรือไม่?</p><div class="sa-delete-confirm-actions"><button type="button" class="sa-delete-confirm-cancel">ยกเลิก</button><button type="button" class="sa-delete-confirm-ok">ลบและบันทึก</button></div></div>`;
+    modal.querySelector(".sa-delete-confirm-cancel").onclick = () => finish(false);
+    modal.querySelector(".sa-delete-confirm-ok").onclick = () => finish(true);
+    modal.addEventListener("click", e => { if (e.target === modal) finish(false); });
+    document.body.appendChild(modal);
+  });
+}
 async function saDeleteSuspendRow(rowId) {
   const row = _saRawRowsById[rowId];
   const wo = saWorkOrderId(row);
   if (!wo) return;
-  if (!confirm(`ลบ Work Order ${wo} ออกจาก SA Suspend Summary?`)) return;
+  if (!(await saConfirmDeleteTheme(wo))) return;
   _saSuspendSelectedDetailKey = null;
   try {
     const filter = `work_order_id=eq.${encodeURIComponent(wo)}`;
