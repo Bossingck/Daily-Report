@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Daily Operation Report — Field Service Management</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="jszip.min.js"></script>
 <script src="pptxgen.bundle.js"></script>
@@ -2081,7 +2080,7 @@
   .sa-long-aging-table th { background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; border-right: 1px solid rgba(255,255,255,.22); border-bottom: 1px solid rgba(255,255,255,.3); padding: 9px 7px; text-align: center; white-space: nowrap; font-weight: 800; }
   .sa-long-aging-table caption { caption-side: top; padding: 12px 16px; text-align: center; background: linear-gradient(135deg, #5b8def, #9b7bf7); color: #fff; font-size: 22px; font-weight: 800; border-radius: 9px 9px 0 0; }
   .sa-long-aging-caption-date { display:block; margin-top:3px; font-size:13px; font-weight:700; opacity:.95; }
-  .sa-long-aging-export-ppt { background:linear-gradient(135deg,#7c3aed,#a855f7) !important; color:#fff !important; border:0 !important; box-shadow:0 4px 12px rgba(124,58,237,.25); }
+  .sa-long-aging-export-ppt { background:linear-gradient(135deg,#f97316,#ea580c) !important; color:#fff !important; border:0 !important; box-shadow:0 4px 12px rgba(234,88,12,.28); }
   .sa-long-aging-export-raw { background:linear-gradient(135deg,#2563eb,#38bdf8) !important; color:#fff !important; border:0 !important; box-shadow:0 4px 12px rgba(37,99,235,.22); }
   .sa-long-aging-export-notfound { background:linear-gradient(135deg,#dc2626,#f97316) !important; color:#fff !important; border:0 !important; box-shadow:0 4px 12px rgba(220,38,38,.22); }
   .sa-nano-badge { position:absolute; top:3px; right:3px; padding:2px 5px; border-radius:5px; background:#16a34a; color:#fff; font-size:9px; font-weight:900; line-height:1.1; box-shadow:0 1px 3px rgba(0,0,0,.18); }
@@ -2107,7 +2106,7 @@
   .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width: 62px; min-width:62px; max-width:62px; padding-left: 2px; padding-right: 2px; text-align:center; }
   .sa-long-aging-table th:nth-child(6), .sa-long-aging-table td:nth-child(6) { width:92px; min-width:92px; max-width:92px; white-space:nowrap; }
   .sa-long-aging-table th:nth-child(17), .sa-long-aging-table td:nth-child(17) { width: 62px; min-width:62px; max-width:62px; text-align:center; }
-  .sa-long-aging-log-text { display:block; max-width:340px; max-height:none; overflow:visible; white-space:normal; overflow-wrap:anywhere; line-height:1.45; cursor:pointer; }
+  .sa-long-aging-log-text { display:-webkit-box; max-width:340px; max-height:4.35em; overflow:hidden; white-space:normal; overflow-wrap:anywhere; line-height:1.45; -webkit-box-orient:vertical; -webkit-line-clamp:3; cursor:pointer; }
   .sa-long-aging-log-text.expanded { max-height:none; }
   .sa-summary-log-cell { vertical-align: top; }
   .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
@@ -8771,9 +8770,10 @@ function saSuspendOverviewHTML(allRows) {
     const totalCard = `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid var(--border-med);border-radius:9px;background:var(--surface-1);text-align:center"><div style="font-size:11px;font-weight:800;color:var(--ink-soft)">ทั้งหมด</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${total}</div></div>`;
     return `<div style="flex:1;min-width:260px;padding:10px;border:1px solid ${rg.color}66;border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:${rg.color};margin-bottom:8px">${saEscape(rg.label)}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${cards}${totalCard}</div></div>`;
   }).join("");
-  const saSuspendGrandTotal = SA_OV_SUMMARY_SEVS.reduce((sum, sv) => sum + SA_OV_REGIONS.reduce((n, rg) => n + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0), 0);
-  const saSuspendTotalSummary = `<div style="flex:1;min-width:260px;padding:10px;border:1px solid rgba(91,141,239,.35);border-radius:10px;background:var(--surface-0)"><div style="font-size:12px;font-weight:900;color:var(--ink-strong);margin-bottom:8px">ทั้งหมด</div><div style="display:flex;gap:6px;flex-wrap:wrap">${SA_OV_SUMMARY_SEVS.map(sv => { const n = SA_OV_REGIONS.reduce((sum, rg) => sum + (saSuspendRegionSevTotals[rg.key][sv.key] || 0), 0); return `<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid ${sv.color}55;border-radius:9px;background:${sv.color}12;text-align:center"><div style="font-size:11px;font-weight:800;color:${sv.color}">${sv.key}</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${n}</div></div>`; }).join("")}<div style="flex:1;min-width:64px;padding:9px 7px;border:1px solid var(--border-med);border-radius:9px;background:var(--surface-1);text-align:center"><div style="font-size:11px;font-weight:800;color:var(--ink-soft)">SA รวม</div><div style="font-size:20px;line-height:1.15;font-weight:900;color:var(--ink-strong);margin-top:2px">${saSuspendGrandTotal}</div></div></div></div>`;
-  const overRows = allRows.filter(r => saOverHours(r) > 0 && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+  const saReasonCardColors = ["#ef4444", "#f97316", "#eab308", "#a855f7", "#ec4899", "#06b6d4", "#14b8a6", "#2563eb", "#64748b"];
+  const saReasonTotals = Object.fromEntries(SA_SUSPEND_REASON_ROWS.map(rr => [rr.key, allRows.filter(r => saReasonKey(r) === rr.key).length]));
+  const saSuspendTotalSummary = `<div style="width:100%;padding:12px 14px;border:1px solid rgba(91,141,239,.38);border-radius:12px;background:var(--surface-0)"><div style="font-size:13px;font-weight:900;color:var(--ink-strong);margin-bottom:9px">Suspend Status Summary</div><div style="display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto">${SA_SUSPEND_REASON_ROWS.map((rr, i) => { const color=saReasonCardColors[i % saReasonCardColors.length]; const n=saReasonTotals[rr.key] || 0; return `<div style="flex:1 1 0;min-width:92px;padding:9px 6px;border:1px solid ${color};border-top:4px solid ${color};border-radius:9px;background:${color}18;text-align:center"><div style="font-size:10px;font-weight:900;color:${color};white-space:nowrap">${saEscape(rr.label)}</div><div style="font-size:22px;line-height:1.1;font-weight:900;color:var(--ink-strong);margin-top:4px">${n}</div><div style="font-size:9px;color:var(--ink-soft);margin-top:2px">Ticket</div></div>`; }).join("")}</div></div>`;
+  const overRows = allRows.filter(r => (saIsLongAging(r) || (saDowntimeHours(r) > 24 && !saIsLongAging(r))) && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
   const provinceSection = saOverviewOverProvinceHTML(overRows);
   return `<div class="sa-ov-toolbar">
     <select id="sa-ov-capture-region" class="sa-ov-capture-select">${regionOptions}</select>
@@ -8781,7 +8781,7 @@ function saSuspendOverviewHTML(allRows) {
     <button type="button" class="nsa-capture-btn blue" data-target="sa-keyword-panel" data-fname="SA_Pending_Summary" data-label="📷 แคปภาพสรุป Pending">📷 แคปภาพสรุป Pending</button>
     <button type="button" class="nsa-capture-btn gold" onclick="exportSaOvRawData()">📊 Export Raw Data</button>
   </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}${saSuspendTotalSummary}</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px">${saSuspendRegionSummary}</div>
   <div id="sa-ov-capture-frame" style="padding:0;background:transparent">
     ${provinceSection}
   </div>
@@ -9044,38 +9044,131 @@ function exportSaLongAgingRawData() {
   if (typeof dashShowToast === "function") dashShowToast(`Export Long Aging Raw Data สำเร็จ — ${exportRows.length} รายการ`);
 }
 async function exportSaLongAgingPowerPoint() {
-  const rows = _saLongAgingVisibleRows || [];
-  if (!rows.length) { alert("ไม่มีข้อมูลสำหรับ Export PowerPoint"); return; }
+  // Export ทั้ง 2 Status ในไฟล์เดียว โดยแยกเป็น Section: Long Aging และ Downtime >24H
+  const sourceRows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_saLongAgingVisibleRows || []);
+  const eligibleRows = sourceRows.filter(r => saIsSaSeverity(r) && !saIsClosed(r) && !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject)))
+    .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
+    .filter(r => _saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)
+    .filter(r => _saLongAgingLogFilter !== "NO_LOG" || !saNormText(saGetInocLog(r)));
+  const sections = [
+    { label:"Long Aging", rows: eligibleRows.filter(r => saIsLongAging(r) && saDowntimeHours(r) >= 48).sort((a, b) => saDowntimeHours(b) - saDowntimeHours(a)) },
+    { label:"Downtime >24H (Exc. Long)", rows: eligibleRows.filter(r => saDowntimeHours(r) > 24 && !saIsLongAging(r)).sort((a, b) => saDowntimeHours(b) - saDowntimeHours(a)) }
+  ].filter(section => section.rows.length);
+  const rows = sections.flatMap(section => section.rows);
+  if (!rows.length) { alert("ไม่มี Ticket สำหรับ Export PowerPoint ตาม Status ที่เลือก"); return; }
   const PptxConstructor = window.PptxGenJS || window.pptxgen || window.pptxgenjs;
   if (typeof PptxConstructor !== "function") { alert("ไม่สามารถโหลดเครื่องมือ PowerPoint ได้ กรุณาตรวจสอบไฟล์ pptxgen.bundle.js"); return; }
   const pptx = new PptxConstructor();
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "Daily Operation Report";
-  pptx.subject = "SA Long Aging Report";
-  pptx.title = "SA Long Aging Report";
+  pptx.subject = "SA Long Aging Report >= 2D";
+  pptx.title = "SA Long Aging Report >= 2D";
   pptx.company = "INOC";
   pptx.lang = "th-TH";
-  const title = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
+  const title = "Report Long Aging >= 2D";
   const date = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
-  const headers = ["Site ID", "Work Order ID", "Source Ticket", "Severity", "Aging Time", "การติดตาม", "INOC Log", ...SA_SUSPEND_REASON_ROWS.map(x => x.label), "Total"];
+  const headers = ["Site ID", "Work Order / Source Ticket", "Severity", "Aging Time", "การติดตาม", "INOC Log", "Status"];
+  const grouped = {};
+  rows.forEach(r => { const region = saRegionNorm(r) || "ไม่ระบุ Region"; (grouped[region] ||= []).push(r); });
   const chunks = [];
-  for (let i = 0; i < rows.length; i += 10) chunks.push(rows.slice(i, i + 10));
+  sections.forEach(section => {
+    const byRegion = {};
+    section.rows.forEach(r => { const region = saRegionNorm(r) || "ไม่ระบุ Region"; (byRegion[region] ||= []).push(r); });
+    Object.entries(byRegion).sort(([a],[b]) => a.localeCompare(b, "th")).forEach(([region, regionRows]) => {
+      for (let i = 0; i < regionRows.length; i += 10) chunks.push({ section: section.label, region, rows: regionRows.slice(i, i + 10) });
+    });
+  });
+  const longRows = sections.find(s => s.label === "Long Aging")?.rows || [];
+  const downtimeRows = sections.find(s => s.label === "Downtime >24H (Exc. Long)")?.rows || [];
+  const allOverRows = eligibleRows.filter(r => saDowntimeHours(r) > 0);
+  const summarySlide = pptx.addSlide();
+  summarySlide.background = { color: "F5F7FF" };
+  summarySlide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.333, h:0.18, fill:{color:"5B8DEF"}, line:{color:"5B8DEF", transparency:100} });
+  summarySlide.addText("SA Over Summary Dashboard", { x:0.55, y:0.42, w:8.5, h:0.52, fontFace:"Arial", fontSize:28, bold:true, color:"173A72", margin:0 });
+  summarySlide.addText("Long Aging และ Downtime >24H (Exc. Long Aging) เทียบกับ Over ทั้งหมด", { x:0.58, y:1.02, w:9.6, h:0.3, fontFace:"Arial", fontSize:14, color:"5A6B85", margin:0, fit:"shrink" });
+  summarySlide.addText(`${date} · เวลา 17:00`, { x:9.1, y:0.58, w:3.5, h:0.25, fontFace:"Arial", fontSize:11, bold:true, color:"5A6B85", align:"right", margin:0 });
+  const summaryCards = [
+    { label:"Over ทั้งหมด", value:String(allOverRows.length), color:"F97316" },
+    { label:"Long Aging", value:String(longRows.length), color:"7C5CE5" },
+    { label:"Downtime >24H (Exc. Long)", value:String(downtimeRows.length), color:"22A699" }
+  ];
+  summaryCards.forEach((card, i) => {
+    const x = 0.85 + i * 4.15;
+    summarySlide.addShape(pptx.ShapeType.roundRect, { x, y:1.62, w:3.15, h:0.92, rectRadius:0.06, fill:{color:"FFFFFF"}, line:{color:card.color, pt:1.25}, shadow:{type:"outer", color:"B7C4E8", blur:2, angle:45, distance:1, opacity:.18} });
+    summarySlide.addText(card.value, { x:x+0.15, y:1.76, w:2.85, h:0.32, fontFace:"Arial", fontSize:22, bold:true, color:card.color, align:"center", margin:0, fit:"shrink" });
+    summarySlide.addText(card.label, { x:x+0.12, y:2.18, w:2.91, h:0.18, fontFace:"Arial", fontSize:9.5, color:"5A6B85", align:"center", margin:0, fit:"shrink" });
+  });
+  summarySlide.addText("Total Pending", { x:0.6, y:3.28, w:4, h:0.3, fontFace:"Arial", fontSize:16, bold:true, color:"173A72", margin:0 });
+  const saLabels = ["SA1", "SA2", "SA3", "SA4"];
+  const saKey = r => (saNormText(r.Severity).toUpperCase().match(/^SA([1-4])/i)?.[1] ? `SA${saNormText(r.Severity).toUpperCase().match(/^SA([1-4])/i)[1]}` : "");
+  const regionNames = Array.from(new Set(eligibleRows.map(r => saRegionNorm(r) || "ไม่ระบุ Region"))).sort((a,b)=>a.localeCompare(b,"th"));
+  const regionTableHeaders = ["SA", "Pending", "Over", "Long", "Downtime"];
+  const regionTableColors = ["5B8DEF", "7C5CE5", "F5A623", "22A699"];
+  const tablePositions = [[0.6,3.82],[4.05,3.82],[0.6,5.55],[4.05,5.55]];
+  regionNames.slice(0, 4).forEach((region, ri) => {
+    const [tx, ty] = tablePositions[ri] || [0.6,3.65];
+    const tw = 3.1, rh = 0.20, widths = [0.55,0.65,0.55,0.65,0.70];
+    summarySlide.addText(region, { x:tx, y:ty-0.16, w:tw, h:0.16, fontFace:"Arial", fontSize:11, bold:true, color:"173A72", margin:0 });
+    let cx = tx;
+    regionTableHeaders.forEach((h, i) => { summarySlide.addShape(pptx.ShapeType.rect,{x:cx,y:ty,w:widths[i],h:rh,fill:{color:regionTableColors[i]},line:{color:"FFFFFF",pt:0.5}}); summarySlide.addText(h,{x:cx+0.02,y:ty+0.07,w:widths[i]-0.04,h:0.11,fontFace:"Arial",fontSize:6.5,bold:true,color:"FFFFFF",align:"center",margin:0,fit:"shrink"}); cx += widths[i]; });
+    saLabels.forEach((label, si) => {
+      const vals = [label, String(eligibleRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region && saKey(r)===label).length), String(allOverRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region && saKey(r)===label).length), String(longRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region && saKey(r)===label).length), String(downtimeRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region && saKey(r)===label).length)];
+      cx = tx; const fill = si % 2 ? "EEF3FF" : "FFFFFF";
+      vals.forEach((v, i) => { summarySlide.addShape(pptx.ShapeType.rect,{x:cx,y:ty+rh+si*rh,w:widths[i],h:rh,fill:{color:fill},line:{color:"D5DDF2",pt:0.4}}); summarySlide.addText(v,{x:cx+0.02,y:ty+rh+si*rh+0.07,w:widths[i]-0.04,h:0.11,fontFace:"Arial",fontSize:7,bold:i===0,color:"173A72",align:"center",margin:0,fit:"shrink"}); cx += widths[i]; });
+    });
+    const totalVals = ["Total", String(eligibleRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region).length), String(allOverRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region).length), String(longRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region).length), String(downtimeRows.filter(r => (saRegionNorm(r)||"ไม่ระบุ Region")===region).length)];
+    cx = tx;
+    totalVals.forEach((v, i) => { summarySlide.addShape(pptx.ShapeType.rect,{x:cx,y:ty+rh+saLabels.length*rh,w:widths[i],h:rh,fill:{color:"DCE8FF"},line:{color:"B8C9EE",pt:0.5}}); summarySlide.addText(v,{x:cx+0.02,y:ty+rh+saLabels.length*rh+0.07,w:widths[i]-0.04,h:0.11,fontFace:"Arial",fontSize:7,bold:true,color:"173A72",align:"center",margin:0,fit:"shrink"}); cx += widths[i]; });
+  });
+  const chartRegion = _saSuspendRegionFilter === "ALL" ? "ALL" : _saSuspendRegionFilter;
+  const chartRows = rows => rows.filter(r => chartRegion === "ALL" || (saRegionNorm(r) || "ไม่ระบุ Region") === chartRegion);
+  const saData = saLabels.map(label => ({
+    label,
+    over: chartRows(allOverRows).filter(r => saKey(r) === label).length,
+    long: chartRows(longRows).filter(r => saKey(r) === label).length,
+    down: chartRows(downtimeRows).filter(r => saKey(r) === label).length
+  }));
+  const chartX = 8.05, chartY = 3.25, chartW = 4.65, chartH = 3.12;
+  summarySlide.addText("Trend ตาม Severity", { x:chartX, y:chartY, w:chartW, h:0.3, fontFace:"Arial", fontSize:16, bold:true, color:"173A72", margin:0 });
+  const legend = [{label:"Over ทั้งหมด", color:"F97316"}, {label:"Long Aging", color:"7C5CE5"}, {label:"Downtime >24H", color:"22A699"}];
+  legend.forEach((item, i) => { const lx=chartX+i*1.52; summarySlide.addShape(pptx.ShapeType.rect,{x:lx,y:chartY+0.42,w:0.12,h:0.12,fill:{color:item.color},line:{color:item.color}}); summarySlide.addText(item.label,{x:lx+0.16,y:chartY+0.38,w:1.3,h:0.2,fontFace:"Arial",fontSize:7.5,color:"5A6B85",margin:0,fit:"shrink"}); });
+  const maxSa = Math.max(...saData.flatMap(d => [d.over, d.long, d.down]), 1);
+  const compactChart = saData.length > 4;
+  const plotX = chartX + 0.48, plotY = chartY + 0.86, plotW = 4.05, plotH = compactChart ? 1.82 : 1.95;
+  [0, .25, .5, .75, 1].forEach(t => { const gy=plotY+plotH*(1-t); summarySlide.addShape(pptx.ShapeType.line,{x:plotX,y:gy,w:plotW,h:0,line:{color:"D5DDF2",pt:0.5,dash:"dash"}}); summarySlide.addText(String(Math.round(maxSa*t)),{x:plotX-0.38,y:gy-0.08,w:0.3,h:0.14,fontFace:"Arial",fontSize:6.5,color:"7B8BA5",align:"right",margin:0}); });
+  const groupW = plotW / Math.max(saData.length, 1), barW = Math.max(0.035, Math.min(0.06, groupW * 0.13)), barGap = compactChart ? 0.09 : 0.12;
+  saData.forEach((d, i) => { const gx=plotX+i*groupW+groupW/2; const values=[[d.over,"F97316"],[d.long,"7C5CE5"],[d.down,"22A699"]]; values.forEach((pair,j)=>{ const value=pair[0], color=pair[1], h=Math.max(0.02, plotH*(value/maxSa)), bx=gx+(j-1)*(barW+barGap)-barW/2, by=plotY+plotH-h; summarySlide.addShape(pptx.ShapeType.rect,{x:bx,y:by,w:barW,h,fill:{color},line:{color,transparency:100}}); }); summarySlide.addText(`${d.over}   ${d.long}   ${d.down}`,{x:gx-groupW/2,y:plotY+plotH+0.08,w:groupW,h:0.14,fontFace:"Arial",fontSize:compactChart?5.2:6.5,bold:true,color:"173A72",align:"center",margin:0,fit:"shrink"}); summarySlide.addText(d.label,{x:gx-groupW/2,y:plotY+plotH+0.29,w:groupW,h:0.16,fontFace:"Arial",fontSize:compactChart?4.8:7,bold:true,color:"173A72",align:"center",margin:0,fit:"shrink"}); });
+  summarySlide.addText(`รายละเอียดทั้งหมด ${rows.length} Ticket · ${chunks.length} หน้า`, { x:0.6, y:7.05, w:11.8, h:0.22, fontFace:"Arial", fontSize:9, color:"5A6B85", margin:0, align:"right" });
   chunks.forEach((chunk, pageIndex) => {
     const slide = pptx.addSlide();
     slide.background = { color: "F5F7FF" };
-    slide.addText(title, { x:0.3, y:0.18, w:10.8, h:0.35, fontFace:"Arial", fontSize:20, bold:true, color:"173A72", margin:0 });
-    slide.addText(`${date} · เวลา 17:00 · หน้า ${pageIndex + 1}/${chunks.length} · ${rows.length} Ticket`, { x:0.3, y:0.58, w:10.8, h:0.2, fontFace:"Arial", fontSize:9, color:"5A6B85", margin:0 });
-    const data = [[...headers].map(h => ({ text:h, options:{ bold:true, color:"FFFFFF", fill:{color:"5B8DEF"}, align:"center", valign:"mid" } })), ...chunk.map(r => {
-      const site = saLongAgingSiteCode(r);
-      const reasonValues = SA_SUSPEND_REASON_ROWS.map(x => saReasonKey(r) === x.key ? "1" : "");
-      const total = reasonValues.filter(Boolean).length;
-      return [site, saWorkOrderId(r), saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-"), saNormText(r.Severity) || "-", saLongAgingTimeText(saDowntimeHours(r)), saGetFollowUp(r), saGetInocLog(r) || "-", ...reasonValues, String(total || "")];
-    })];
-    const widths = [1.05,1.18,1.08,.68,.78,2.35,.72,...SA_SUSPEND_REASON_ROWS.map(() => .48),.45];
-    slide.addTable(data, { x:0.18, y:0.9, w:10.65, colW:widths, border:{type:"solid",color:"D5DDF2",pt:0.5}, fontFace:"Arial", fontSize:7, color:"173A72", margin:0.04, valign:"mid", rowH:0.42, autoFit:false, fill:{color:"FFFFFF"}, breakLine:false });
+    slide.addText(`${chunk.section} · ${chunk.region}`, { x:0.3, y:0.18, w:10.8, h:0.35, fontFace:"Arial", fontSize:20, bold:true, color:"173A72", margin:0 });
+    slide.addText(`${date} · เวลา 17:00 · หน้า ${pageIndex + 2}/${chunks.length + 1} · ${chunk.rows.length} Ticket`, { x:0.3, y:0.58, w:10.8, h:0.2, fontFace:"Arial", fontSize:9, color:"5A6B85", margin:0 });
+    const colW = [1.12, 2.62, 0.82, 0.92, 0.82, 5.05, 0.82];
+    const tableX = 0.28, tableY = 0.95, headH = 0.42, rowH = 0.53;
+    let x = tableX;
+    headers.forEach((header, i) => {
+      slide.addShape(pptx.ShapeType.rect, { x, y:tableY, w:colW[i], h:headH, fill:{color:"5B8DEF"}, line:{color:"FFFFFF", pt:0.5} });
+      slide.addText(header, { x:x+0.04, y:tableY+0.11, w:colW[i]-0.08, h:0.16, fontFace:"Arial", fontSize:8, bold:true, color:"FFFFFF", align:"center", margin:0, fit:"shrink" });
+      x += colW[i];
+    });
+    chunk.rows.forEach((r, rowIndex) => {
+      const statusText = saOvReasonLabel(r) || "ไม่ระบุ";
+      const inocLogForSlide = saNormText(saGetInocLog(r) || "-").replace(/\s+/g, " ").trim();
+      const workOrder = saNormText(saWorkOrderId(r) || "-");
+      const sourceTicket = saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-");
+      const values = [saLongAgingSiteCode(r), `${workOrder}\n${sourceTicket}`, saNormText(r.Severity) || "-", saLongAgingTimeText(saDowntimeHours(r)), saGetFollowUp(r) || "-", inocLogForSlide.length > 190 ? inocLogForSlide.slice(0, 187) + "…" : inocLogForSlide, statusText];
+      let cx = tableX;
+      values.forEach((value, i) => {
+        const fill = rowIndex % 2 ? "EEF3FF" : "FFFFFF";
+        slide.addShape(pptx.ShapeType.rect, { x:cx, y:tableY+headH+rowIndex*rowH, w:colW[i], h:rowH, fill:{color:fill}, line:{color:"D5DDF2", pt:0.5} });
+        slide.addText(String(value), { x:cx+0.05, y:tableY+headH+rowIndex*rowH+(i===1?0.08:0.13), w:colW[i]-0.1, h:i===1?0.36:0.24, fontFace:"Arial", fontSize:i===5?7.5:(i===1?7.5:8), color:"173A72", align:i===5?"left":"center", margin:0, fit:"shrink", valign:"mid" });
+        cx += colW[i];
+      });
+    });
   });
   const stamp = new Date().toISOString().slice(0,16).replace(/[-:T]/g, "");
-  await pptx.writeFile({ fileName:`SA_Long_Aging_Report_${stamp}.pptx` });
+  await pptx.writeFile({ fileName:`SA_Long_Aging_Report_v2_${stamp}.pptx` });
 }
 async function saPreviewLongAgingCapture() {
   const frame = document.getElementById("sa-long-aging-capture-frame");
@@ -9091,7 +9184,7 @@ function saSetLongAgingLogFilter(value) {
   renderSaSuspendSummary();
 }
 function saSetLongAgingStatusFilter(value) {
-  _saLongAgingStatusFilter = value === "DOWNTIME24_NO_LONG" ? value : "LONG_AGING";
+  _saLongAgingStatusFilter = ["LONG_AGING", "DOWNTIME24_NO_LONG", "OVER"].includes(value) ? value : "LONG_AGING";
   renderSaSuspendSummary();
 }
 function saManagerValue(r) {
@@ -9128,6 +9221,11 @@ function saLongAgingSearchHTML(rows) {
   const body = found.map(r => { const rowId = saRowId(r); return `<tr><td>${saEscape(r["Site ID"] || r["Site Code"] || "-")}</td><td>${saEscape(saWorkOrderId(r) || "-")}</td><td>${saEscape(r["Source Ticket ID"] || "-")}</td><td>${saEscape(r.Severity || "-")}</td><td>${saEscape(saLongAgingTimeText(saDowntimeHours(r)))}</td><td><button class="sa-summary-log-btn btn" onclick="saToggleTicketSummaryLog('${saEscape(rowId)}', this)">Summary Log</button></td><td><button class="sa-delete-row-btn" onclick="saDeleteSuspendRow('${saEscape(rowId)}')">ลบ</button></td></tr>`; }).join("");
   return `<section class="sa-long-aging-search-panel"><div class="sa-long-aging-search-head"><strong>ผลการค้นหา Ticket</strong><span>${found.length} รายการ</span><button type="button" class="btn" onclick="_saLongAgingSearch='';renderSaSuspendSummary()">ปิด</button></div>${found.length ? `<div class="sa-long-aging-search-scroll"><table><thead><tr><th>Site ID</th><th>Work Order ID</th><th>Source Ticket</th><th>Severity</th><th>Aging Time</th><th>Summary Log</th><th>จัดการ</th></tr></thead><tbody>${body}</tbody></table></div>` : `<div class="sa-long-aging-search-empty">ไม่พบ Ticket ที่ค้นหา</div>`}</section>`;
 }
+function saLongAgingStatusCardsHTML(rows) {
+  const colors = ["#ef4444", "#f97316", "#eab308", "#a855f7", "#ec4899", "#06b6d4", "#14b8a6", "#2563eb", "#64748b"];
+  const totals = Object.fromEntries(SA_SUSPEND_REASON_ROWS.map(rr => [rr.key, (rows || []).filter(r => saReasonKey(r) === rr.key).length]));
+  return `<div style="width:100%;margin:0 0 12px;padding:12px 14px;border:1px solid rgba(91,141,239,.38);border-radius:12px;background:var(--surface-0)"><div style="font-size:13px;font-weight:900;color:var(--ink-strong);margin-bottom:9px">Suspend Status Summary</div><div style="display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto">${SA_SUSPEND_REASON_ROWS.map((rr,i)=>{const color=colors[i%colors.length];return `<div style="flex:1 1 0;min-width:92px;padding:9px 6px;border:1px solid ${color};border-top:4px solid ${color};border-radius:9px;background:${color}18;text-align:center"><div style="font-size:10px;font-weight:900;color:${color};white-space:nowrap">${saEscape(rr.label)}</div><div style="font-size:22px;line-height:1.1;font-weight:900;color:var(--ink-strong);margin-top:4px">${totals[rr.key]||0}</div><div style="font-size:9px;color:var(--ink-soft);margin-top:2px">Ticket</div></div>`;}).join("")}</div></div>`;
+}
 function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
   const managers = Array.from(new Set((allRows || []).map(saManagerValue).filter(Boolean))).sort((a, b) => a.localeCompare(b, "th"));
@@ -9140,16 +9238,11 @@ function saLongAgingHTML(allRows) {
     const aging = urgency === "" ? 0 : Math.max(0, over - urgency);
     const hasLog = Boolean(saNormText(saGetInocLog(r)));
     const isLongAging = saIsLongAging(r);
-    const statusOk = _saLongAgingStatusFilter === "LONG_AGING" ? isLongAging : (saDowntimeHours(r) > 24 && !isLongAging);
+    const statusOk = _saLongAgingStatusFilter === "LONG_AGING" ? isLongAging : (_saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? (saDowntimeHours(r) > 24 && !isLongAging) : (saDowntimeHours(r) > 0 && saDowntimeHours(r) <= 24 && !isLongAging));
     return statusOk && (_saLongAgingLogFilter !== "NO_LOG" || !hasLog) ? { r, urgency, over, aging: _saLongAgingStatusFilter === "LONG_AGING" ? aging : saDowntimeHours(r), downtime: saDowntimeHours(r) } : null;
   }).filter(Boolean).sort((a, b) => b.downtime - a.downtime);
   _saLongAgingVisibleRows = rows.map(x => x.r);
   _saLongAgingExportRows = rows.filter(x => saLongAgingSiteCode(x.r) === "find not found").map(x => x.r);
-  if (!rows.length) {
-    const emptyDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
-    const emptyTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
-    return `<div class="sa-long-aging-wrap"><div class="sa-long-aging-title" style="text-align:center;font-size:22px">${emptyTitle}<div class="sa-long-aging-caption-date">${saEscape(emptyDate)} · เวลา 17:00</div></div><div class="sa-suspend-empty">ไม่มี Ticket ตาม Status ที่เลือก</div></div>`;
-  }
   const reasonKeys = SA_SUSPEND_REASON_ROWS.map(x => x.key);
   const headers = ["Site ID", "Work Order ID", "Source Ticket", "Severity", "Aging Time", "การติดตาม", "INOC Log", ...SA_SUSPEND_REASON_ROWS.map(x => x.label), "Total"];
   const totals = Object.fromEntries(reasonKeys.map(k => [k, 0]));
@@ -9174,9 +9267,9 @@ function saLongAgingHTML(allRows) {
   }).join("");
   const foot = `<tr><td colspan="7">Total</td>${SA_SUSPEND_REASON_ROWS.map(x => `<td>${totals[x.key] || ""}</td>`).join("")}<td>${grandTotal || ""}</td></tr>`;
   const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
-  const reportTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : "Report Downtime > 24H (Exc. Long Aging)";
+  const reportTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : (_saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? "Report Downtime > 24H (Exc. Long Aging)" : "Report Over");
   const managerOptions = ["<option value=\"ALL\">ทั้งหมด</option>", ...managers.map(m => `<option value="${saEscape(m)}"${_saLongAgingManagerFilter === m ? " selected" : ""}>${saEscape(m)}</option>`)].join("");
-  return `<div class="sa-long-aging-wrap"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><input class="sa-search-input" style="min-width:280px" value="${saEscape(_saLongAgingSearch)}" placeholder="ค้นหา Site ID / Work Order ID / Source Ticket" oninput="saSetLongAgingSearch(this.value)"><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div>${saLongAgingSearchHTML(allRows)}<table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  return `<div class="sa-long-aging-wrap">${saLongAgingStatusCardsHTML(rows.map(x => x.r))}<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option><option value="OVER"${_saLongAgingStatusFilter==="OVER"?" selected":""}>Over</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><input class="sa-search-input" style="min-width:280px" value="${saEscape(_saLongAgingSearch)}" placeholder="ค้นหา Site ID / Work Order ID / Source Ticket" oninput="saSetLongAgingSearch(this.value)"><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint Report</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div>${saLongAgingSearchHTML(allRows)}<table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
 function renderSaSuspendSummary() {
@@ -9202,11 +9295,12 @@ function renderSaSuspendSummary() {
   const subtabsHTML = saSuspendSubTabsHTML();
   if (_saSuspendView === "overview") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
-    saRenderOverviewCountryMaps(rows, rows.filter(r => saOverHours(r) > 0));
+    const pendingOverRows = rows.filter(r => saIsLongAging(r) || (saDowntimeHours(r) > 24 && !saIsLongAging(r)));
+    saRenderOverviewCountryMaps(rows, pendingOverRows);
     return;
   }
   if (_saSuspendView === "long-aging") {
-    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}</div>${saLongAgingHTML(rows)}</div>`;
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}</div>${saLongAgingHTML(rows)}</div>`;
     return;
   }
   if (!allRows.length) {
