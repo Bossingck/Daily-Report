@@ -7011,6 +7011,7 @@ let _saSuspendDetailSeq = 0;
 let _saSuspendClickTimer = null;
 let _saSuspendRegionFilter = "ALL";
 let _saSuspendView = "overview";
+let _saLastSuspendRenderKey = "";
 let _saReportStatusFilter = "ALL";
 let _saReportManagerFilter = "ALL";
 let _saReportExportRows = [];
@@ -8483,7 +8484,7 @@ function saSuspendSubTabsHTML() {
 
 function saOverAgingSummaryHTML(allRows) {
   const rows = (allRows || []).filter(r => saOvRegionKey(r) && saOverHours(r) > 0 && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
-  const regions = ["BMA", "CW", "EAS"];
+  const regions = ["BMA", "CW", "EAS", "SOU"];
   const buckets = [
     { key:"d2", label:"Over 2 วัน", min:48, max:72, color:"#16a34a" },
     { key:"d3", label:"Over 3 วัน", min:72, max:96, color:"#eab308" },
@@ -8502,19 +8503,22 @@ function saOverAgingTrendChartHTML(snapshotRows) {
   const regionFilter = _saSuspendRegionFilter === "ALL" ? "ALL" : _saSuspendRegionFilter;
   const regions = regionFilter === "ALL" ? ["BMA", "CW", "EAS", "SOU"] : [regionFilter];
   const dates = Array.from(new Set(rows.map(r => r.snapshot_date))).sort().slice(-14);
-  const metrics = [{key:"over_2d",label:"Over 2 วัน",color:"#16a34a"},{key:"over_3d",label:"Over 3 วัน",color:"#eab308"},{key:"over_more3d",label:"มากกว่า 3 วัน",color:"#dc2626"}];
-  const charts = regions.map(region => metrics.map(metric => {
-    const values = dates.map(date => rows.filter(r => r.snapshot_date === date && r.region === region).reduce((s,r)=>s+Number(r[metric.key]||0),0));
-    const max = Math.max(1,...values), bars = dates.map((date,i)=>`<div style="flex:1;min-width:42px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:190px"><div style="font-size:10px;font-weight:800;color:#173a72;margin-bottom:3px">${values[i]||0}</div><div style="width:28px;height:${Math.max(3,Math.round((values[i]/max)*135))}px;background:${metric.color};border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:5px;color:#5a6b85">${saEscape(String(date).slice(5).replace("-","/"))}</div></div>`).join("");
-    return `<section style="padding:12px 14px;border:1px solid rgba(91,141,239,.28);border-radius:10px;background:var(--surface-0)"><div style="font-size:18px;font-weight:900;color:#173a72;margin-bottom:5px">${region}</div><div style="font-size:12px;font-weight:800;color:${metric.color};margin-bottom:4px">${metric.label}</div><div style="height:210px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid #b9c9e8;padding:0 8px">${bars || `<span style="color:#7b8ba5">ยังไม่มี Snapshot</span>`}</div></section>`;
-  }).join("")).join("");
+  const metrics = [{key:"within_count",label:"Within",color:"#16a34a"},{key:"over_2d",label:"Over 2 วัน",color:"#eab308"},{key:"over_3d",label:"Over 3 วัน",color:"#f97316"},{key:"over_more3d",label:"มากกว่า 3 วัน",color:"#dc2626"}];
+  const charts = regions.map(region => {
+    const series = dates.map(date => { const rr=rows.filter(r=>r.snapshot_date===date&&r.region===region); return Object.fromEntries(metrics.map(m=>[m.key,rr.reduce((s,r)=>s+Number(r[m.key]||0),0)])); });
+    const max = Math.max(1,...series.map(v=>metrics.reduce((s,m)=>s+Number(v[m.key]||0),0)));
+    const bars = dates.map((date,i)=>{ const v=series[i]; const total=metrics.reduce((s,m)=>s+Number(v[m.key]||0),0); const stack=metrics.map(m=>{ const value=Number(v[m.key]||0); const scaled=Math.round((value/max)*145); const height=m.key === "within_count" ? Math.max(1,scaled) : Math.max(16,scaled); return `<div style="width:42px;height:${height}px;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;line-height:1;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.55);overflow:visible">${value}</div>`; }).join(""); return `<div style="flex:0 0 60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:235px"><div style="font-size:10px;font-weight:800;color:#173a72;margin-bottom:3px">${total}</div><div style="width:42px;display:flex;flex-direction:column;align-items:stretch">${stack}</div><div style="font-size:10px;margin-top:5px;color:#5a6b85">${saEscape(String(date).slice(5).replace("-","/"))}</div></div>`; }).join("");
+    const legend=metrics.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:11px"><i style="width:12px;height:12px;background:${m.color};display:inline-block"></i>${m.label}</span>`).join("");
+    const yTicks = [0,.25,.5,.75,1].map(t=>`<span style="position:absolute;left:0;right:0;bottom:${Math.round(t*145)+28}px;border-top:1px dashed #cbd5e1;font-size:10px;color:#64748b;text-align:left;padding-left:2px">${Math.round(max*t)}</span>`).join("");
+    return `<section style="padding:12px 14px;border:1px solid rgba(91,141,239,.28);border-radius:10px;background:var(--surface-0)"><div style="font-size:18px;font-weight:900;color:#173a72;margin-bottom:5px">${region}</div><div style="margin-bottom:8px">${legend}</div><div style="height:270px;display:flex;align-items:flex-end;justify-content:flex-start;gap:10px;border-bottom:1px solid #b9c9e8;padding:0 8px;overflow-x:auto">${bars || `<span style="color:#7b8ba5">ยังไม่มี Snapshot</span>`}</div></section>`;
+  }).join("");
   return `<div style="display:grid;gap:12px">${charts || `<div class="sa-suspend-empty">ยังไม่มีข้อมูล Snapshot ใน Database</div>`}</div>`;
 }
 async function saLoadOverAgingTrend() {
   const target = document.getElementById("sa-over-aging-trend");
   if (!target) return;
   try {
-    const data = await supaFetch("sa_overview_province_snapshots?select=snapshot_date,region,long_aging,downtime_over24,total_over&order=snapshot_date.asc&limit=5000");
+    const data = await supaFetch("sa_overview_province_snapshots?select=snapshot_date,region,within_count,over_2d,over_3d,over_more3d&order=snapshot_date.asc&limit=5000");
     target.innerHTML = saOverAgingTrendChartHTML(data || []);
   } catch (e) { target.innerHTML = `<div class="sa-suspend-empty">โหลด Snapshot ไม่สำเร็จ: ${saEscape(e.message || "ไม่ทราบสาเหตุ")}</div>`; }
 }
@@ -8912,23 +8916,24 @@ let _saOverviewSnapshotSaving = false;
 let _saOverviewSnapshotSignature = "";
 async function saSaveOverviewProvinceSnapshot(allRows, pendingRows) {
   if (_saOverviewSnapshotSaving) return;
-  const rows = (pendingRows || []).filter(r => saOvRegionKey(r));
+  const rows = (allRows || []).filter(r => saOvRegionKey(r));
   if (!rows.length) return;
   const now = new Date();
   const snapshotDate = new Intl.DateTimeFormat("en-CA", { timeZone:"Asia/Bangkok", year:"numeric", month:"2-digit", day:"2-digit" }).format(now);
-  const regions = ["BMA", "CW", "EAS"];
+  const regions = ["BMA", "CW", "EAS", "SOU"];
   const provinceMap = {};
   rows.forEach(r => {
     const region = saOvRegionKey(r);
     if (!regions.includes(region)) return;
     const province = saOverviewProvinceCode(r) || "ไม่ระบุ Code";
     const key = `${region}|${province}`;
-    if (!provinceMap[key]) provinceMap[key] = { snapshot_date:snapshotDate, snapshot_at:now.toISOString(), region, province_code:province, long_aging:0, downtime_over24:0, total_over:0, ticket_count:0, max_over_hours:0, max_downtime_hours:0, max_urgency_hours:0 };
+    if (!provinceMap[key]) provinceMap[key] = { snapshot_date:snapshotDate, snapshot_at:now.toISOString(), region, province_code:province, within_count:0, long_aging:0, downtime_over24:0, total_over:0, ticket_count:0, max_over_hours:0, max_downtime_hours:0, max_urgency_hours:0, over_2d:0, over_3d:0, over_more3d:0 };
     const item = provinceMap[key];
     const overHours = Number(saOverHours(r) || 0);
     const downtimeHours = Number(saDowntimeHours(r) || 0);
     const urgencyHours = Number(saLongAgingUrgencyHours(r) || 0);
     item.ticket_count++;
+    if (overHours <= 0) item.within_count++;
     item.max_over_hours = Math.max(item.max_over_hours, overHours);
     item.max_downtime_hours = Math.max(item.max_downtime_hours, downtimeHours);
     item.max_urgency_hours = Math.max(item.max_urgency_hours, urgencyHours);
@@ -9366,6 +9371,9 @@ function saLongAgingHTML(allRows) {
 function renderSaSuspendSummary() {
   const container = document.getElementById("content-sa-suspend");
   if (!container) return;
+  const renderKey = [_saSuspendView, _saSuspendRegionFilter, _saReportStatusFilter, _saReportManagerFilter, _saLongAgingStatusFilter, _saLongAgingManagerFilter, _saLongAgingLogFilter, _saSuspendSearch, saSourceRows().length, _saSuspendRowsDbLoaded, _saDeletedWorkOrdersDbLoaded].join("|");
+  if (_saLastSuspendRenderKey === renderKey && container.firstElementChild) return;
+  _saLastSuspendRenderKey = renderKey;
   if (!_saDeletedWorkOrdersDbLoaded && !_saDeletedWorkOrdersDbLoading) {
     saLoadDeletedWorkOrdersFromDb().then(() => renderSaSuspendSummary());
   }
@@ -9396,7 +9404,7 @@ function renderSaSuspendSummary() {
     return;
   }
   if (_saSuspendView === "over-aging") {
-    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}</div><div id="sa-over-aging-trend">${saOverAgingSummaryHTML(rows)}</div></div>`;
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}<button type="button" class="nsa-capture-btn blue" data-target="sa-over-aging-trend" data-fname="SA_Over_Aging_Summary">📷 แคปภาพ</button></div><div id="sa-over-aging-trend"><div class="sa-suspend-empty">กำลังโหลดกราฟ Snapshot...</div></div></div>`;
     saLoadOverAgingTrend();
     return;
   }
