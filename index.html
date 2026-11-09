@@ -6,8 +6,8 @@
 <title>Daily Operation Report — Field Service Management</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="jszip.min.js"></script>
-<script src="pptxgen.bundle.js"></script>
+<script src="jszip.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'"></script>
+<script src="pptxgen.bundle.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js'"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -2671,7 +2671,7 @@
 </div>
 
 <!-- Summary Cards -->
-<div class="cards" id="cards"></div>
+<div class="cards" id="cards" style="display:none"></div>
 
 <!-- Tabs -->
 <div class="tabs">
@@ -8149,6 +8149,9 @@ function processSaSuspendExcelFile(file) {
         saSetDbStatus("error", "อ่านไฟล์สำเร็จ แต่บันทึก Supabase ไม่สำเร็จ: " + (saveErr.message || saveErr));
       }
       renderSaSuspendSummary();
+      const uploadSnapshotRows = (rows || []).filter(r => !saHasEzTicketSubject(r) && !saIsClosed(r) && saIsSaSeverity(r) && saIsSystemCreator(r));
+      const uploadPendingOverRows = uploadSnapshotRows.filter(r => saIsLongAging(r) || (saDowntimeHours(r) > 24 && !saIsLongAging(r)));
+      setTimeout(() => saSaveOverviewProvinceSnapshot(uploadSnapshotRows, uploadPendingOverRows), 0);
     } catch (e) {
       saSetDbStatus("error", "อ่านไฟล์ SA Suspend Summary ไม่สำเร็จ: " + (e.message || e));
     } finally {
@@ -8466,7 +8469,7 @@ function saCloseDetail() {
 }
 // ── SA Suspend Summary: Overview / Report sub-tabs ──────────────────────────
 function saSetSuspendView(view) {
-  _saSuspendView = view === "report" ? "report" : (view === "long-aging" ? "long-aging" : "overview");
+  _saSuspendView = view === "report" ? "report" : (view === "long-aging" ? "long-aging" : (view === "over-aging" ? "over-aging" : "overview"));
   renderSaSuspendSummary();
 }
 function saSuspendSubTabsHTML() {
@@ -8474,7 +8477,46 @@ function saSuspendSubTabsHTML() {
     <button type="button" class="sa-subtab-btn${_saSuspendView==="overview"?" active":""}" onclick="saSetSuspendView('overview')">📊 Overview</button>
     <button type="button" class="sa-subtab-btn${_saSuspendView==="report"?" active":""}" onclick="saSetSuspendView('report')">📋 Report</button>
     <button type="button" class="sa-subtab-btn${_saSuspendView==="long-aging"?" active":""}" onclick="saSetSuspendView('long-aging')">⏱️ Long Aging</button>
+    <button type="button" class="sa-subtab-btn${_saSuspendView==="over-aging"?" active":""}" onclick="saSetSuspendView('over-aging')">📈 Over Aging Summary</button>
   </div>`;
+}
+
+function saOverAgingSummaryHTML(allRows) {
+  const rows = (allRows || []).filter(r => saOvRegionKey(r) && saOverHours(r) > 0 && /^SA[1-4](?:\b|[-\s])/i.test(saNormText(r.Severity)));
+  const regions = ["BMA", "CW", "EAS"];
+  const buckets = [
+    { key:"d2", label:"Over 2 วัน", min:48, max:72, color:"#16a34a" },
+    { key:"d3", label:"Over 3 วัน", min:72, max:96, color:"#eab308" },
+    { key:"d4", label:"มากกว่า 3 วัน", min:96, max:Infinity, color:"#dc2626" }
+  ];
+  const cards = regions.map(region => {
+    const rr = rows.filter(r => saOvRegionKey(r) === region);
+    const total = rr.length;
+    const cells = buckets.map(b => `<div style="flex:1;min-width:150px;padding:18px 12px;border-radius:10px;background:${b.color};color:#fff;text-align:center"><div style="font-size:14px;font-weight:800">${b.label}</div><div style="font-size:30px;font-weight:900;margin-top:5px">${rr.filter(r => { const h=saOverHours(r); return h >= b.min && h < b.max; }).length}</div><div style="font-size:11px">Ticket</div></div>`).join("");
+    return `<section style="padding:14px;border:1px solid rgba(91,141,239,.35);border-radius:12px;background:var(--surface-0)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong style="font-size:18px;color:var(--ink-strong)">${region}</strong><span style="font-weight:800;color:var(--ink-soft)">Pending Over รวม ${total} ใบ</span></div><div style="display:flex;gap:10px;flex-wrap:wrap">${cells}</div></section>`;
+  }).join("");
+  return `<div class="sa-over-aging-summary"><div style="padding:14px 16px;margin-bottom:12px;border-radius:12px;background:linear-gradient(135deg,#173a72,#5b8def);color:#fff"><div style="font-size:22px;font-weight:900">Over Aging Summary</div><div style="font-size:12px;margin-top:4px;opacity:.9">สรุป Ticket ที่ Pending Over แยกตามช่วงเวลา</div></div><div style="display:grid;gap:12px">${cards}</div></div>`;
+}
+function saOverAgingTrendChartHTML(snapshotRows) {
+  const rows = snapshotRows || [];
+  const regionFilter = _saSuspendRegionFilter === "ALL" ? "ALL" : _saSuspendRegionFilter;
+  const regions = regionFilter === "ALL" ? ["BMA", "CW", "EAS", "SOU"] : [regionFilter];
+  const dates = Array.from(new Set(rows.map(r => r.snapshot_date))).sort().slice(-14);
+  const metrics = [{key:"over_2d",label:"Over 2 วัน",color:"#16a34a"},{key:"over_3d",label:"Over 3 วัน",color:"#eab308"},{key:"over_more3d",label:"มากกว่า 3 วัน",color:"#dc2626"}];
+  const charts = regions.map(region => metrics.map(metric => {
+    const values = dates.map(date => rows.filter(r => r.snapshot_date === date && r.region === region).reduce((s,r)=>s+Number(r[metric.key]||0),0));
+    const max = Math.max(1,...values), bars = dates.map((date,i)=>`<div style="flex:1;min-width:42px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:190px"><div style="font-size:10px;font-weight:800;color:#173a72;margin-bottom:3px">${values[i]||0}</div><div style="width:28px;height:${Math.max(3,Math.round((values[i]/max)*135))}px;background:${metric.color};border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:5px;color:#5a6b85">${saEscape(String(date).slice(5).replace("-","/"))}</div></div>`).join("");
+    return `<section style="padding:12px 14px;border:1px solid rgba(91,141,239,.28);border-radius:10px;background:var(--surface-0)"><div style="font-size:18px;font-weight:900;color:#173a72;margin-bottom:5px">${region}</div><div style="font-size:12px;font-weight:800;color:${metric.color};margin-bottom:4px">${metric.label}</div><div style="height:210px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid #b9c9e8;padding:0 8px">${bars || `<span style="color:#7b8ba5">ยังไม่มี Snapshot</span>`}</div></section>`;
+  }).join("")).join("");
+  return `<div style="display:grid;gap:12px">${charts || `<div class="sa-suspend-empty">ยังไม่มีข้อมูล Snapshot ใน Database</div>`}</div>`;
+}
+async function saLoadOverAgingTrend() {
+  const target = document.getElementById("sa-over-aging-trend");
+  if (!target) return;
+  try {
+    const data = await supaFetch("sa_overview_province_snapshots?select=snapshot_date,region,long_aging,downtime_over24,total_over&order=snapshot_date.asc&limit=5000");
+    target.innerHTML = saOverAgingTrendChartHTML(data || []);
+  } catch (e) { target.innerHTML = `<div class="sa-suspend-empty">โหลด Snapshot ไม่สำเร็จ: ${saEscape(e.message || "ไม่ทราบสาเหตุ")}</div>`; }
 }
 function saSetReportStatusFilter(value) {
   _saReportStatusFilter = ["OVER", "LONG_AGING", "DOWNTIME24_NO_LONG"].includes(value) ? value : "ALL";
@@ -8866,6 +8908,52 @@ function saOverviewOverProvinceHTML(overRows) {
   return `<section class="sa-ov-province-section"><div class="sa-ov-section-heading"><div><span class="sa-ov-section-kicker">OVERVIEW</span><h3>Pending Over By Province</h3></div><div class="sa-ov-date" style="text-align:right;font-size:12px;font-weight:800;color:var(--ink-soft)"><div>${saEscape(overviewDate)}</div><div>เวลา 17:00</div></div></div><div class="sa-ov-prov-grid">${blocks}</div></section>`;
 }
 
+let _saOverviewSnapshotSaving = false;
+let _saOverviewSnapshotSignature = "";
+async function saSaveOverviewProvinceSnapshot(allRows, pendingRows) {
+  if (_saOverviewSnapshotSaving) return;
+  const rows = (pendingRows || []).filter(r => saOvRegionKey(r));
+  if (!rows.length) return;
+  const now = new Date();
+  const snapshotDate = new Intl.DateTimeFormat("en-CA", { timeZone:"Asia/Bangkok", year:"numeric", month:"2-digit", day:"2-digit" }).format(now);
+  const regions = ["BMA", "CW", "EAS"];
+  const provinceMap = {};
+  rows.forEach(r => {
+    const region = saOvRegionKey(r);
+    if (!regions.includes(region)) return;
+    const province = saOverviewProvinceCode(r) || "ไม่ระบุ Code";
+    const key = `${region}|${province}`;
+    if (!provinceMap[key]) provinceMap[key] = { snapshot_date:snapshotDate, snapshot_at:now.toISOString(), region, province_code:province, long_aging:0, downtime_over24:0, total_over:0, ticket_count:0, max_over_hours:0, max_downtime_hours:0, max_urgency_hours:0 };
+    const item = provinceMap[key];
+    const overHours = Number(saOverHours(r) || 0);
+    const downtimeHours = Number(saDowntimeHours(r) || 0);
+    const urgencyHours = Number(saLongAgingUrgencyHours(r) || 0);
+    item.ticket_count++;
+    item.max_over_hours = Math.max(item.max_over_hours, overHours);
+    item.max_downtime_hours = Math.max(item.max_downtime_hours, downtimeHours);
+    item.max_urgency_hours = Math.max(item.max_urgency_hours, urgencyHours);
+    if (saIsLongAging(r)) item.long_aging++;
+    else if (saDowntimeHours(r) > 24) item.downtime_over24++;
+    if (overHours >= 48 && overHours < 72) item.over_2d = (item.over_2d || 0) + 1;
+    else if (overHours >= 72 && overHours < 96) item.over_3d = (item.over_3d || 0) + 1;
+    else if (overHours >= 96) item.over_more3d = (item.over_more3d || 0) + 1;
+    item.total_over++;
+  });
+  const payload = Object.values(provinceMap);
+  const signature = `${snapshotDate}|${payload.map(x => `${x.region}:${x.province_code}:${x.long_aging}:${x.downtime_over24}`).sort().join(",")}`;
+  if (signature === _saOverviewSnapshotSignature) return;
+  _saOverviewSnapshotSaving = true;
+  try {
+    await supaUpsert("sa_overview_province_snapshots?on_conflict=snapshot_date,region,province_code", payload);
+    _saOverviewSnapshotSignature = signature;
+    saSetDbStatus("ok", `บันทึก Overview Snapshot แล้ว ${snapshotDate} · ${payload.length} รายการ`);
+  } catch (e) {
+    const msg = e.message || "";
+    if (/PGRST205|Could not find the table|404/i.test(msg)) saSetDbStatus("warn", "ยังไม่บันทึก Overview Snapshot: ต้องสร้างตาราง sa_overview_province_snapshots ก่อน");
+    else saSetDbStatus("warn", "บันทึก Overview Snapshot ไม่สำเร็จ: " + msg);
+  } finally { _saOverviewSnapshotSaving = false; }
+}
+
 function saKeywordSummaryHTML(rows) {
   const regions = Array.from(new Set(rows.map(saOvRegionKey).filter(Boolean))).sort((a,b) => ["BMA","CW","EAS","SOU"].indexOf(a) - ["BMA","CW","EAS","SOU"].indexOf(b));
   const summary = regions.map(region => {
@@ -9046,6 +9134,9 @@ function exportSaLongAgingRawData() {
 async function exportSaLongAgingPowerPoint() {
   // Export ทั้ง 2 Status ในไฟล์เดียว โดยแยกเป็น Section: Long Aging และ Downtime >24H
   const sourceRows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_saLongAgingVisibleRows || []);
+  if (typeof saLoadSaRowEditsFromDb === "function" && sourceRows.length) {
+    await saLoadSaRowEditsFromDb(sourceRows);
+  }
   const eligibleRows = sourceRows.filter(r => saIsSaSeverity(r) && !saIsClosed(r) && !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject)))
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
     .filter(r => _saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)
@@ -9297,10 +9388,16 @@ function renderSaSuspendSummary() {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}${saSuspendOverviewHTML(rows)}</div>`;
     const pendingOverRows = rows.filter(r => saIsLongAging(r) || (saDowntimeHours(r) > 24 && !saIsLongAging(r)));
     saRenderOverviewCountryMaps(rows, pendingOverRows);
+    setTimeout(() => saSaveOverviewProvinceSnapshot(rows, pendingOverRows), 0);
     return;
   }
   if (_saSuspendView === "long-aging") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}</div>${saLongAgingHTML(rows)}</div>`;
+    return;
+  }
+  if (_saSuspendView === "over-aging") {
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}</div><div id="sa-over-aging-trend">${saOverAgingSummaryHTML(rows)}</div></div>`;
+    saLoadOverAgingTrend();
     return;
   }
   if (!allRows.length) {
