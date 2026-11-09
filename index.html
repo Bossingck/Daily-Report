@@ -7917,7 +7917,7 @@ function saSetInocLog(rowId, value) {
   const wo = saWorkOrderId(row);
   if (wo) _saInocLogOverridesByWo[wo] = value;
   clearTimeout(_saInocLogSaveTimers[rowId]);
-  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 350);
+  _saInocLogSaveTimers[rowId] = setTimeout(() => saSaveSaRowEditToDb(rowId), 700);
 }
 function saSaveSaRowEditNow(rowId) {
   if (!rowId) return;
@@ -8279,11 +8279,11 @@ window.addEventListener("beforeunload", saFlushPendingRowEdits);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") saFlushPendingRowEdits();
 });
-async function saLoadSaRowEditsFromDb(rows) {
+async function saLoadSaRowEditsFromDb(rows, forceReload = false) {
   if (_saInocLogDbUnavailable) return;
   const workOrders = Array.from(new Set((rows || []).map(saWorkOrderId).filter(Boolean))).sort();
   const sig = workOrders.join("|");
-  if (!workOrders.length || sig === _saInocLogLoadedSig) return;
+  if (!workOrders.length || (!forceReload && sig === _saInocLogLoadedSig)) return;
   _saInocLogLoadedSig = sig;
   try {
     const chunks = [];
@@ -9140,7 +9140,7 @@ async function exportSaLongAgingPowerPoint() {
   // Export ทั้ง 2 Status ในไฟล์เดียว โดยแยกเป็น Section: Long Aging และ Downtime >24H
   const sourceRows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_saLongAgingVisibleRows || []);
   if (typeof saLoadSaRowEditsFromDb === "function" && sourceRows.length) {
-    await saLoadSaRowEditsFromDb(sourceRows);
+    await saLoadSaRowEditsFromDb(sourceRows, true);
   }
   const eligibleRows = sourceRows.filter(r => saIsSaSeverity(r) && !saIsClosed(r) && !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject)))
     .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
@@ -9291,10 +9291,13 @@ function saSetLongAgingManagerFilter(value) {
   _saLongAgingManagerFilter = saNormText(value) || "ALL";
   renderSaSuspendSummary();
 }
-function saSetLongAgingReasonCount(rowId, reasonKey, value) {
+function saSetLongAgingReasonCount(rowId, reasonKey, value, inputEl) {
   const count = Math.max(0, Math.min(1, Number(value) || 0));
   const row = _saRawRowsById[rowId];
   if (!row) return;
+  const tr = inputEl && inputEl.closest ? inputEl.closest("tr") : null;
+  if (tr) tr.querySelectorAll(".sa-long-aging-reason-input").forEach(input => { if (input !== inputEl) input.value = "0"; });
+  if (inputEl) inputEl.value = String(count);
   const current = saReasonKey(row);
   if (count > 0) {
     saSetRowReason(rowId, reasonKey);
@@ -9349,7 +9352,7 @@ function saLongAgingHTML(allRows) {
     const cells = SA_SUSPEND_REASON_ROWS.map(x => {
       const hit = reason === x.key ? 1 : "";
       if (hit) totals[x.key]++;
-      return `<td><input class="sa-long-aging-reason-input" type="number" min="0" max="1" step="1" value="${hit || 0}" title="แก้ไขจำนวน Suspend Reason" onchange="saSetLongAgingReasonCount('${saEscape(rowId)}','${x.key}',this.value)"></td>`;
+      return `<td><input class="sa-long-aging-reason-input" type="number" min="0" max="1" step="1" value="${hit || 0}" title="เลือก Suspend Reason ได้ 1 รายการต่อ Ticket" onchange="saSetLongAgingReasonCount('${saEscape(rowId)}','${x.key}',this.value,this)"></td>`;
     }).join("");
     const rowTotal = reasonKeys.includes(reason) ? 1 : 0;
     grandTotal += rowTotal;
@@ -9371,7 +9374,7 @@ function saLongAgingHTML(allRows) {
 function renderSaSuspendSummary() {
   const container = document.getElementById("content-sa-suspend");
   if (!container) return;
-  const renderKey = [_saSuspendView, _saSuspendRegionFilter, _saReportStatusFilter, _saReportManagerFilter, _saLongAgingStatusFilter, _saLongAgingManagerFilter, _saLongAgingLogFilter, _saSuspendSearch, saSourceRows().length, _saSuspendRowsDbLoaded, _saDeletedWorkOrdersDbLoaded].join("|");
+  const renderKey = [_saSuspendView, _saSuspendRegionFilter, _saReportStatusFilter, _saReportManagerFilter, _saLongAgingStatusFilter, _saLongAgingManagerFilter, _saLongAgingLogFilter, _saSuspendSearch, _saLongAgingSearch, saSourceRows().length, _saSuspendRowsDbLoaded, _saDeletedWorkOrdersDbLoaded].join("|");
   if (_saLastSuspendRenderKey === renderKey && container.firstElementChild) return;
   _saLastSuspendRenderKey = renderKey;
   if (!_saDeletedWorkOrdersDbLoaded && !_saDeletedWorkOrdersDbLoading) {
