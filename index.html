@@ -8511,7 +8511,7 @@ function saSetSuspendView(view) {
 function saSuspendSubTabsHTML() {
   return `<div class="sa-subtabs">
     <button type="button" class="sa-subtab-btn${_saSuspendView==="overview"?" active":""}" onclick="saSetSuspendView('overview')">📊 Overview</button>
-    <button type="button" class="sa-subtab-btn${_saSuspendView==="report"?" active":""}" onclick="saSetSuspendView('report')" style="display:none">📋 Report</button>
+    <button type="button" class="sa-subtab-btn${_saSuspendView==="report"?" active":""}" onclick="saSetSuspendView('report')">📋 Report</button>
     <button type="button" class="sa-subtab-btn${_saSuspendView==="long-aging"?" active":""}" onclick="saSetSuspendView('long-aging')">⏱️ Long Aging</button>
     <button type="button" class="sa-subtab-btn${_saSuspendView==="over-aging"?" active":""}" onclick="saSetSuspendView('over-aging')">📈 Over Aging Summary</button>
   </div>`;
@@ -9445,7 +9445,14 @@ function renderSaSuspendSummary() {
     return;
   }
   if (_saSuspendView === "long-aging") {
-    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}</div>${saLongAgingHTML(rows)}</div>`;
+    container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}<button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button><input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])"></div>${saLongAgingHTML(rows)}</div>`;
+    const longWrap = container.querySelector(".sa-long-aging-wrap");
+    const sourceToolbar = container.querySelector(".sa-suspend-toolbar");
+    const longControls = longWrap?.querySelector(".sa-long-aging-capture-controls") || longWrap?.querySelector("div[style*='display:flex']");
+    const uploadButton = sourceToolbar?.querySelector("button.btn-blue");
+    const uploadInput = sourceToolbar?.querySelector("#sa-suspend-file-input");
+    if (longControls && uploadButton) longControls.appendChild(uploadButton);
+    if (longControls && uploadInput) longControls.appendChild(uploadInput);
     return;
   }
   if (_saSuspendView === "over-aging") {
@@ -9505,7 +9512,6 @@ function renderSaSuspendSummary() {
       ${_saSuspendView === "report" ? saReportStatusFilterHTML() : ""}
       ${_saSuspendView === "report" ? `<button class="btn" onclick="exportSaReportByCategory()">📥 Export Raw Data</button>` : ""}
       <button class="btn" onclick="saRefreshSuspendFromDb()">Refresh ข้อมูล</button>
-      <button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button>
       ${saSearchHTML()}
       ${saTableToggleControlsHTML()}
       <input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])">
