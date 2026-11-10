@@ -2113,6 +2113,8 @@
   .sa-long-aging-table th:nth-child(8), .sa-long-aging-table td:nth-child(8) { width:320px !important; min-width:320px !important; max-width:320px !important; }
   .sa-long-aging-log-text { display:-webkit-box; max-width:340px; max-height:4.35em; overflow:hidden; white-space:normal; overflow-wrap:anywhere; line-height:1.45; -webkit-box-orient:vertical; -webkit-line-clamp:3; cursor:pointer; }
   .sa-long-aging-log-text.expanded { max-height:none; }
+  .sa-long-aging-wrap.sa-capturing > div[style*="display:flex"], .sa-long-aging-wrap.sa-capturing .sa-long-aging-search-panel { display:none !important; }
+  .sa-long-aging-wrap.sa-capturing .sa-long-aging-log-text { display:block; max-height:none; overflow:visible; -webkit-line-clamp:unset; }
   .sa-summary-log-cell { vertical-align: top; }
   .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
   .sa-summary-log-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
@@ -4446,7 +4448,8 @@ function buildSuspendReasonPivot(overRows, taggedRows) {
 
 // ── Capture ส่วนต่างๆของหน้า Long Aging — Copy to Clipboard ──────────────────
 async function captureLaSection(targetId, btnId) {
-  const frame = document.getElementById(targetId);
+  const target = document.getElementById(targetId);
+  const frame = target && target.closest(".sa-long-aging-wrap") || target;
   const btn   = document.getElementById(btnId);
   if (!frame || !btn) return;
 
@@ -7704,13 +7707,13 @@ function saWithinFourHours(r) {
 function saReasonKey(r) {
   const rowId = saRowId(r);
   if (rowId && _saReasonOverrides[rowId]) {
-    return SA_REASON_SELECT_OPTIONS.some(x => x.key === _saReasonOverrides[rowId]) ? _saReasonOverrides[rowId] : "r00";
+    return SA_REASON_SELECT_OPTIONS.some(x => x.key === _saReasonOverrides[rowId]) ? _saReasonOverrides[rowId] : "non_action";
   }
   const wo = saWorkOrderId(r);
   if (wo && _saReasonOverridesByWo[wo]) {
-    return SA_REASON_SELECT_OPTIONS.some(x => x.key === _saReasonOverridesByWo[wo]) ? _saReasonOverridesByWo[wo] : "r00";
+    return SA_REASON_SELECT_OPTIONS.some(x => x.key === _saReasonOverridesByWo[wo]) ? _saReasonOverridesByWo[wo] : "non_action";
   }
-  return "r00";
+  return "non_action";
 }
 function saOverBucket(r) {
   const h = saOverHours(r);
@@ -8225,6 +8228,20 @@ async function saSaveSaRowEditToDb(rowId) {
   const payload = saRowEditPayload(rowId);
   if (!payload) return;
   try {
+    // เปลี่ยน Suspend Status อย่างเดียวต้องไม่ล้างค่าเดิมของ INOC Log/การติดตาม
+    // อนุญาตให้เป็นค่าว่างได้เฉพาะกรณีที่ผู้ใช้แก้ช่องนั้นโดยตรง
+    const row = _saRawRowsById[rowId];
+    const wo = saWorkOrderId(row);
+    const hasLogEdit = Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId) || (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo));
+    const hasFollowUpEdit = Object.prototype.hasOwnProperty.call(_saFollowUpOverrides, rowId) || (wo && Object.prototype.hasOwnProperty.call(_saFollowUpOverridesByWo, wo));
+    if (wo && (!hasLogEdit || !hasFollowUpEdit)) {
+      const existing = await supaFetch(`sa_inoc_logs?select=inoc_log,follow_up&work_order_id=eq.${encodeURIComponent(wo)}`);
+      const previous = Array.isArray(existing) ? existing[0] : null;
+      if (previous) {
+        if (!hasLogEdit && Object.prototype.hasOwnProperty.call(previous, "inoc_log")) payload.inoc_log = previous.inoc_log || "";
+        if (!hasFollowUpEdit && Object.prototype.hasOwnProperty.call(previous, "follow_up")) payload.follow_up = previous.follow_up || "";
+      }
+    }
     await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", [payload]);
     _saPendingRowEditIds.delete(rowId);
     saSetDbStatus("ok", "บันทึกเลือกสาเหตุ / INOC Log ลง Supabase แล้ว");
@@ -8669,7 +8686,7 @@ function saOvStatusOverLabel(r) {
 function saOvReasonLabel(r) {
   const key = saReasonKey(r);
   const found = SA_SUSPEND_REASON_ROWS.find(x => x.key === key);
-  return found ? found.label : (key || "");
+  return found ? found.label : "00. Non Action";
 }
 function exportSaOvRawData() {
   const rows = _saOvExportRows || [];
@@ -8925,7 +8942,7 @@ function saOverviewOverProvinceHTML(overRows) {
       codeCounts[code] = (codeCounts[code] || 0) + 1;
       const reasonKey = saReasonKey(r);
       const reasonRow = SA_SUSPEND_REASON_ROWS.find(x => x.key === reasonKey);
-      const reason = reasonRow ? reasonRow.label : "ไม่ระบุ";
+      const reason = reasonRow ? reasonRow.label : "00. Non Action";
       reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
     });
     const entries = Object.entries(counts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], "th"));
@@ -11486,6 +11503,7 @@ document.getElementById("content-sa-overview").addEventListener("click", async f
   if (!frame) return;
 
   const origClass = btn.className;
+  frame.classList.add("sa-capturing");
   btn.textContent = "⏳ กำลังแคป...";
   btn.disabled = true;
 
@@ -11734,6 +11752,7 @@ async function captureFrameToClipboard(btn, targetId, fname) {
       windowWidth: captureWidth, windowHeight: captureHeight, logging: false,
     });
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
+    frame.classList.remove("sa-capturing");
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
 
@@ -11756,6 +11775,7 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     });
   } catch(err) {
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
+    frame.classList.remove("sa-capturing");
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
     btn.textContent="❌ "+err.message; btn.className=origClass.replace(/gold|blue/g,"")+" error"; btn.disabled=false;
