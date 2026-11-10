@@ -9446,13 +9446,6 @@ function renderSaSuspendSummary() {
   }
   if (_saSuspendView === "long-aging") {
     container.innerHTML = `<div class="sa-suspend-wrap">${subtabsHTML}<div class="sa-suspend-toolbar">${saRegionOptionsHTML(allRows)}${saUploadLogHTML()}<button class="btn btn-blue" onclick="document.getElementById('sa-suspend-file-input').click()">Upload SA Suspend Summary</button><input type="file" id="sa-suspend-file-input" accept=".xls,.xlsx,.xlsb,.csv" style="display:none" onchange="processSaSuspendExcelFile(this.files[0])"></div>${saLongAgingHTML(rows)}</div>`;
-    const longWrap = container.querySelector(".sa-long-aging-wrap");
-    const sourceToolbar = container.querySelector(".sa-suspend-toolbar");
-    const longControls = longWrap?.querySelector(".sa-long-aging-capture-controls") || longWrap?.querySelector("div[style*='display:flex']");
-    const uploadButton = sourceToolbar?.querySelector("button.btn-blue");
-    const uploadInput = sourceToolbar?.querySelector("#sa-suspend-file-input");
-    if (longControls && uploadButton) longControls.appendChild(uploadButton);
-    if (longControls && uploadInput) longControls.appendChild(uploadInput);
     return;
   }
   if (_saSuspendView === "over-aging") {
