@@ -8499,7 +8499,18 @@ function saOverAgingSummaryHTML(allRows) {
   return `<div class="sa-over-aging-summary"><div style="padding:14px 16px;margin-bottom:12px;border-radius:12px;background:linear-gradient(135deg,#173a72,#5b8def);color:#fff"><div style="font-size:22px;font-weight:900">Over Aging Summary</div><div style="font-size:12px;margin-top:4px;opacity:.9">สรุป Ticket ที่ Pending Over แยกตามช่วงเวลา</div></div><div style="display:grid;gap:12px">${cards}</div></div>`;
 }
 function saOverAgingTrendChartHTML(snapshotRows) {
-  const rows = snapshotRows || [];
+  const rawRows = snapshotRows || [];
+  const latestByDateRegion = {};
+  rawRows.forEach(r => {
+    const key = `${r.snapshot_date || ""}|${r.region || ""}`;
+    const stamp = Date.parse(r.snapshot_at || "") || 0;
+    if (!latestByDateRegion[key] || stamp >= latestByDateRegion[key]) latestByDateRegion[key] = stamp;
+  });
+  const rows = rawRows.filter(r => {
+    const key = `${r.snapshot_date || ""}|${r.region || ""}`;
+    const latest = latestByDateRegion[key];
+    return !latest || !r.snapshot_at || (Date.parse(r.snapshot_at) || 0) === latest;
+  });
   const regionFilter = _saSuspendRegionFilter === "ALL" ? "ALL" : _saSuspendRegionFilter;
   const regions = regionFilter === "ALL" ? ["BMA", "CW", "EAS", "SOU"] : [regionFilter];
   const dates = Array.from(new Set(rows.map(r => r.snapshot_date))).sort().slice(-14);
@@ -8507,7 +8518,7 @@ function saOverAgingTrendChartHTML(snapshotRows) {
   const charts = regions.map(region => {
     const series = dates.map(date => { const rr=rows.filter(r=>r.snapshot_date===date&&r.region===region); return Object.fromEntries(metrics.map(m=>[m.key,rr.reduce((s,r)=>s+Number(r[m.key]||0),0)])); });
     const max = Math.max(1,...series.map(v=>metrics.reduce((s,m)=>s+Number(v[m.key]||0),0)));
-    const bars = dates.map((date,i)=>{ const v=series[i]; const total=metrics.reduce((s,m)=>s+Number(v[m.key]||0),0); const stack=metrics.map(m=>{ const value=Number(v[m.key]||0); const scaled=Math.round((value/max)*145); const height=m.key === "within_count" ? Math.max(1,scaled) : Math.max(16,scaled); return `<div style="width:42px;height:${height}px;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;line-height:1;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.55);overflow:visible">${value}</div>`; }).join(""); return `<div style="flex:0 0 60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:235px"><div style="font-size:10px;font-weight:800;color:#173a72;margin-bottom:3px">${total}</div><div style="width:42px;display:flex;flex-direction:column;align-items:stretch">${stack}</div><div style="font-size:10px;margin-top:5px;color:#5a6b85">${saEscape(String(date).slice(5).replace("-","/"))}</div></div>`; }).join("");
+    const bars = dates.map((date,i)=>{ const v=series[i]; const total=metrics.reduce((s,m)=>s+Number(v[m.key]||0),0); const stack=metrics.map(m=>{ const value=Number(v[m.key]||0); const scaled=Math.round((value/max)*145); const height=m.key === "within_count" ? Math.max(1,scaled) : Math.max(16,scaled); return `<div style="width:42px;height:${height}px;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;line-height:1;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.55);overflow:visible">${value}</div>`; }).join(""); const dayMonth=String(date).slice(8,10)+"/"+String(date).slice(5,7); return `<div style="flex:0 0 60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:235px"><div style="font-size:10px;font-weight:800;color:#173a72;margin-bottom:3px">${total}</div><div style="width:42px;display:flex;flex-direction:column;align-items:stretch">${stack}</div><div style="font-size:10px;margin-top:5px;color:#5a6b85">${saEscape(dayMonth)}</div></div>`; }).join("");
     const legend=metrics.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:11px"><i style="width:12px;height:12px;background:${m.color};display:inline-block"></i>${m.label}</span>`).join("");
     const yTicks = [0,.25,.5,.75,1].map(t=>`<span style="position:absolute;left:0;right:0;bottom:${Math.round(t*145)+28}px;border-top:1px dashed #cbd5e1;font-size:10px;color:#64748b;text-align:left;padding-left:2px">${Math.round(max*t)}</span>`).join("");
     return `<section style="padding:12px 14px;border:1px solid rgba(91,141,239,.28);border-radius:10px;background:var(--surface-0)"><div style="font-size:18px;font-weight:900;color:#173a72;margin-bottom:5px">${region}</div><div style="margin-bottom:8px">${legend}</div><div style="height:270px;display:flex;align-items:flex-end;justify-content:flex-start;gap:10px;border-bottom:1px solid #b9c9e8;padding:0 8px;overflow-x:auto">${bars || `<span style="color:#7b8ba5">ยังไม่มี Snapshot</span>`}</div></section>`;
@@ -8518,7 +8529,7 @@ async function saLoadOverAgingTrend() {
   const target = document.getElementById("sa-over-aging-trend");
   if (!target) return;
   try {
-    const data = await supaFetch("sa_overview_province_snapshots?select=snapshot_date,region,within_count,over_2d,over_3d,over_more3d&order=snapshot_date.asc&limit=5000");
+    const data = await supaFetch("sa_overview_province_snapshots?select=snapshot_date,snapshot_at,region,within_count,over_2d,over_3d,over_more3d&order=snapshot_date.asc,snapshot_at.desc&limit=5000");
     target.innerHTML = saOverAgingTrendChartHTML(data || []);
   } catch (e) { target.innerHTML = `<div class="sa-suspend-empty">โหลด Snapshot ไม่สำเร็จ: ${saEscape(e.message || "ไม่ทราบสาเหตุ")}</div>`; }
 }
