@@ -1879,6 +1879,12 @@
     border-color: rgba(91,141,239,.65);
     box-shadow: 0 0 0 3px rgba(91,141,239,.12);
   }
+  .sa-long-aging-suggestion-wrap { position:relative; flex:1 1 340px; min-width:280px; max-width:520px; }
+  .sa-long-aging-suggestion-wrap .sa-search-input { width:100%; max-width:none; }
+  .sa-search-suggestions { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:1000; padding:6px; border:1px solid rgba(91,141,239,.35); border-radius:10px; background:var(--surface-0); box-shadow:0 10px 24px rgba(20,40,100,.18); }
+  .sa-search-suggestions-title { padding:4px 8px; font-size:11px; font-weight:800; color:var(--text-soft); }
+  .sa-search-suggestions button { display:block; width:100%; padding:7px 8px; border:0; border-radius:6px; background:transparent; color:var(--ink-strong); text-align:left; cursor:pointer; font:inherit; font-size:12px; }
+  .sa-search-suggestions button:hover { background:rgba(91,141,239,.12); }
   .sa-province-filter {
     display: inline-flex;
     align-items: center;
@@ -6992,6 +6998,9 @@ function renderAll(data) {
 
   renderSaOverview && document.getElementById("content-sa-overview").style.display !== "none" && renderSaOverview(data);
   if (typeof renderSaSuspendSummary === "function" && document.getElementById("content-sa-suspend")?.style.display !== "none") {
+    // ค่าจาก Database เปลี่ยนแล้ว ต้องบังคับ Render ใหม่
+    // ไม่เช่นนั้น renderKey เดิมจะทำให้หน้าเว็บใช้ข้อมูลดิบชุดเก่า
+    _saLastSuspendRenderKey = "";
     renderSaSuspendSummary();
   }
 
@@ -7027,7 +7036,7 @@ let _saShowSummaryLog = false;
 let _saLongAgingExportRows = [];
 let _saLongAgingVisibleRows = [];
 let _saLongAgingLogFilter = "ALL";
-let _saLongAgingStatusFilter = "LONG_AGING";
+let _saLongAgingStatusFilter = "ALL";
 let _saLongAgingManagerFilter = "ALL";
 let _saLongAgingSearch = "";
 let _saSnapshotAt = null;
@@ -7065,34 +7074,34 @@ let _saSuspendRowsDbUnavailable = false;
 let _saSuspendLastUploadAt = "";
 let _saSuspendDbRawCount = 0;
 const SA_REASON_SELECT_OPTIONS = [
-  { key:"non_action", label:"00. Non Action" },
-  { key:"r01", label:"01. Spare part - Spare part not available" },
-  { key:"r02", label:"02. Spare part - Wait on site to replace" },
-  { key:"r03", label:"03. Budget required - Approve in progress" },
-  { key:"r04", label:"04. Site renovate - area is still closed" },
-  { key:"r05", label:"05. Site permission - Requesting or pending approval" },
-  { key:"r06", label:"06. Site permission - Approved and awaiting site entry" },
-  { key:"r07", label:"07. Site dismantle - Wait for configuration removal" },
-  { key:"r08", label:"08. Improvement - Awarded subcons" },
-  { key:"r09", label:"09. Improvement - Track B" },
-  { key:"r10", label:"10. Wait for other parties - Back office/Vendor support" },
-  { key:"r11", label:"11. Wait for other parties - Other operators/Provider" },
-  { key:"r12", label:"12. Workload - Team workload is too high" },
-  { key:"r13", label:"13. Risk Area - Protest/Dangerous area" },
-  { key:"r14", label:"14. Disaster - Strom/Flood/Earthquake" },
-  { key:"r15", label:"15. Difficulte work - Site equipment was stolen" },
-  { key:"r16", label:"16. Difficulte work - Work at high" },
-  { key:"r17", label:"17. Fiber optic - Fire burn/High voltage short circuit" },
-  { key:"r18", label:"18. Fiber optic - Accident/Constuction" },
-  { key:"r19", label:"19. Fiber optic - PEA/MEA Maintenance transmission line" },
-  { key:"r20", label:"20. Fiber optic - High loss/Degrade/Animal" },
-  { key:"r21", label:"21. Others" },
-  { key:"r22", label:"22. Workload - Assigning team access site" },
-  { key:"r23", label:"23. Workload - Assigning team access island/border area" },
-  { key:"tt_resolved", label:"24. TT Resolved" },
-  { key:"in_progress", label:"25. In Progress" },
-  { key:"solar_cell", label:"26. Solar Cell - Off Grid" },
-  { key:"rebuild_site", label:"27. Rebuild site" },
+  { key:"non_action", label:"Non Action" },
+  { key:"r01", label:"1. อะไหล่ – ไม่มีอะไหล่พร้อมใช้งาน" },
+  { key:"r02", label:"2. อะไหล่ – รอเปลี่ยนที่ไซต์งาน" },
+  { key:"r03", label:"3. ต้องใช้งบประมาณ – อยู่ระหว่างดำเนินการอนุมัติ" },
+  { key:"r04", label:"4. ปรับปรุงไซต์งาน – พื้นที่ยังปิดอยู่" },
+  { key:"r05", label:"5. ขออนุญาตเข้าพื้นที่ – อยู่ระหว่างยื่นคำขอหรือรออนุมัติ" },
+  { key:"r06", label:"6. ขออนุญาตเข้าพื้นที่ – ได้รับอนุมัติแล้วและรอเข้าพื้นที่" },
+  { key:"r07", label:"7. ไซต์รื้อถอนแล้ว – รอดำเนินการ ลบ Data บนระบบ" },
+  { key:"r08", label:"8. งานปรับปรุง – โดยผู้รับเหมาในพื้นที่สัญญา" },
+  { key:"r09", label:"9. งานปรับปรุง – Track B" },
+  { key:"r10", label:"10. รอหน่วยงานอื่นดำเนินการ – Vendor support" },
+  { key:"r11", label:"11. รอหน่วยงานอื่นดำเนินการ – จากหน่วยงานอื่น" },
+  { key:"r12", label:"12. Workload – ทีมมีงานคงค้างจำนวนมาก" },
+  { key:"r13", label:"13. พื้นที่เสี่ยง – พื้นที่ชุมนุมหรือพื้นที่อันตราย" },
+  { key:"r14", label:"14. ภัยพิบัติ – พายุ น้ำท่วม หรือแผ่นดินไหว" },
+  { key:"r15", label:"15. งานดำเนินการยาก – อุปกรณ์ที่ไซต์งานถูกโจรกรรม" },
+  { key:"r16", label:"16. งานดำเนินการยาก – ปฏิบัติงานบนที่สูง" },
+  { key:"r17", label:"17. สายใยแก้วนำแสง – สายไหม้หรือไฟฟ้าแรงสูงลัดวงจร" },
+  { key:"r18", label:"18. สายใยแก้วนำแสง – สายเสียหายจากอุบัติเหตุหรืองานก่อสร้าง" },
+  { key:"r19", label:"19. สายใยแก้วนำแสง – การไฟฟ้าส่วนภูมิภาคหรือการไฟฟ้านครหลวงบำรุงรักษาแนวสายส่ง" },
+  { key:"r20", label:"20. สายใยแก้วนำแสง – สัญญาณสูญเสียสูง สายเสื่อมสภาพ หรือสัตว์กัดแทะ" },
+  { key:"r21", label:"21. อื่น ๆ" },
+  { key:"r22", label:"22. ภาระงาน – อยู่ระหว่างจัดทีมเข้าปฏิบัติงานที่ไซต์" },
+  { key:"r23", label:"23. ภาระงาน – อยู่ระหว่างจัดทีมเข้าปฏิบัติงานในพื้นที่เกาะหรือชายแดน" },
+  { key:"tt_resolved", label:"24. ใบแจ้งเหตุขัดข้อง – แก้ไขแล้ว" },
+  { key:"in_progress", label:"25. อยู่ระหว่างดำเนินการ" },
+  { key:"solar_cell", label:"26. ระบบโซลาร์เซลล์" },
+  { key:"rebuild_site", label:"27. สร้างไซต์งานขึ้นใหม่" },
 ];
 const SA_SUSPEND_REASON_ROWS = SA_REASON_SELECT_OPTIONS.slice();
 const SA_SUSPEND_STATUS_ORDER = ["Dispatched", "Accepted", "Departed", "Arrived"];
@@ -7470,7 +7479,7 @@ function saSourceRows() {
   if ((!Array.isArray(_saSuspendRows) || !_saSuspendRows.length) && typeof saLoadSuspendRowsLocal === "function") {
     saLoadSuspendRowsLocal();
   }
-  return Array.isArray(_saSuspendRows) ? _saSuspendRows.filter(r => !saIsDeletedWorkOrder(r)) : [];
+  return Array.isArray(_saSuspendRows) ? saUniqueRows(_saSuspendRows.filter(r => !saIsDeletedWorkOrder(r))) : [];
 }
 function saSaveSuspendRowsLocal(rows, filename) {
   try {
@@ -7557,6 +7566,9 @@ async function loadSaNanoMappingFromDb(force = false) {
     _saNanoFilename = set.size ? "Supabase Database" : "";
     _saNanoDbLoaded = true;
     saSetDbStatus("ok", `โหลดจาก Supabase แล้ว ${set.size} EQPT_NAME`);
+    // ค่าจาก Database เปลี่ยนแล้ว ต้องบังคับ Render ใหม่
+    // ไม่เช่นนั้น renderKey เดิมจะทำให้หน้าเว็บใช้ข้อมูลดิบชุดเก่า
+    _saLastSuspendRenderKey = "";
     renderSaSuspendSummary();
   } catch (e) {
     _saNanoDbLoaded = false;
@@ -7755,9 +7767,11 @@ function saBuildMatrix(rows, statusRows) {
 function saUniqueRows(rows) {
   const seen = new Set();
   return (rows || []).filter(r => {
-    const id = saRowId(r);
-    if (seen.has(id)) return false;
-    seen.add(id);
+    const wo = saWorkOrderId(r);
+    const source = saNormText(r && (r["Source Ticket ID"] || r["Source Ticket"] || r["Ticket"]));
+    const key = wo ? `wo:${wo.toUpperCase()}` : (source ? `source:${source.toUpperCase()}` : `row:${saRowId(r)}`);
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -7846,13 +7860,15 @@ function saGetInocLog(r) {
   if (rowId && Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId)) return _saInocLogOverrides[rowId];
   const wo = saWorkOrderId(r);
   if (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo)) return _saInocLogOverridesByWo[wo];
-  return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || "";
+  const raw = r.raw_data || {};
+  return r["INOC Log"] || r["Inoc Log"] || r["INOC_LOG"] || r["INOCLog"] || r["INOC log"] || raw["INOC Log"] || raw["Inoc Log"] || raw["INOC_LOG"] || raw["INOCLog"] || raw["INOC log"] || "";
 }
 function saGetFollowUp(r) {
   const rowId = saRowId(r), wo = saWorkOrderId(r);
   if (rowId && Object.prototype.hasOwnProperty.call(_saFollowUpOverrides, rowId)) return _saFollowUpOverrides[rowId];
   if (wo && Object.prototype.hasOwnProperty.call(_saFollowUpOverridesByWo, wo)) return _saFollowUpOverridesByWo[wo];
-  return r["การติดตาม"] || r["Follow Up"] || r.follow_up || "";
+  const raw = r.raw_data || {};
+  return r["การติดตาม"] || r["Follow Up"] || r.follow_up || raw["การติดตาม"] || raw["Follow Up"] || raw.follow_up || "";
 }
 function saSetFollowUp(rowId, value) {
   const row = _saRawRowsById[rowId]; if (!row) return;
@@ -8158,7 +8174,12 @@ function processSaSuspendExcelFile(file) {
         renderSaSuspendSummary();
         return;
       }
-      saSetDbStatus("ok", saUploadPipelineColumnSummary(rows, file.name));
+      const sourceRowCount = rows.length;
+      rows = saUniqueRows(rows);
+      if (rows.length < sourceRowCount) {
+        saSetDbStatus("warn", `ตรวจพบ Ticket ซ้ำ ${sourceRowCount - rows.length} รายการ · ใช้ Work Order ID เป็นตัวกันซ้ำ`);
+      }
+      if (rows.length === sourceRowCount) saSetDbStatus("ok", saUploadPipelineColumnSummary(rows, file.name));
       _rawDataSource = "upload";
       _rawUploadFileName = file.name;
       _saSnapshotAt = Date.now();
@@ -8232,8 +8253,9 @@ async function saSaveSaRowEditToDb(rowId) {
     // อนุญาตให้เป็นค่าว่างได้เฉพาะกรณีที่ผู้ใช้แก้ช่องนั้นโดยตรง
     const row = _saRawRowsById[rowId];
     const wo = saWorkOrderId(row);
-    const hasLogEdit = Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId) || (wo && Object.prototype.hasOwnProperty.call(_saInocLogOverridesByWo, wo));
-    const hasFollowUpEdit = Object.prototype.hasOwnProperty.call(_saFollowUpOverrides, rowId) || (wo && Object.prototype.hasOwnProperty.call(_saFollowUpOverridesByWo, wo));
+    // ค่า *_ByWo มาจากการโหลด Database ไม่ใช่การแก้ไขครั้งนี้
+    const hasLogEdit = Object.prototype.hasOwnProperty.call(_saInocLogOverrides, rowId);
+    const hasFollowUpEdit = Object.prototype.hasOwnProperty.call(_saFollowUpOverrides, rowId);
     if (wo && (!hasLogEdit || !hasFollowUpEdit)) {
       const existing = await supaFetch(`sa_inoc_logs?select=inoc_log,follow_up&work_order_id=eq.${encodeURIComponent(wo)}`);
       const previous = Array.isArray(existing) ? existing[0] : null;
@@ -8243,6 +8265,7 @@ async function saSaveSaRowEditToDb(rowId) {
       }
     }
     await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", [payload]);
+    _saInocLogDbUnavailable = false;
     _saPendingRowEditIds.delete(rowId);
     saSetDbStatus("ok", "บันทึกเลือกสาเหตุ / INOC Log ลง Supabase แล้ว");
   } catch (e) {
@@ -8251,8 +8274,9 @@ async function saSaveSaRowEditToDb(rowId) {
       _saInocLogDbUnavailable = true;
       saSetDbStatus("warn", "ยังไม่บันทึกข้อมูล: ต้องสร้างตาราง sa_inoc_logs ก่อน");
     } else if (/team_code|follow_up|schema cache|PGRST204/i.test(msg)) {
-      const { team_code, follow_up, ...fallbackPayload } = payload;
+      const { team_code, ...fallbackPayload } = payload;
       await supaUpsert("sa_inoc_logs?on_conflict=work_order_id", [fallbackPayload]);
+      _saInocLogDbUnavailable = false;
       _saPendingRowEditIds.delete(rowId);
       saSetDbStatus("warn", "บันทึกแล้ว แต่ควรอัปเดต SQL เพื่อเพิ่ม column team_code");
     } else {
@@ -8327,16 +8351,19 @@ async function saLoadSaRowEditsFromDb(rows, forceReload = false) {
     const results = await Promise.all(chunks.map(ids =>
       supaFetch(`sa_inoc_logs?select=*&work_order_id=in.(${ids.map(pgInValue).join(",")})`)
     ));
+    _saInocLogDbUnavailable = false;
     results.flat().forEach(rec => {
       const wo = saNormText(rec.work_order_id);
       if (!wo) return;
-      if (Object.prototype.hasOwnProperty.call(rec, "inoc_log")) _saInocLogOverridesByWo[wo] = rec.inoc_log || "";
-      if (Object.prototype.hasOwnProperty.call(rec, "follow_up")) _saFollowUpOverridesByWo[wo] = rec.follow_up || "";
+      if (Object.prototype.hasOwnProperty.call(rec, "inoc_log") && saNormText(rec.inoc_log)) _saInocLogOverridesByWo[wo] = rec.inoc_log;
+      if (Object.prototype.hasOwnProperty.call(rec, "follow_up") && saNormText(rec.follow_up)) _saFollowUpOverridesByWo[wo] = rec.follow_up;
     if (rec.updated_at) _saRowEditUpdatedAtByWo[wo] = rec.updated_at;
       if (rec.reason_key && SA_REASON_SELECT_OPTIONS.some(opt => opt.key === rec.reason_key)) {
         _saReasonOverridesByWo[wo] = rec.reason_key;
       }
     });
+    // ค่าจาก Database เปลี่ยนแล้ว ต้องบังคับ Render ใหม่
+    _saLastSuspendRenderKey = "";
     renderSaSuspendSummary();
   } catch (e) {
     const msg = e.message || "";
@@ -8979,7 +9006,6 @@ async function saSaveOverviewProvinceSnapshot(allRows, pendingRows) {
     const downtimeHours = Number(saDowntimeHours(r) || 0);
     const urgencyHours = Number(saLongAgingUrgencyHours(r) || 0);
     item.ticket_count++;
-    if (overHours <= 0) item.within_count++;
     item.max_over_hours = Math.max(item.max_over_hours, overHours);
     item.max_downtime_hours = Math.max(item.max_downtime_hours, downtimeHours);
     item.max_urgency_hours = Math.max(item.max_urgency_hours, urgencyHours);
@@ -8989,6 +9015,12 @@ async function saSaveOverviewProvinceSnapshot(allRows, pendingRows) {
     else if (overHours >= 72 && overHours < 96) item.over_3d = (item.over_3d || 0) + 1;
     else if (overHours >= 96) item.over_more3d = (item.over_more3d || 0) + 1;
     if (overHours > 0) item.total_over++;
+  });
+  // Within ต้องเป็นใบที่ยังไม่เข้าเกณฑ์ Over 2 วัน
+  // เพื่อให้ยอดรวมของกราฟแต่ละวันเท่ากับจำนวน Ticket จริงเสมอ
+  Object.values(provinceMap).forEach(item => {
+    const agingBuckets = (item.over_2d || 0) + (item.over_3d || 0) + (item.over_more3d || 0);
+    item.within_count = Math.max(0, item.ticket_count - agingBuckets);
   });
   const payload = Object.values(provinceMap);
   const signature = `${snapshotDate}|${payload.map(x => `${x.region}:${x.province_code}:${x.long_aging}:${x.downtime_over24}`).sort().join(",")}`;
@@ -9183,18 +9215,16 @@ function exportSaLongAgingRawData() {
   if (typeof dashShowToast === "function") dashShowToast(`Export Long Aging Raw Data สำเร็จ — ${exportRows.length} รายการ`);
 }
 async function exportSaLongAgingPowerPoint() {
-  // Export ทั้ง 2 Status ในไฟล์เดียว โดยแยกเป็น Section: Long Aging และ Downtime >24H
-  const sourceRows = Array.isArray(_saSuspendRows) && _saSuspendRows.length ? _saSuspendRows : (_saLongAgingVisibleRows || []);
+  // Export ต้องใช้ชุดเดียวกับตารางที่แสดงบนเว็บ หลังกรอง Region/Manager/Search/Status แล้ว
+  const sourceRows = Array.isArray(_saLongAgingVisibleRows) ? _saLongAgingVisibleRows : [];
+  // รอการบันทึกแบบ debounce ของ INOC Log/การติดตามให้จบก่อนอ่านค่าล่าสุด
+  await new Promise(resolve => setTimeout(resolve, 850));
   if (typeof saLoadSaRowEditsFromDb === "function" && sourceRows.length) {
     await saLoadSaRowEditsFromDb(sourceRows, true);
   }
-  const eligibleRows = sourceRows.filter(r => saIsSaSeverity(r) && !saIsClosed(r) && !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject)))
-    .filter(r => _saSuspendRegionFilter === "ALL" || saRegionNorm(r) === _saSuspendRegionFilter)
-    .filter(r => _saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)
-    .filter(r => _saLongAgingLogFilter !== "NO_LOG" || !saNormText(saGetInocLog(r)));
+  const eligibleRows = sourceRows;
   const sections = [
-    { label:"Long Aging", rows: eligibleRows.filter(r => saIsLongAging(r) && saDowntimeHours(r) >= 48).sort((a, b) => saDowntimeHours(b) - saDowntimeHours(a)) },
-    { label:"Downtime >24H (Exc. Long)", rows: eligibleRows.filter(r => saDowntimeHours(r) > 24 && !saIsLongAging(r)).sort((a, b) => saDowntimeHours(b) - saDowntimeHours(a)) }
+    { label: _saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? "Downtime >24H (Exc. Long)" : (_saLongAgingStatusFilter === "OVER" ? "Report Over" : "Long Aging"), rows: eligibleRows.slice().sort((a, b) => saDowntimeHours(b) - saDowntimeHours(a)) }
   ].filter(section => section.rows.length);
   const rows = sections.flatMap(section => section.rows);
   if (!rows.length) { alert("ไม่มี Ticket สำหรับ Export PowerPoint ตาม Status ที่เลือก"); return; }
@@ -9217,7 +9247,7 @@ async function exportSaLongAgingPowerPoint() {
     const byRegion = {};
     section.rows.forEach(r => { const region = saRegionNorm(r) || "ไม่ระบุ Region"; (byRegion[region] ||= []).push(r); });
     Object.entries(byRegion).sort(([a],[b]) => a.localeCompare(b, "th")).forEach(([region, regionRows]) => {
-      for (let i = 0; i < regionRows.length; i += 10) chunks.push({ section: section.label, region, rows: regionRows.slice(i, i + 10) });
+      for (let i = 0; i < regionRows.length; i += 8) chunks.push({ section: section.label, region, rows: regionRows.slice(i, i + 8) });
     });
   });
   const longRows = sections.find(s => s.label === "Long Aging")?.rows || [];
@@ -9286,8 +9316,8 @@ async function exportSaLongAgingPowerPoint() {
     slide.background = { color: "F5F7FF" };
     slide.addText(`${chunk.section} · ${chunk.region}`, { x:0.3, y:0.18, w:10.8, h:0.35, fontFace:"Arial", fontSize:20, bold:true, color:"173A72", margin:0 });
     slide.addText(`${date} · เวลา 17:00 · หน้า ${pageIndex + 2}/${chunks.length + 1} · ${chunk.rows.length} Ticket`, { x:0.3, y:0.58, w:10.8, h:0.2, fontFace:"Arial", fontSize:9, color:"5A6B85", margin:0 });
-    const colW = [1.12, 2.62, 0.82, 0.92, 0.82, 5.05, 0.82];
-    const tableX = 0.28, tableY = 0.95, headH = 0.42, rowH = 0.53;
+    const colW = [1.12, 2.42, 0.82, 0.92, 0.82, 4.42, 1.62];
+    const tableX = 0.28, tableY = 0.95, headH = 0.42, rowH = 0.72;
     let x = tableX;
     headers.forEach((header, i) => {
       slide.addShape(pptx.ShapeType.rect, { x, y:tableY, w:colW[i], h:headH, fill:{color:"5B8DEF"}, line:{color:"FFFFFF", pt:0.5} });
@@ -9299,12 +9329,13 @@ async function exportSaLongAgingPowerPoint() {
       const inocLogForSlide = saNormText(saGetInocLog(r) || "-").replace(/\s+/g, " ").trim();
       const workOrder = saNormText(saWorkOrderId(r) || "-");
       const sourceTicket = saNormText(r["Source Ticket ID"] || r["Source Ticket"] || "-");
-      const values = [saLongAgingSiteCode(r), `${workOrder}\n${sourceTicket}`, saNormText(r.Severity) || "-", saLongAgingTimeText(saDowntimeHours(r)), saGetFollowUp(r) || "-", inocLogForSlide.length > 190 ? inocLogForSlide.slice(0, 187) + "…" : inocLogForSlide, statusText];
+      const inocLogForPpt = inocLogForSlide.length > 120 ? inocLogForSlide.slice(0, 117) + "…" : inocLogForSlide;
+      const values = [saLongAgingSiteCode(r), `${workOrder}\n${sourceTicket}`, saNormText(r.Severity) || "-", saLongAgingTimeText(saDowntimeHours(r)), saGetFollowUp(r) || "-", inocLogForPpt, statusText];
       let cx = tableX;
       values.forEach((value, i) => {
         const fill = rowIndex % 2 ? "EEF3FF" : "FFFFFF";
         slide.addShape(pptx.ShapeType.rect, { x:cx, y:tableY+headH+rowIndex*rowH, w:colW[i], h:rowH, fill:{color:fill}, line:{color:"D5DDF2", pt:0.5} });
-        slide.addText(String(value), { x:cx+0.05, y:tableY+headH+rowIndex*rowH+(i===1?0.08:0.13), w:colW[i]-0.1, h:i===1?0.36:0.24, fontFace:"Arial", fontSize:i===5?7.5:(i===1?7.5:8), color:"173A72", align:i===5?"left":"center", margin:0, fit:"shrink", valign:"mid" });
+        slide.addText(String(value), { x:cx+0.05, y:tableY+headH+rowIndex*rowH+0.08, w:colW[i]-0.1, h:rowH-0.16, fontFace:"Arial", fontSize:i===6?6:(i===5?7:(i===1?7.5:8)), color:"173A72", align:i===5?"left":"center", margin:0, fit:"shrink", valign:"mid" });
         cx += colW[i];
       });
     });
@@ -9326,8 +9357,16 @@ function saSetLongAgingLogFilter(value) {
   renderSaSuspendSummary();
 }
 function saSetLongAgingStatusFilter(value) {
-  _saLongAgingStatusFilter = ["LONG_AGING", "DOWNTIME24_NO_LONG", "OVER"].includes(value) ? value : "LONG_AGING";
+  _saLongAgingStatusFilter = ["ALL", "LONG_AGING", "DOWNTIME24_NO_LONG", "OVER"].includes(value) ? value : "LONG_AGING";
   renderSaSuspendSummary();
+}
+function saEnsureLongAgingStatusAll() {
+  const select = document.querySelector('.sa-long-aging-wrap select[onchange*="saSetLongAgingStatusFilter"]');
+  if (!select) return;
+  if (!select.querySelector('option[value="ALL"]')) {
+    select.insertAdjacentHTML("afterbegin", '<option value="ALL">ทั้งหมด</option>');
+  }
+  select.value = _saLongAgingStatusFilter;
 }
 function saManagerValue(r) {
   const raw = r?.raw_data || {};
@@ -9353,12 +9392,51 @@ function saSetLongAgingReasonCount(rowId, reasonKey, value, inputEl) {
 }
 function saSetLongAgingSearch(value) {
   _saLongAgingSearch = saNormText(value);
+  const pageX = window.scrollX, pageY = window.scrollY;
   renderSaSuspendSummary();
+  // Render ใหม่จะสร้าง input ใหม่ จึงต้องคืน Focus และตำแหน่งเคอร์เซอร์
+  requestAnimationFrame(() => {
+    window.scrollTo(pageX, pageY);
+    const input = document.querySelector('.sa-long-aging-wrap .sa-search-input');
+    if (!input) return;
+    let parent = input.parentElement;
+    if (parent && !parent.classList.contains('sa-long-aging-suggestion-wrap')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'sa-long-aging-suggestion-wrap';
+      parent.insertBefore(wrap, input);
+      wrap.appendChild(input);
+      parent = wrap;
+    }
+    if (parent) {
+      parent.querySelectorAll('.sa-search-suggestions').forEach(el => el.remove());
+      const suggestions = saLongAgingSearchSuggestions(saSourceRows());
+      if (suggestions) parent.insertAdjacentHTML('beforeend', suggestions);
+    }
+    input.focus({ preventScroll: true });
+    const end = input.value.length;
+    try { input.setSelectionRange(end, end); } catch (_) {}
+  });
 }
 function saLongAgingSearchRows(rows) {
   const q = saNormText(_saLongAgingSearch).toLowerCase();
   if (!q) return [];
   return (rows || []).filter(r => [saWorkOrderId(r), r["Source Ticket ID"], r["Site ID"], r["Site Code"], r.Subject, r["External Ticket ID"], r["SDM TT"]].some(v => saNormText(v).toLowerCase().includes(q)));
+}
+function saLongAgingSearchSuggestions(rows) {
+  const q = saNormText(_saLongAgingSearch).toLowerCase();
+  if (!q) return "";
+  const values = [];
+  (rows || []).forEach(r => {
+    [r["Site ID"], r["Site Code"], saWorkOrderId(r), r["Source Ticket ID"], r["Source Ticket"], r["External Ticket ID"], r["SDM TT"]].forEach(v => {
+      const text = saNormText(v);
+      if (text && text.toLowerCase().includes(q) && !values.some(x => x.toLowerCase() === text.toLowerCase())) values.push(text);
+    });
+  });
+  // เมื่อพิมพ์ตรงกับค่าเต็มแล้ว ไม่ต้องแสดงคำแนะนำซ้ำด้านล่างช่องค้นหา
+  if (values.some(v => v.toLowerCase() === q)) return "";
+  const suggestions = values.slice(0, 8);
+  if (!suggestions.length) return "";
+  return `<div class="sa-search-suggestions"><div class="sa-search-suggestions-title">รายการใกล้เคียง</div>${suggestions.map(v => `<button type="button" onclick="saSetLongAgingSearch('${saEscape(v).replace(/'/g, "\\'")}')">${saEscape(v)}</button>`).join("")}</div>`;
 }
 function saLongAgingSearchHTML(rows) {
   if (!_saLongAgingSearch) return "";
@@ -9375,7 +9453,9 @@ function saLongAgingHTML(allRows) {
   _saLongAgingKnownSiteIds = Array.from(new Set((allRows || []).map(r => saNormText(r["Site ID"])).filter(v => v && !/^(find\s*not\s*found|not\s*found|n\/a|null|-)$/i.test(v)))).sort((a, b) => b.length - a.length);
   const managers = Array.from(new Set((allRows || []).map(saManagerValue).filter(Boolean))).sort((a, b) => a.localeCompare(b, "th"));
   if (_saLongAgingManagerFilter !== "ALL" && !managers.includes(_saLongAgingManagerFilter)) _saLongAgingManagerFilter = "ALL";
-  const rows = (allRows || []).filter(r => (_saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)).filter(r => !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject))).map(r => {
+  // ช่องค้นหาต้องกรองตาราง Long Aging หลักโดยตรง ไม่ใช่แสดงผลค้นหาแยกอย่างเดียว
+  const searchableRows = _saLongAgingSearch ? saLongAgingSearchRows(allRows) : (allRows || []);
+  const rows = searchableRows.filter(r => (_saLongAgingManagerFilter === "ALL" || saManagerValue(r) === _saLongAgingManagerFilter)).filter(r => !/^NKR/i.test(saNormText(r["Site ID"] || r["Site Code"] || r.Subject))).map(r => {
     const sevMatch = saNormText(r.Severity).toUpperCase().match(/^SA([1-4])(?:\b|[-\s])/);
     if (!sevMatch) return null;
     const urgency = saLongAgingUrgencyHours(r);
@@ -9383,7 +9463,7 @@ function saLongAgingHTML(allRows) {
     const aging = urgency === "" ? 0 : Math.max(0, over - urgency);
     const hasLog = Boolean(saNormText(saGetInocLog(r)));
     const isLongAging = saIsLongAging(r);
-    const statusOk = _saLongAgingStatusFilter === "LONG_AGING" ? isLongAging : (_saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? (saDowntimeHours(r) > 24 && !isLongAging) : (saDowntimeHours(r) > 0 && saDowntimeHours(r) <= 24 && !isLongAging));
+    const statusOk = _saLongAgingStatusFilter === "ALL" ? true : (_saLongAgingStatusFilter === "LONG_AGING" ? isLongAging : (_saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? (saDowntimeHours(r) > 24 && !isLongAging) : (saDowntimeHours(r) > 0 && saDowntimeHours(r) <= 24 && !isLongAging)));
     return statusOk && (_saLongAgingLogFilter !== "NO_LOG" || !hasLog) ? { r, urgency, over, aging: _saLongAgingStatusFilter === "LONG_AGING" ? aging : saDowntimeHours(r), downtime: saDowntimeHours(r) } : null;
   }).filter(Boolean).sort((a, b) => b.downtime - a.downtime);
   _saLongAgingVisibleRows = rows.map(x => x.r);
@@ -9410,12 +9490,13 @@ function saLongAgingHTML(allRows) {
   const reportDate = new Intl.DateTimeFormat("th-TH", { day:"2-digit", month:"2-digit", year:"numeric" }).format(new Date(_saSnapshotAt || Date.now()));
   const reportTitle = _saLongAgingStatusFilter === "LONG_AGING" ? "Report Pending Long Aging" : (_saLongAgingStatusFilter === "DOWNTIME24_NO_LONG" ? "Report Downtime > 24H (Exc. Long Aging)" : "Report Over");
   const managerOptions = ["<option value=\"ALL\">ทั้งหมด</option>", ...managers.map(m => `<option value="${saEscape(m)}"${_saLongAgingManagerFilter === m ? " selected" : ""}>${saEscape(m)}</option>`)].join("");
-  return `<div class="sa-long-aging-wrap">${saLongAgingStatusCardsHTML(rows.map(x => x.r))}<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING"?" selected":""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG"?" selected":""}>Downtime &gt;24H (Exc. Long Aging)</option><option value="OVER"${_saLongAgingStatusFilter==="OVER"?" selected":""}>Over</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL"?" selected":""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG"?" selected":""}>ไม่มีการ Update Log</option></select></label><input class="sa-search-input" style="min-width:280px" value="${saEscape(_saLongAgingSearch)}" placeholder="ค้นหา Site ID / Work Order ID / Source Ticket" oninput="saSetLongAgingSearch(this.value)"><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint Report</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div>${saLongAgingSearchHTML(allRows)}<table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
+  return `<div class="sa-long-aging-wrap">${saLongAgingStatusCardsHTML(rows.map(x => x.r))}<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label>Status <select onchange="saSetLongAgingStatusFilter(this.value)"><option value="LONG_AGING"${_saLongAgingStatusFilter==="LONG_AGING" ? " selected" : ""}>Long Aging</option><option value="DOWNTIME24_NO_LONG"${_saLongAgingStatusFilter==="DOWNTIME24_NO_LONG" ? " selected" : ""}>Downtime &gt;24H (Exc. Long Aging)</option><option value="OVER"${_saLongAgingStatusFilter==="OVER" ? " selected" : ""}>Over</option></select></label><label>Manager <select onchange="saSetLongAgingManagerFilter(this.value)">${managerOptions}</select></label><label>INOC Log <select onchange="saSetLongAgingLogFilter(this.value)"><option value="ALL"${_saLongAgingLogFilter==="ALL" ? " selected" : ""}>ทั้งหมด</option><option value="NO_LOG"${_saLongAgingLogFilter==="NO_LOG" ? " selected" : ""}>ไม่มีการ Update Log</option></select></label><input class="sa-search-input" style="min-width:280px" value="${saEscape(_saLongAgingSearch)}" placeholder="ค้นหา Site ID / Work Order ID / Source Ticket" oninput="saSetLongAgingSearch(this.value)"><button type="button" class="nsa-capture-btn blue" data-target="sa-long-aging-table-capture" data-fname="SA_Long_Aging">📷 แคปภาพ</button><button class="btn sa-long-aging-export-ppt" onclick="exportSaLongAgingPowerPoint()">📊 Export PowerPoint Report</button><button class="btn sa-long-aging-export-raw" onclick="exportSaLongAgingRawData()">📥 Export Raw Data</button></div>${saLongAgingSearchHTML(allRows)}<table id="sa-long-aging-table-capture" class="sa-long-aging-table"><caption>${reportTitle} <span style="font-size:12px;font-weight:500">(${rows.length} Ticket)</span><span class="sa-long-aging-caption-date">${saEscape(reportDate)} · เวลา 17:00</span></caption><thead><tr>${headers.map(h => `<th>${saEscape(h)}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
 function renderSaSuspendSummary() {
   const container = document.getElementById("content-sa-suspend");
   if (!container) return;
+  setTimeout(saEnsureLongAgingStatusAll, 0);
   const renderKey = [_saSuspendView, _saSuspendRegionFilter, _saReportStatusFilter, _saReportManagerFilter, _saLongAgingStatusFilter, _saLongAgingManagerFilter, _saLongAgingLogFilter, _saSuspendSearch, _saLongAgingSearch, saSourceRows().length, _saSuspendRowsDbLoaded, _saDeletedWorkOrdersDbLoaded].join("|");
   if (_saLastSuspendRenderKey === renderKey && container.firstElementChild) return;
   _saLastSuspendRenderKey = renderKey;
@@ -11721,10 +11802,29 @@ function showImageCopyFallback(blob) {
 
 // Generic capture helper (shared) — clipboard image with visible fallback
 async function captureFrameToClipboard(btn, targetId, fname) {
-  const frame = document.getElementById(targetId);
-  if (!frame) return;
+  const sourceFrame = document.getElementById(targetId);
+  if (!sourceFrame) return;
+  let frame = sourceFrame;
+  let captureClone = null;
+  if (sourceFrame.classList.contains("sa-long-aging-wrap")) {
+    const summary = sourceFrame.firstElementChild;
+    const table = sourceFrame.querySelector("#sa-long-aging-table-capture");
+    if (!summary || !table) {
+      btn.textContent = "❌ ไม่พบกรอบข้อมูลสำหรับแคป";
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = btn.dataset.label || "📷 แคปภาพ"; }, 4000);
+      return;
+    }
+    captureClone = document.createElement("div");
+    captureClone.className = "sa-long-aging-wrap";
+    captureClone.append(summary.cloneNode(true), table.cloneNode(true));
+    captureClone.style.cssText = "position:absolute;left:-100000px;top:0;display:block;width:max-content;min-width:1550px;background:#fff;padding:10px;";
+    document.body.appendChild(captureClone);
+    frame = captureClone;
+  }
   const origClass = btn.className;
   btn.textContent = "⏳..."; btn.disabled = true;
+  frame.classList.add("sa-capturing");
 
   const scrollEls = [frame, ...frame.querySelectorAll("*")];
   const saved = scrollEls.map(el => ({ el, mh: el.style.maxHeight, ov: el.style.overflow, ox: el.style.overflowX, oy: el.style.overflowY }));
@@ -11754,6 +11854,7 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     frame.classList.remove("sa-capturing");
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
+    if (captureClone) captureClone.remove();
 
     await new Promise((resolve) => {
       canvas.toBlob(async (blob) => {
@@ -11777,6 +11878,7 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     frame.classList.remove("sa-capturing");
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
+    if (captureClone) captureClone.remove();
     btn.textContent="❌ "+err.message; btn.className=origClass.replace(/gold|blue/g,"")+" error"; btn.disabled=false;
     setTimeout(()=>{ btn.textContent=btn.dataset.label || "📷 แคปภาพ"; btn.className=origClass; }, 4000);
   }
