@@ -2121,6 +2121,17 @@
   .sa-long-aging-log-text.expanded { max-height:none; }
   .sa-long-aging-wrap.sa-capturing > div[style*="display:flex"], .sa-long-aging-wrap.sa-capturing .sa-long-aging-search-panel { display:none !important; }
   .sa-long-aging-wrap.sa-capturing .sa-long-aging-log-text { display:block; max-height:none; overflow:visible; -webkit-line-clamp:unset; }
+  /* Capture the table itself with full INOC Log text and natural row heights. */
+  .sa-long-aging-table.sa-table-capturing .sa-long-aging-log-text { display:block !important; max-height:none !important; height:auto !important; overflow:visible !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; line-height:1.45 !important; -webkit-line-clamp:unset !important; }
+  .sa-long-aging-table.sa-table-capturing td.sa-long-aging-log-cell { height:auto !important; vertical-align:top !important; }
+  .sa-long-aging-table.sa-table-capturing { font-size:14px !important; }
+  .sa-long-aging-table.sa-table-capturing th { font-size:14px !important; padding:10px 8px !important; }
+  .sa-long-aging-table.sa-table-capturing td { font-size:14px !important; padding:8px 7px !important; }
+  .sa-long-aging-table.sa-table-capturing th:nth-child(6), .sa-long-aging-table.sa-table-capturing td:nth-child(6) { width:100px !important; min-width:100px !important; max-width:100px !important; }
+  .sa-long-aging-table.sa-table-capturing th:nth-child(8), .sa-long-aging-table.sa-table-capturing td:nth-child(8) { width:440px !important; min-width:440px !important; max-width:440px !important; }
+  .sa-long-aging-table.sa-table-capturing .sa-long-aging-follow-up { width:86px !important; min-width:86px !important; font-size:14px !important; }
+  .sa-long-aging-table.sa-table-capturing .sa-reason-select { width:100% !important; min-width:0 !important; font-size:14px !important; padding-left:8px !important; padding-right:26px !important; }
+  .sa-long-aging-table.sa-table-capturing .sa-capture-status-text { display:block; width:100%; box-sizing:border-box; padding:7px 8px; border:1px solid rgba(91,141,239,.18); border-radius:6px; background:#fff; color:#173a72; font-size:14px; font-weight:700; line-height:1.35; white-space:normal; overflow-wrap:anywhere; text-align:left; }
   .sa-summary-log-cell { vertical-align: top; }
   .sa-summary-log-btn { padding: 7px 12px; font-size: 11px; white-space: nowrap; color: #fff !important; background: linear-gradient(135deg, #5b8def, #9b7bf7) !important; border: 0 !important; box-shadow: 0 3px 10px rgba(91,141,239,.28); font-weight: 800; }
   .sa-summary-log-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
@@ -11825,6 +11836,20 @@ async function captureFrameToClipboard(btn, targetId, fname) {
   const origClass = btn.className;
   btn.textContent = "⏳..."; btn.disabled = true;
   frame.classList.add("sa-capturing");
+  const isLongAgingTableCapture = sourceFrame.id === "sa-long-aging-table-capture";
+  if (isLongAgingTableCapture) frame.classList.add("sa-table-capturing");
+  const captureStatusNodes = [];
+  if (isLongAgingTableCapture) {
+    frame.querySelectorAll(".sa-reason-select").forEach(select => {
+      const selected = select.options[select.selectedIndex];
+      const text = document.createElement("div");
+      text.className = "sa-capture-status-text";
+      text.textContent = selected ? selected.textContent : (select.value || "");
+      select.replaceWith(text);
+      captureStatusNodes.push({ text, select });
+    });
+  }
+  const restoreCaptureStatusNodes = () => captureStatusNodes.forEach(({ text, select }) => text.parentNode && text.parentNode.replaceChild(select, text));
 
   const scrollEls = [frame, ...frame.querySelectorAll("*")];
   const saved = scrollEls.map(el => ({ el, mh: el.style.maxHeight, ov: el.style.overflow, ox: el.style.overflowX, oy: el.style.overflowY }));
@@ -11845,13 +11870,15 @@ async function captureFrameToClipboard(btn, targetId, fname) {
     const captureWidth = Math.max(frame.scrollWidth, frame.getBoundingClientRect().width);
     const captureHeight = Math.max(frame.scrollHeight, frame.getBoundingClientRect().height);
     const canvas = await html2canvas(frame, {
-      backgroundColor: resolvedBg, scale: 1, useCORS: true, allowTaint: true,
+      backgroundColor: resolvedBg, scale: isLongAgingTableCapture ? 2 : 1, useCORS: true, allowTaint: true,
       scrollX: 0, scrollY: 0, x: 0, y: 0,
       width: captureWidth, height: captureHeight,
       windowWidth: captureWidth, windowHeight: captureHeight, logging: false,
     });
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
     frame.classList.remove("sa-capturing");
+    frame.classList.remove("sa-table-capturing");
+    restoreCaptureStatusNodes();
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
     if (captureClone) captureClone.remove();
@@ -11876,6 +11903,8 @@ async function captureFrameToClipboard(btn, targetId, fname) {
   } catch(err) {
     saved.forEach(s => { s.el.style.maxHeight=s.mh; s.el.style.overflow=s.ov; s.el.style.overflowX=s.ox; s.el.style.overflowY=s.oy; });
     frame.classList.remove("sa-capturing");
+    frame.classList.remove("sa-table-capturing");
+    restoreCaptureStatusNodes();
     if (captureGrid) captureGrid.style.gridTemplateColumns = captureGridColumns;
     frame.style.position=origPos; frame.style.left=origLeft; frame.style.top=origTop; frame.style.zIndex=origZ; frame.style.width=origWidth; frame.style.height=origHeight;
     if (captureClone) captureClone.remove();
